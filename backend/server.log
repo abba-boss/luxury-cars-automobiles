@@ -1,0 +1,88 @@
+Executing (default): SELECT 1+1 AS result
+✅ Database connection established successfully
+🚀 Server running on port 3001
+📊 Environment: development
+🗄️  Database: sarkin_mota_db
+2025-12-23T15:32:55.266Z - GET /health
+2025-12-23T15:33:00.077Z - POST /api/auth/register
+Executing (68b061c5-5521-4a95-a118-ce87a8e56d26): START TRANSACTION;
+Registration attempt: {
+  email: 'admin@sarkinmota.com',
+  full_name: 'System Administrator',
+  phone: '+2348099999999'
+}
+Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@sarkinmota.com';
+Executing (68b061c5-5521-4a95-a118-ce87a8e56d26): INSERT INTO `users` (`id`,`email`,`password`,`full_name`,`phone`,`role`,`status`,`created_at`,`updated_at`) VALUES (DEFAULT,?,?,?,?,?,?,?,?);
+Executing (68b061c5-5521-4a95-a118-ce87a8e56d26): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 2;
+Executing (68b061c5-5521-4a95-a118-ce87a8e56d26): COMMIT;
+User registered successfully: { id: 2, email: 'admin@sarkinmota.com', role: 'user' }
+2025-12-23T15:33:06.073Z - POST /api/auth/register
+Executing (6f41282d-655b-4bf4-a9fa-01147001bcee): START TRANSACTION;
+Registration attempt: {
+  email: 'user@test.com',
+  full_name: 'Regular User',
+  phone: '+2348012345678'
+}
+Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'user@test.com';
+Executing (6f41282d-655b-4bf4-a9fa-01147001bcee): INSERT INTO `users` (`id`,`email`,`password`,`full_name`,`phone`,`role`,`status`,`created_at`,`updated_at`) VALUES (DEFAULT,?,?,?,?,?,?,?,?);
+Executing (6f41282d-655b-4bf4-a9fa-01147001bcee): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 3;
+Executing (6f41282d-655b-4bf4-a9fa-01147001bcee): COMMIT;
+User registered successfully: { id: 3, email: 'user@test.com', role: 'user' }
+2025-12-23T15:33:06.778Z - POST /api/auth/login
+Login attempt: { email: 'admin@sarkinmota.com' }
+Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@sarkinmota.com';
+User logged in successfully: { id: 2, email: 'admin@sarkinmota.com', role: 'admin' }
+2025-12-23T15:33:07.361Z - GET /api/dashboard
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 3;
+Auth success: User 3 (user) accessing GET /dashboard
+2025-12-23T15:33:07.389Z - GET /api/admin/dashboard
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 3;
+Auth success: User 3 (user) accessing GET /admin/dashboard
+Access denied: User 3 (user) attempted to access GET /admin/dashboard. Required roles: [admin]
+2025-12-23T15:33:07.411Z - GET /api/admin/dashboard
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 2;
+Auth success: User 2 (admin) accessing GET /admin/dashboard
+Access granted: User 2 (admin) accessing GET /admin/dashboard
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User`;
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User` WHERE `User`.`status` = 'active';
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User` WHERE `User`.`role` = 'admin';
+2025-12-23T15:33:07.446Z - GET /api/admin/users
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 2;
+Auth success: User 2 (admin) accessing GET /admin/users
+Access granted: User 2 (admin) accessing GET /admin/users
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` ORDER BY `createdAt` DESC;
+2025-12-23T15:33:07.475Z - GET /api/users/3
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 3;
+Auth success: User 3 (user) accessing GET /users/3
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '3';
+2025-12-23T15:33:07.500Z - GET /api/users/999
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 3;
+Auth success: User 3 (user) accessing GET /users/999
+2025-12-23T15:33:07.524Z - GET /api/users/3
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 2;
+Auth success: User 2 (admin) accessing GET /users/3
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '3';
+2025-12-23T15:33:07.549Z - GET /api/dashboard
+Authentication error: JsonWebTokenError: jwt malformed
+    at module.exports [as verify] (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/jsonwebtoken/verify.js:70:17)
+    at authenticateUser (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/middlewares/rbac.js:19:25)
+    at Layer.handle [as handle_request] (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/express/lib/router/index.js:175:3)
+2025-12-23T15:33:07.567Z - GET /api/dashboard
+2025-12-23T15:33:07.584Z - PUT /api/admin/users/3/role
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 2;
+Auth success: User 2 (admin) accessing PUT /admin/users/3/role
+Access granted: User 2 (admin) accessing PUT /admin/users/3/role
+Executing (1c75cacc-c6af-4553-9ab7-7b863112466b): START TRANSACTION;
+Executing (1c75cacc-c6af-4553-9ab7-7b863112466b): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '3';
+Executing (1c75cacc-c6af-4553-9ab7-7b863112466b): UPDATE `users` SET `role`=?,`updated_at`=? WHERE `id` = ?
+Executing (1c75cacc-c6af-4553-9ab7-7b863112466b): COMMIT;
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = '3';
+Admin 2 updated user 3 role to admin
+SIGTERM received, shutting down gracefully

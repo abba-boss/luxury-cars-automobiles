@@ -1,0 +1,86 @@
+Executing (default): SELECT 1+1 AS result
+✅ Database connection established successfully
+🚀 Server running on port 3001
+📊 Environment: development
+🗄️  Database: sarkin_mota_db
+2025-12-24T12:05:19.004Z - POST /api/auth/login
+Login attempt: { email: 'admin@test.com' }
+Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@test.com';
+User logged in successfully: { id: 5, email: 'admin@test.com', role: 'admin' }
+2025-12-24T12:05:19.480Z - POST /api/upload/vehicles
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing POST /vehicles
+Access granted: User 5 (admin) accessing POST /vehicles
+Error: Error: Only images and videos are allowed
+    at fileFilter (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/middlewares/upload.js:38:8)
+    at wrappedFileFilter (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/multer/index.js:44:7)
+    at Multipart.<anonymous> (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/multer/lib/make-middleware.js:132:7)
+    at Multipart.emit (node:events:524:28)
+    at HeaderParser.cb (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/busboy/lib/types/multipart.js:358:14)
+    at HeaderParser.push (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/busboy/lib/types/multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/busboy/lib/types/multipart.js:394:37)
+    at feed (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/streamsearch/lib/sbmh.js:219:14)
+    at SBMH.push (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/streamsearch/lib/sbmh.js:104:16)
+    at Multipart._write (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/busboy/lib/types/multipart.js:567:19) {
+  storageErrors: []
+}
+2025-12-24T12:05:26.430Z - POST /api/auth/login
+Login attempt: { email: 'admin@test.com' }
+Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@test.com';
+User logged in successfully: { id: 5, email: 'admin@test.com', role: 'admin' }
+2025-12-24T12:05:26.869Z - POST /api/vehicles
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing POST /
+Access granted: User 5 (admin) accessing POST /
+Executing (default): INSERT INTO `vehicles` (`id`,`make`,`model`,`year`,`price`,`mileage`,`fuel_type`,`transmission`,`condition`,`color`,`description`,`features`,`images`,`videos`,`is_verified`,`is_featured`,`is_hot_deal`,`status`,`created_at`,`updated_at`) VALUES (DEFAULT,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+2025-12-24T12:05:31.633Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T12:28:47.032Z - POST /api/auth/login
+Login attempt: { email: 'admin@gmail.com' }
+Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@gmail.com';
+2025-12-24T12:28:55.680Z - POST /api/auth/login
+Login attempt: { email: 'admin@gmail.com' }
+Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@gmail.com';
+2025-12-24T12:29:12.955Z - POST /api/auth/login
+Login attempt: { email: 'admin@gmail.com' }
+Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@gmail.com';
+2025-12-24T12:29:56.419Z - POST /api/auth/login
+Login attempt: { email: 'admin@test.com' }
+Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@test.com';
+User logged in successfully: { id: 5, email: 'admin@test.com', role: 'admin' }
+2025-12-24T12:29:56.898Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+2025-12-24T12:29:56.903Z - GET /api/admin/users
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T12:29:56.911Z - GET /api/inquiries
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /users
+Access granted: User 5 (admin) accessing GET /users
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User`;
+Auth success: User 5 (admin) accessing GET /
+Access granted: User 5 (admin) accessing GET /
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` ORDER BY `createdAt` DESC LIMIT 0, 10;
+Executing (default): SELECT count(`Inquiry`.`id`) AS `count` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id`;
+Executing (default): SELECT `Inquiry`.`id`, `Inquiry`.`name`, `Inquiry`.`email`, `Inquiry`.`phone`, `Inquiry`.`subject`, `Inquiry`.`message`, `Inquiry`.`vehicle_id`, `Inquiry`.`user_id`, `Inquiry`.`status`, `Inquiry`.`priority`, `Inquiry`.`created_at` AS `createdAt`, `Inquiry`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id` ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T12:31:49.047Z - POST /api/upload/vehicles
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing POST /vehicles
+Access granted: User 5 (admin) accessing POST /vehicles
+2025-12-24T12:31:49.157Z - GET /uploads/vehicles/images/images-1766579509065-745257005.png
+2025-12-24T12:31:49.167Z - GET /uploads/vehicles/images/images-1766579509072-626661570.png
+2025-12-24T12:31:49.169Z - GET /uploads/vehicles/images/images-1766579509086-106315258.png
+2025-12-24T12:32:15.830Z - POST /api/upload/vehicles
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing POST /vehicles
+Access granted: User 5 (admin) accessing POST /vehicles
+2025-12-24T12:32:19.457Z - POST /api/vehicles
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing POST /
+Access granted: User 5 (admin) accessing POST /
+Executing (default): INSERT INTO `vehicles` (`id`,`make`,`model`,`year`,`price`,`mileage`,`fuel_type`,`transmission`,`condition`,`body_type`,`color`,`description`,`features`,`images`,`videos`,`is_verified`,`is_featured`,`is_hot_deal`,`status`,`created_at`,`updated_at`) VALUES (DEFAULT,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+2025-12-24T12:33:18.492Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T12:33:46.803Z - POST /api/auth/logout

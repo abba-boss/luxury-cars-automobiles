@@ -1,0 +1,133 @@
+'use strict';
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    // Insert sample vehicles
+    await queryInterface.bulkInsert('vehicles', [
+      {
+        make: 'Toyota',
+        model: 'Camry',
+        year: 2022,
+        price: 18500000.00,
+        mileage: 25000,
+        condition: 'Tokunbo',
+        transmission: 'Automatic',
+        fuel_type: 'Petrol',
+        color: 'White',
+        description: 'Well-maintained Toyota Camry with full service history.',
+        features: JSON.stringify(['Leather Seats', 'Sunroof', 'Backup Camera', 'Bluetooth']),
+        images: JSON.stringify(['/images/car-1.jpg']),
+        is_verified: true,
+        is_featured: true,
+        is_hot_deal: false,
+        status: 'available',
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        make: 'Lexus',
+        model: 'RX 350',
+        year: 2021,
+        price: 32000000.00,
+        mileage: 35000,
+        condition: 'Tokunbo',
+        transmission: 'Automatic',
+        fuel_type: 'Petrol',
+        color: 'Black',
+        description: 'Luxury Lexus RX 350 in excellent condition.',
+        features: JSON.stringify(['Navigation', 'Premium Sound', 'Heated Seats', '360 Camera']),
+        images: JSON.stringify(['/images/car-2.jpg']),
+        is_verified: true,
+        is_featured: true,
+        is_hot_deal: true,
+        status: 'available',
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        make: 'Mercedes-Benz',
+        model: 'E-Class',
+        year: 2020,
+        price: 28500000.00,
+        mileage: 45000,
+        condition: 'Tokunbo',
+        transmission: 'Automatic',
+        fuel_type: 'Petrol',
+        color: 'Silver',
+        description: 'Elegant Mercedes E-Class with premium features.',
+        features: JSON.stringify(['Ambient Lighting', 'Apple CarPlay', 'Lane Assist', 'Panoramic Roof']),
+        images: JSON.stringify(['/images/car-3.jpg']),
+        is_verified: true,
+        is_featured: true,
+        is_hot_deal: false,
+        status: 'available',
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        make: 'Toyota',
+        model: 'Highlander',
+        year: 2023,
+        price: 42000000.00,
+        mileage: 8000,
+        condition: 'Brand New',
+        transmission: 'Automatic',
+        fuel_type: 'Hybrid',
+        color: 'Red',
+        description: 'Brand new Toyota Highlander Hybrid with warranty.',
+        features: JSON.stringify(['Third Row', 'Wireless Charging', 'JBL Audio', 'AWD']),
+        images: JSON.stringify(['/images/car-4.jpg']),
+        is_verified: true,
+        is_featured: false,
+        is_hot_deal: true,
+        status: 'available',
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        make: 'Honda',
+        model: 'Accord',
+        year: 2019,
+        price: 14500000.00,
+        mileage: 55000,
+        condition: 'Nigerian Used',
+        transmission: 'Automatic',
+        fuel_type: 'Petrol',
+        color: 'Blue',
+        description: 'Clean Honda Accord with low mileage for its year.',
+        features: JSON.stringify(['Honda Sensing', 'Leather Interior', 'Push Start', 'Cruise Control']),
+        images: JSON.stringify(['/images/car-5.jpg']),
+        is_verified: true,
+        is_featured: false,
+        is_hot_deal: false,
+        status: 'available',
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        make: 'Range Rover',
+        model: 'Sport',
+        year: 2022,
+        price: 85000000.00,
+        mileage: 15000,
+        condition: 'Tokunbo',
+        transmission: 'Automatic',
+        fuel_type: 'Petrol',
+        color: 'White',
+        description: 'Stunning Range Rover Sport in pristine condition.',
+        features: JSON.stringify(['Terrain Response', 'Meridian Sound', 'Air Suspension', 'Massage Seats']),
+        images: JSON.stringify(['/images/car-6.jpg']),
+        is_verified: true,
+        is_featured: true,
+        is_hot_deal: false,
+        status: 'available',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    ], {});
+  },
+
+  async down(queryInterface, Sequelize) {
+    await queryInterface.bulkDelete('vehicles', null, {});
+  }
+};
