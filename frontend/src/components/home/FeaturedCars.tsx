@@ -1,14 +1,61 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowUpRight, Eye, Heart, Gauge, Calendar, Fuel } from "lucide-react";
-import { featuredCars, formatPrice, formatMileage } from "@/data/cars";
+import { ArrowRight, ArrowUpRight, Eye, Heart, Gauge, Calendar, Fuel, Settings, Palette } from "lucide-react";
+import { formatPrice, formatMileage } from "@/data/cars";
+import { localDb } from "@/lib/database";
 import { cn } from "@/lib/utils";
 
 export function FeaturedCars() {
-  const displayCars = featuredCars.slice(0, 6);
+  const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const fetchFeaturedCars = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/vehicles');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          // Filter for featured cars and map to expected format
+          const featuredVehicles = result.data
+            .filter(vehicle => vehicle.is_featured)
+            .slice(0, 6)
+            .map(vehicle => ({
+              id: vehicle.id.toString(),
+              make: vehicle.make,
+              model: vehicle.model,
+              year: vehicle.year,
+              price: parseFloat(vehicle.price),
+              mileage: vehicle.mileage || 0,
+              condition: vehicle.condition,
+              transmission: vehicle.transmission,
+              fuelType: vehicle.fuel_type,
+              color: vehicle.color || '',
+              images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img => 
+                img.startsWith('http') ? img : `http://localhost:3001${img}`
+              ) : [`http://localhost:3001/uploads/vehicles/placeholder.jpg`],
+              description: vehicle.description || '',
+              features: vehicle.features || [],
+              isVerified: vehicle.is_verified || false,
+              isFeatured: vehicle.is_featured || false,
+              isHotDeal: vehicle.is_hot_deal || false,
+              createdAt: vehicle.created_at || new Date().toISOString()
+            }));
+          setCars(featuredVehicles);
+        }
+      } catch (error) {
+        console.error('Failed to fetch featured cars:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeaturedCars();
+  }, []);
+
+  const displayCars = cars;
 
   const toggleFavorite = (carId: string) => {
     setFavorites(prev => ({
@@ -40,7 +87,23 @@ export function FeaturedCars() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayCars.map((car, index) => (
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="bg-muted rounded-lg h-64 mb-4"></div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-muted rounded w-3/4"></div>
+                  <div className="h-4 bg-muted rounded w-1/2"></div>
+                </div>
+              </div>
+            ))
+          ) : displayCars.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground">No featured vehicles available at the moment.</p>
+            </div>
+          ) : (
+            displayCars.map((car, index) => (
             <div
               key={car.id}
               className="group block card-luxury overflow-hidden transition-all duration-500 hover:shadow-lg hover:shadow-primary/10"
@@ -181,10 +244,23 @@ export function FeaturedCars() {
                       <p className="text-sm font-medium text-foreground">{car.fuelType}</p>
                     </div>
                   </div>
+
+                  {/* Additional Specs Row */}
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/50">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Settings className="h-3 w-3" />
+                      <span>{car.transmission}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Palette className="h-3 w-3" />
+                      <span>{car.color}</span>
+                    </div>
+                  </div>
                 </div>
               </Link>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </section>

@@ -1,208 +1,149 @@
 import { Link, useNavigate } from "react-router-dom";
-import { PublicLayout } from "@/components/layout/PublicLayout";
+import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
 import { formatPrice } from "@/data/cars";
-import { Trash2, ShoppingCart, ArrowRight, Phone, MessageCircle } from "lucide-react";
-import { toast } from "sonner";
 
 const CartPage = () => {
-  const { items, removeFromCart, clearCart, getTotal } = useCart();
-  const { user } = useAuth();
   const navigate = useNavigate();
-
-  const handleCheckout = () => {
-    if (!user) {
-      navigate('/auth', { state: { from: { pathname: '/checkout' }, message: "Please sign in to proceed with checkout" } });
-    } else {
-      navigate('/checkout');
-    }
-  };
-
-  const handleRemove = (carId: string, carName: string) => {
-    removeFromCart(carId);
-    toast.success("Removed from cart", {
-      description: `${carName} has been removed from your cart.`,
-    });
-  };
+  const { items, removeFromCart, clearCart, getTotalPrice, getItemCount } = useCart();
 
   if (items.length === 0) {
     return (
-      <PublicLayout>
-        <div className="min-h-screen pt-20">
-          <div className="max-w-[1800px] mx-auto section-padding">
-            <div className="text-center py-24">
-              <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-8">
-                <ShoppingCart className="h-12 w-12 text-muted-foreground" />
-              </div>
-              <h1 className="text-3xl font-bold text-foreground mb-4">Your Cart is Empty</h1>
-              <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                Explore our collection of premium vehicles and add your favorites to the cart.
-              </p>
+      <Layout>
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="text-center">
+            <ShoppingBag className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <h1 className="text-2xl font-bold mb-2">Your Cart is Empty</h1>
+            <p className="text-muted-foreground mb-6">
+              Browse our inventory and add some vehicles to your cart
+            </p>
+            <Button asChild>
               <Link to="/cars">
-                <Button className="btn-luxury">
-                  Browse Collection
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                Browse Vehicles
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
-            </div>
+            </Button>
           </div>
         </div>
-      </PublicLayout>
+      </Layout>
     );
   }
 
   return (
-    <PublicLayout>
-      <div className="min-h-screen pt-20">
-        <div className="max-w-[1800px] mx-auto section-padding">
-          {/* Header */}
-          <div className="mb-12">
-            <span className="inline-block px-4 py-1.5 border border-primary/50 text-primary text-xs font-medium tracking-[0.2em] mb-4">
-              YOUR CART
-            </span>
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-              {items.length} {items.length === 1 ? "Vehicle" : "Vehicles"} Selected
-            </h1>
+    <Layout>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold">Shopping Cart</h1>
+            <p className="text-muted-foreground">
+              {getItemCount()} {getItemCount() === 1 ? 'vehicle' : 'vehicles'} in your cart
+            </p>
+          </div>
+          <Button variant="outline" onClick={clearCart}>
+            Clear Cart
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-4">
+            {items.map((item) => (
+              <Card key={item.id}>
+                <CardContent className="p-4">
+                  <div className="flex gap-4">
+                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={`${item.make} ${item.model}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ShoppingBag className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold text-lg">
+                            {item.year} {item.make} {item.model}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            Added on {item.addedAt.toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="mt-4 flex items-center justify-between">
+                        <p className="text-xl font-bold text-primary">
+                          {formatPrice(item.price)}
+                        </p>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/cars/${item.id}`}>
+                            View Details
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-6">
-              {items.map((car) => (
-                <div
-                  key={car.id}
-                  className="flex flex-col md:flex-row gap-6 border border-border p-6 animate-fade-in"
-                >
-                  {/* Image */}
-                  <Link to={`/cars/${car.id}`} className="md:w-64 flex-shrink-0">
-                    <div className="aspect-[4/3] overflow-hidden">
-                      <img
-                        src={car.images[0]}
-                        alt={`${car.make} ${car.model}`}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                  </Link>
-
-                  {/* Details */}
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <p className="text-xs text-primary font-medium tracking-wider mb-1">
-                          {car.condition.toUpperCase()}
-                        </p>
-                        <Link to={`/cars/${car.id}`}>
-                          <h3 className="text-xl font-semibold text-foreground hover:text-primary transition-colors">
-                            {car.year} {car.make} {car.model}
-                          </h3>
-                        </Link>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemove(car.id, `${car.year} ${car.make} ${car.model}`)}
-                        className="text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </Button>
-                    </div>
-
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                      <span>{car.transmission}</span>
-                      <span className="w-1 h-1 bg-muted-foreground rounded-full" />
-                      <span>{car.fuelType}</span>
-                      <span className="w-1 h-1 bg-muted-foreground rounded-full" />
-                      <span>{car.color}</span>
-                    </div>
-
-                    {/* Price - NOW VISIBLE */}
-                    <p className="text-2xl font-bold text-primary">
-                      {formatPrice(car.price)}
-                    </p>
+          <div className="lg:col-span-1">
+            <Card className="sticky top-4">
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Subtotal ({getItemCount()} items)</span>
+                    <span>{formatPrice(getTotalPrice())}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Processing Fee</span>
+                    <span>Calculated at checkout</span>
                   </div>
                 </div>
-              ))}
+                
+                <Separator />
+                
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Total</span>
+                  <span className="text-primary">{formatPrice(getTotalPrice())}</span>
+                </div>
 
-              {/* Clear Cart */}
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  clearCart();
-                  toast.success("Cart cleared");
-                }}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Clear All
-              </Button>
-            </div>
-
-            {/* Summary */}
-            <div>
-              <div className="sticky top-24 space-y-6">
-                {/* Order Summary */}
-                <div className="border border-border p-8">
-                  <h2 className="text-xl font-bold text-foreground mb-6">Order Summary</h2>
-                  
-                  <div className="space-y-4 mb-6">
-                    {items.map((car) => (
-                      <div key={car.id} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {car.year} {car.make} {car.model}
-                        </span>
-                        <span className="font-medium text-foreground">
-                          {formatPrice(car.price)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="border-t border-border pt-4 mb-6">
-                    <div className="flex justify-between">
-                      <span className="font-semibold text-foreground">Total</span>
-                      <span className="text-2xl font-bold text-primary">
-                        {formatPrice(getTotal())}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-muted-foreground mb-6">
-                    Prices are subject to inspection and final negotiation.
-                  </p>
-
-                  <Button className="w-full btn-luxury" onClick={handleCheckout}>
-                    Checkout
+                <div className="space-y-2">
+                  <Button className="w-full" size="lg" onClick={() => navigate('/checkout')}>
+                    Proceed to Checkout
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/cars">Continue Shopping</Link>
                   </Button>
                 </div>
-
-                {/* Contact Options */}
-                <div className="border border-border p-8">
-                  <h3 className="font-semibold text-foreground mb-4">Need Assistance?</h3>
-                  <div className="space-y-3">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start gap-3 rounded-none border-border hover:border-primary hover:bg-primary/10"
-                    >
-                      <Phone className="h-5 w-5 text-primary" />
-                      Call Us
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start gap-3 rounded-none border-border hover:border-emerald-500 hover:bg-emerald-500/10"
-                    >
-                      <MessageCircle className="h-5 w-5 text-emerald-500" />
-                      WhatsApp
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
-    </PublicLayout>
+    </Layout>
   );
 };
 

@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { featuredCars, brands, conditions, formatPrice } from "@/data/cars";
+import { brands, conditions, formatPrice } from "@/data/cars";
+import { localDb } from "@/lib/database";
 import {
   Search,
   SlidersHorizontal,
@@ -30,6 +31,8 @@ const CarsPage = () => {
   const [searchParams] = useSearchParams();
   const brandFromUrl = searchParams.get("brand");
 
+  const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
@@ -37,6 +40,50 @@ const CarsPage = () => {
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [selectedTransmission, setSelectedTransmission] = useState<string[]>([]);
   const [selectedFuelType, setSelectedFuelType] = useState<string[]>([]);
+
+  // Fetch cars from API
+  useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        console.log('Fetching vehicles from API...');
+        const response = await fetch('http://localhost:3001/api/vehicles');
+        const result = await response.json();
+        console.log('API Response:', result);
+        
+        if (result.success && result.data) {
+          // Map API data to Car interface
+          const mappedCars = result.data.map(vehicle => ({
+            id: vehicle.id.toString(),
+            make: vehicle.make,
+            model: vehicle.model,
+            year: vehicle.year,
+            price: parseFloat(vehicle.price),
+            mileage: vehicle.mileage || 0,
+            condition: vehicle.condition,
+            transmission: vehicle.transmission,
+            fuelType: vehicle.fuel_type,
+            color: vehicle.color || '',
+            images: vehicle.images ? vehicle.images.map(img => 
+              img.startsWith('http') ? img : `http://localhost:3001${img}`
+            ) : [],
+            description: vehicle.description || '',
+            features: vehicle.features || [],
+            isVerified: vehicle.is_verified || false,
+            isFeatured: vehicle.is_featured || false,
+            isHotDeal: vehicle.is_hot_deal || false,
+            createdAt: vehicle.created_at || new Date().toISOString()
+          }));
+          console.log('Mapped cars:', mappedCars);
+          setCars(mappedCars);
+        }
+      } catch (error) {
+        console.error('Failed to fetch vehicles:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCars();
+  }, []);
 
   // Update filters when URL brand parameter changes
   useEffect(() => {
@@ -48,7 +95,7 @@ const CarsPage = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000000]);
   const [sortBy, setSortBy] = useState("newest");
 
-  const filteredCars = featuredCars.filter((car) => {
+  const filteredCars = cars.filter((car) => {
     const matchesSearch =
       searchQuery === "" ||
       `${car.make} ${car.model}`.toLowerCase().includes(searchQuery.toLowerCase());
@@ -60,7 +107,8 @@ const CarsPage = () => {
       selectedTransmission.length === 0 || selectedTransmission.includes(car.transmission);
     const matchesFuelType =
       selectedFuelType.length === 0 || selectedFuelType.includes(car.fuelType);
-    const matchesPrice = car.price >= priceRange[0] && car.price <= priceRange[1];
+    const matchesPrice =
+      car.price >= priceRange[0] && car.price <= priceRange[1];
 
     return matchesSearch && matchesBrand && matchesCondition && matchesTransmission && matchesFuelType && matchesPrice;
   });
@@ -406,39 +454,51 @@ const CarsPage = () => {
       </div>
 
       {/* Results */}
-      <div
-        className={cn(
-          "gap-6",
-          viewMode === "grid"
-            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            : "flex flex-col"
-        )}
-      >
-        {sortedCars.map((car, index) => (
-          <div
-            key={car.id}
-            className="animate-fade-in-up"
-            style={{ animationDelay: `${0.05 * index}s` }}
-          >
-            <CarCard car={car} />
-          </div>
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {sortedCars.length === 0 && (
+      {loading ? (
         <div className="text-center py-20">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted/50 flex items-center justify-center">
-            <Search className="h-10 w-10 text-muted-foreground" />
+            <Car className="h-10 w-10 text-muted-foreground animate-pulse" />
           </div>
-          <h3 className="text-2xl font-bold text-foreground mb-2">No cars found</h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            We couldn't find any cars matching your search. Try adjusting your filters or search query.
-          </p>
-          <Button onClick={clearFilters} className="px-8">
-            Clear Filters
-          </Button>
+          <h3 className="text-2xl font-bold text-foreground mb-2">Loading vehicles...</h3>
+          <p className="text-muted-foreground">Please wait while we fetch the latest inventory.</p>
         </div>
+      ) : (
+        <>
+          <div
+            className={cn(
+              "gap-6",
+              viewMode === "grid"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                : "flex flex-col"
+            )}
+          >
+            {sortedCars.map((car, index) => (
+              <div
+                key={car.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${0.05 * index}s` }}
+              >
+                <CarCard car={car} />
+              </div>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {sortedCars.length === 0 && (
+            <div className="text-center py-20">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted/50 flex items-center justify-center">
+                <Search className="h-10 w-10 text-muted-foreground" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-2">No cars found</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                We couldn't find any cars matching your search. Try adjusting your filters or search query.
+              </p>
+              <Button onClick={clearFilters} className="px-8">
+                Clear Filters
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </Layout>
   );

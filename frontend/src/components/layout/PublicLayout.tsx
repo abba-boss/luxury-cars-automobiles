@@ -36,7 +36,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { items } = useCart();
+  const { items, getItemCount } = useCart();
   const { user, isAdmin, signOut } = useAuth();
 
   const handleSignOut = async () => {
@@ -143,9 +143,9 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                   className="relative rounded-full hover:bg-foreground/10"
                 >
                   <ShoppingCart className="h-5 w-5" />
-                  {items.length > 0 && (
+                  {getItemCount() > 0 && (
                     <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
-                      {items.length}
+                      {getItemCount()}
                     </span>
                   )}
                 </Button>

@@ -3,7 +3,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { Car360Viewer } from "@/components/car/Car360Viewer";
 import { CarVideoSection } from "@/components/car/CarVideoSection";
-import { featuredCars, formatMileage } from "@/data/cars";
+import { formatMileage, formatPrice } from "@/data/cars";
 import { useCart } from "@/hooks/useCart";
 import {
   ArrowLeft,
@@ -23,7 +23,7 @@ import {
   Shield,
   Scale,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { SimpleAnimatedPerformanceCircle } from "@/components/car/SimpleAnimatedPerformanceCircle";
@@ -44,9 +44,60 @@ function SpecItem({ label, value }: { label: string; value: string }) {
 const CarDetailsPage = () => {
   const { id } = useParams();
   const [isSaved, setIsSaved] = useState(false);
+  const [car, setCar] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { addToCart, isInCart } = useCart();
 
-  const car = featuredCars.find((c) => c.id === id);
+  useEffect(() => {
+    const fetchCar = async () => {
+      if (!id) return;
+      
+      try {
+        const response = await fetch(`http://localhost:3001/api/vehicles/${id}`);
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          const vehicleData = result.data;
+          setCar({
+            id: vehicleData.id.toString(),
+            make: vehicleData.make,
+            model: vehicleData.model,
+            year: vehicleData.year,
+            price: parseFloat(vehicleData.price),
+            mileage: vehicleData.mileage || 0,
+            condition: vehicleData.condition,
+            transmission: vehicleData.transmission,
+            fuelType: vehicleData.fuel_type,
+            color: vehicleData.color || '',
+            images: vehicleData.images && vehicleData.images.length > 0 
+              ? vehicleData.images.map(img => img.startsWith('http') ? img : `http://localhost:3001${img}`)
+              : [`http://localhost:3001/uploads/vehicles/placeholder.jpg`],
+            description: vehicleData.description || '',
+            features: vehicleData.features || [],
+            isVerified: vehicleData.is_verified || false,
+            isFeatured: vehicleData.is_featured || false,
+            isHotDeal: vehicleData.is_hot_deal || false
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch vehicle:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCar();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <PublicLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </PublicLayout>
+    );
+  }
 
   if (!car) {
     return (
@@ -67,7 +118,12 @@ const CarDetailsPage = () => {
   const inCart = isInCart(car.id);
 
   const handleAddToCart = () => {
-    addToCart(car);
+    addToCart({
+      id: car.id,
+      name: `${car.year} ${car.make} ${car.model}`,
+      price: car.price,
+      image: car.images[0]
+    });
     toast.success("Added to cart", {
       description: `${car.year} ${car.make} ${car.model} has been added to your cart.`,
     });
@@ -271,8 +327,11 @@ const CarDetailsPage = () => {
               <div className="bg-card border border-border p-8 rounded-2xl">
                 <div className="mb-6">
                   <p className="text-sm text-muted-foreground mb-2">Pricing</p>
-                  <p className="text-xl font-semibold text-foreground">
-                    Request price or add to cart
+                  <p className="text-3xl font-bold text-primary mb-2">
+                    {formatPrice(car.price)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Add to cart to proceed with purchase
                   </p>
                 </div>
 
@@ -298,7 +357,7 @@ const CarDetailsPage = () => {
                 )}
 
                 <p className="text-xs text-muted-foreground text-center mt-4">
-                  Price will be revealed in your cart
+                  Secure checkout available
                 </p>
 
 

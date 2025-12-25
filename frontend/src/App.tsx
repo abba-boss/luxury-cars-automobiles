@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { CartProvider } from "@/hooks/useCart";
 import Index from "./pages/Index";
 import CarsPage from "./pages/CarsPage";
 import CarDetailsPage from "./pages/CarDetailsPage";
@@ -36,6 +37,7 @@ import AdminBookings from "./pages/admin/AdminBookings";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminHomepage from "./pages/admin/AdminHomepage";
 import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminEditCar from "./pages/admin/AdminEditCar";
 import AdminSettings from "./pages/admin/AdminSettings";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -52,7 +54,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
+          <CartProvider>
+            <Routes>
             {/* Guest Routes - Public pages with top navbar only */}
             <Route path="/" element={<Index />} />
             <Route path="/cars" element={<CarsPage />} />
@@ -111,6 +114,11 @@ const App = () => (
                 <AdminAddCar />
               </ProtectedRoute>
             } />
+            <Route path="/admin/edit-car/:id" element={
+              <ProtectedRoute requireAdmin>
+                <AdminEditCar />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/cars" element={
               <ProtectedRoute requireAdmin>
                 <AdminInventory />
@@ -166,7 +174,8 @@ const App = () => (
           </Routes>
           <LiveChat />
           <WhatsAppButton />
-        </AuthProvider>
+        </CartProvider>
+      </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -19,14 +19,21 @@ export interface Vehicle {
   make: string;
   model: string;
   year: number;
-  price: number;
+  price: string;
   mileage?: number;
   fuel_type?: string;
   transmission?: string;
+  condition?: string;
   body_type?: string;
   color?: string;
   description?: string;
-  image_url?: string;
+  images?: string[];
+  videos?: string[];
+  features?: string[];
+  is_verified?: boolean;
+  is_featured?: boolean;
+  is_hot_deal?: boolean;
+  status?: string;
   created_at: string;
   updated_at: string;
 }
@@ -72,9 +79,20 @@ export interface AuthResponse {
 export const localDb = {
   vehicles: {
     findMany: async (): Promise<Vehicle[]> => {
-      const res = await fetch(`${API_URL}/vehicles`);
-      const response = await res.json();
-      return response.data || [];
+      try {
+        console.log('Fetching from:', `${API_URL}/vehicles`);
+        const res = await fetch(`${API_URL}/vehicles`);
+        console.log('Response status:', res.status);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const response = await res.json();
+        console.log('API response:', response);
+        return response.data || [];
+      } catch (error) {
+        console.error('Error fetching vehicles:', error);
+        return [];
+      }
     },
 
     findById: async (id: number): Promise<Vehicle | undefined> => {

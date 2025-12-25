@@ -1,10 +1,10 @@
 import AdminLayout from '@/components/layout/AdminLayout';
-import AddCarForm from '@/components/admin/AddCarForm';
+import VehicleForm from '@/components/admin/VehicleForm';
 
 const AdminAddCar = () => {
   return (
     <AdminLayout>
-      <AddCarForm />
+      <VehicleForm mode="create" />
     </AdminLayout>
   );
 };

@@ -21,13 +21,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        // Try to get user profile using stored token
-        const response = await localDb.auth.getProfile();
-        if (response.success && response.data) {
-          setUser(response.data);
-        } else {
-          // If token is invalid, clear it
-          localStorage.removeItem('auth_token');
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          // Try to get user profile using stored token
+          const response = await localDb.auth.getProfile();
+          if (response.success && response.data) {
+            setUser(response.data);
+          } else {
+            // If token is invalid, clear it
+            localStorage.removeItem('auth_token');
+          }
         }
       } catch (error) {
         // If there's an error, clear the token
