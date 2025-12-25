@@ -3,84 +3,248 @@ Executing (default): SELECT 1+1 AS result
 🚀 Server running on port 3001
 📊 Environment: development
 🗄️  Database: sarkin_mota_db
-2025-12-24T12:05:19.004Z - POST /api/auth/login
+2025-12-24T15:39:18.969Z - POST /api/auth/login
 Login attempt: { email: 'admin@test.com' }
 Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@test.com';
 User logged in successfully: { id: 5, email: 'admin@test.com', role: 'admin' }
-2025-12-24T12:05:19.480Z - POST /api/upload/vehicles
+2025-12-24T15:39:19.418Z - GET /api/admin/dashboard
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /dashboard
+Access granted: User 5 (admin) accessing GET /dashboard
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User` WHERE `User`.`role` = 'user';
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle`;
+Executing (default): SELECT count(*) AS `count` FROM `sales` AS `Sale`;
+Executing (default): SELECT count(*) AS `count` FROM `inquiries` AS `Inquiry`;
+Executing (default): SELECT `Sale`.`id`, `Sale`.`vehicle_id`, `Sale`.`customer_id`, `Sale`.`user_id`, `Sale`.`sale_price`, `Sale`.`payment_method`, `Sale`.`payment_status`, `Sale`.`status`, `Sale`.`notes`, `Sale`.`sale_date`, `Sale`.`created_at` AS `createdAt`, `Sale`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt`, `customer`.`id` AS `customer.id`, `customer`.`name` AS `customer.name`, `customer`.`email` AS `customer.email`, `customer`.`phone` AS `customer.phone`, `customer`.`address` AS `customer.address`, `customer`.`user_id` AS `customer.user_id`, `customer`.`created_at` AS `customer.createdAt`, `customer`.`updated_at` AS `customer.updatedAt` FROM `sales` AS `Sale` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Sale`.`vehicle_id` = `vehicle`.`id` LEFT OUTER JOIN `customers` AS `customer` ON `Sale`.`customer_id` = `customer`.`id` ORDER BY `createdAt` DESC LIMIT 5;
+Executing (default): SELECT `Inquiry`.`id`, `Inquiry`.`name`, `Inquiry`.`email`, `Inquiry`.`phone`, `Inquiry`.`subject`, `Inquiry`.`message`, `Inquiry`.`vehicle_id`, `Inquiry`.`user_id`, `Inquiry`.`status`, `Inquiry`.`priority`, `Inquiry`.`created_at` AS `createdAt`, `Inquiry`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id` ORDER BY `createdAt` DESC LIMIT 5;
+Executing (default): SELECT sum(`sale_price`) AS `sum` FROM `sales` AS `Sale` WHERE `Sale`.`status` = 'completed';
+2025-12-24T15:46:50.324Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T15:46:50.364Z - GET /api/auth/me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+2025-12-24T15:59:21.777Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T15:59:21.780Z - GET /images/car-1.jpg
+2025-12-24T15:59:21.801Z - GET /images/car-3.jpg
+2025-12-24T15:59:31.495Z - GET /api/vehicles
+2025-12-24T15:59:31.509Z - GET /api/auth/me
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+2025-12-24T15:59:35.034Z - GET /images/car-1.jpg
+2025-12-24T15:59:35.037Z - GET /images/car-3.jpg
+2025-12-24T15:59:35.041Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T15:59:46.156Z - GET /api/vehicles
+2025-12-24T15:59:46.167Z - GET /api/auth/me
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+2025-12-24T15:59:54.212Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T15:59:54.226Z - GET /api/auth/me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+2025-12-24T15:59:54.312Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T15:59:54.324Z - GET /images/car-1.jpg
+2025-12-24T15:59:54.330Z - GET /images/car-3.jpg
+2025-12-24T15:59:58.248Z - GET /api/admin/dashboard
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /dashboard
+Access granted: User 5 (admin) accessing GET /dashboard
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User` WHERE `User`.`role` = 'user';
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle`;
+Executing (default): SELECT count(*) AS `count` FROM `sales` AS `Sale`;
+Executing (default): SELECT count(*) AS `count` FROM `inquiries` AS `Inquiry`;
+Executing (default): SELECT `Sale`.`id`, `Sale`.`vehicle_id`, `Sale`.`customer_id`, `Sale`.`user_id`, `Sale`.`sale_price`, `Sale`.`payment_method`, `Sale`.`payment_status`, `Sale`.`status`, `Sale`.`notes`, `Sale`.`sale_date`, `Sale`.`created_at` AS `createdAt`, `Sale`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt`, `customer`.`id` AS `customer.id`, `customer`.`name` AS `customer.name`, `customer`.`email` AS `customer.email`, `customer`.`phone` AS `customer.phone`, `customer`.`address` AS `customer.address`, `customer`.`user_id` AS `customer.user_id`, `customer`.`created_at` AS `customer.createdAt`, `customer`.`updated_at` AS `customer.updatedAt` FROM `sales` AS `Sale` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Sale`.`vehicle_id` = `vehicle`.`id` LEFT OUTER JOIN `customers` AS `customer` ON `Sale`.`customer_id` = `customer`.`id` ORDER BY `createdAt` DESC LIMIT 5;
+Executing (default): SELECT `Inquiry`.`id`, `Inquiry`.`name`, `Inquiry`.`email`, `Inquiry`.`phone`, `Inquiry`.`subject`, `Inquiry`.`message`, `Inquiry`.`vehicle_id`, `Inquiry`.`user_id`, `Inquiry`.`status`, `Inquiry`.`priority`, `Inquiry`.`created_at` AS `createdAt`, `Inquiry`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id` ORDER BY `createdAt` DESC LIMIT 5;
+Executing (default): SELECT sum(`sale_price`) AS `sum` FROM `sales` AS `Sale` WHERE `Sale`.`status` = 'completed';
+2025-12-24T16:00:01.430Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:00:01.498Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T16:00:01.499Z - GET /images/car-1.jpg
+2025-12-24T16:00:01.501Z - GET /images/car-3.jpg
+2025-12-24T16:01:16.536Z - POST /api/upload/vehicles
 Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
 Auth success: User 5 (admin) accessing POST /vehicles
 Access granted: User 5 (admin) accessing POST /vehicles
-Error: Error: Only images and videos are allowed
-    at fileFilter (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/middlewares/upload.js:38:8)
-    at wrappedFileFilter (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/multer/index.js:44:7)
-    at Multipart.<anonymous> (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/multer/lib/make-middleware.js:132:7)
-    at Multipart.emit (node:events:524:28)
-    at HeaderParser.cb (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/busboy/lib/types/multipart.js:358:14)
-    at HeaderParser.push (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/busboy/lib/types/multipart.js:162:20)
-    at SBMH.ssCb [as _cb] (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/busboy/lib/types/multipart.js:394:37)
-    at feed (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/streamsearch/lib/sbmh.js:219:14)
-    at SBMH.push (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/streamsearch/lib/sbmh.js:104:16)
-    at Multipart._write (/home/abba-boss/Desktop/sarkin-mota-automobiles/backend/node_modules/busboy/lib/types/multipart.js:567:19) {
-  storageErrors: []
-}
-2025-12-24T12:05:26.430Z - POST /api/auth/login
-Login attempt: { email: 'admin@test.com' }
-Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@test.com';
-User logged in successfully: { id: 5, email: 'admin@test.com', role: 'admin' }
-2025-12-24T12:05:26.869Z - POST /api/vehicles
+2025-12-24T16:01:16.601Z - GET /uploads/vehicles/images/images-1766592076557-405234711.jpg
+2025-12-24T16:01:31.329Z - POST /api/upload/vehicles
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing POST /vehicles
+Access granted: User 5 (admin) accessing POST /vehicles
+2025-12-24T16:01:40.908Z - POST /api/vehicles
 Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
 Auth success: User 5 (admin) accessing POST /
 Access granted: User 5 (admin) accessing POST /
-Executing (default): INSERT INTO `vehicles` (`id`,`make`,`model`,`year`,`price`,`mileage`,`fuel_type`,`transmission`,`condition`,`color`,`description`,`features`,`images`,`videos`,`is_verified`,`is_featured`,`is_hot_deal`,`status`,`created_at`,`updated_at`) VALUES (DEFAULT,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
-2025-12-24T12:05:31.633Z - GET /api/vehicles
+Executing (default): INSERT INTO `vehicles` (`id`,`make`,`model`,`year`,`price`,`mileage`,`fuel_type`,`transmission`,`condition`,`body_type`,`color`,`description`,`features`,`images`,`videos`,`is_verified`,`is_featured`,`is_hot_deal`,`status`,`created_at`,`updated_at`) VALUES (DEFAULT,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+2025-12-24T16:01:41.037Z - GET /api/vehicles
 Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
 Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
-2025-12-24T12:28:47.032Z - POST /api/auth/login
-Login attempt: { email: 'admin@gmail.com' }
-Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@gmail.com';
-2025-12-24T12:28:55.680Z - POST /api/auth/login
-Login attempt: { email: 'admin@gmail.com' }
-Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@gmail.com';
-2025-12-24T12:29:12.955Z - POST /api/auth/login
-Login attempt: { email: 'admin@gmail.com' }
-Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@gmail.com';
-2025-12-24T12:29:56.419Z - POST /api/auth/login
-Login attempt: { email: 'admin@test.com' }
-Executing (default): SELECT `id`, `email`, `password`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`email` = 'admin@test.com';
-User logged in successfully: { id: 5, email: 'admin@test.com', role: 'admin' }
-2025-12-24T12:29:56.898Z - GET /api/vehicles
+2025-12-24T16:01:41.097Z - GET /uploads/vehicles/images/images-1766592076557-405234711.jpg
+2025-12-24T16:01:41.098Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T16:01:41.100Z - GET /images/car-1.jpg
+2025-12-24T16:01:41.102Z - GET /images/car-3.jpg
+2025-12-24T16:01:54.780Z - GET /api/vehicles
 Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
-2025-12-24T12:29:56.903Z - GET /api/admin/users
 Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
-2025-12-24T12:29:56.911Z - GET /api/inquiries
+2025-12-24T16:01:56.799Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:01:56.816Z - GET /api/auth/me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+2025-12-24T16:01:56.927Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T16:01:56.937Z - GET /images/car-1.jpg
+2025-12-24T16:01:56.946Z - GET /images/car-3.jpg
+2025-12-24T16:02:06.663Z - GET /api/auth/me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+2025-12-24T16:02:10.201Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:02:10.211Z - GET /api/auth/me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+2025-12-24T16:02:10.469Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T16:02:10.471Z - GET /images/car-1.jpg
+2025-12-24T16:02:10.473Z - GET /images/car-3.jpg
+2025-12-24T16:02:13.135Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:02:13.140Z - GET /api/auth/me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+2025-12-24T16:02:22.459Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T16:02:22.461Z - GET /images/car-1.jpg
+2025-12-24T16:02:22.464Z - GET /images/car-3.jpg
+2025-12-24T16:02:47.385Z - GET /api/vehicles
+2025-12-24T16:02:47.400Z - GET /api/auth/me
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /me
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+2025-12-24T16:02:47.572Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T16:02:47.573Z - GET /images/car-1.jpg
+2025-12-24T16:02:47.577Z - GET /images/car-3.jpg
+2025-12-24T16:03:05.189Z - GET /api/admin/dashboard
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /dashboard
+Access granted: User 5 (admin) accessing GET /dashboard
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User` WHERE `User`.`role` = 'user';
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle`;
+Executing (default): SELECT count(*) AS `count` FROM `sales` AS `Sale`;
+Executing (default): SELECT count(*) AS `count` FROM `inquiries` AS `Inquiry`;
+Executing (default): SELECT `Sale`.`id`, `Sale`.`vehicle_id`, `Sale`.`customer_id`, `Sale`.`user_id`, `Sale`.`sale_price`, `Sale`.`payment_method`, `Sale`.`payment_status`, `Sale`.`status`, `Sale`.`notes`, `Sale`.`sale_date`, `Sale`.`created_at` AS `createdAt`, `Sale`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt`, `customer`.`id` AS `customer.id`, `customer`.`name` AS `customer.name`, `customer`.`email` AS `customer.email`, `customer`.`phone` AS `customer.phone`, `customer`.`address` AS `customer.address`, `customer`.`user_id` AS `customer.user_id`, `customer`.`created_at` AS `customer.createdAt`, `customer`.`updated_at` AS `customer.updatedAt` FROM `sales` AS `Sale` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Sale`.`vehicle_id` = `vehicle`.`id` LEFT OUTER JOIN `customers` AS `customer` ON `Sale`.`customer_id` = `customer`.`id` ORDER BY `createdAt` DESC LIMIT 5;
+Executing (default): SELECT `Inquiry`.`id`, `Inquiry`.`name`, `Inquiry`.`email`, `Inquiry`.`phone`, `Inquiry`.`subject`, `Inquiry`.`message`, `Inquiry`.`vehicle_id`, `Inquiry`.`user_id`, `Inquiry`.`status`, `Inquiry`.`priority`, `Inquiry`.`created_at` AS `createdAt`, `Inquiry`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id` ORDER BY `createdAt` DESC LIMIT 5;
+Executing (default): SELECT sum(`sale_price`) AS `sum` FROM `sales` AS `Sale` WHERE `Sale`.`status` = 'completed';
+2025-12-24T16:03:16.201Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:03:16.288Z - GET /uploads/vehicles/images/images-1766592076557-405234711.jpg
+2025-12-24T16:03:16.289Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T16:03:16.290Z - GET /images/car-1.jpg
+2025-12-24T16:03:16.293Z - GET /images/car-3.jpg
+2025-12-24T16:03:21.210Z - GET /api/vehicles/11
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`id` = '11';
+2025-12-24T16:03:21.314Z - GET /uploads/vehicles/images/images-1766592076557-405234711.jpg
+2025-12-24T16:03:24.425Z - PUT /api/vehicles/11
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing PUT /11
+Access granted: User 5 (admin) accessing PUT /11
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`id` = '11';
+Executing (default): UPDATE `vehicles` SET `price`=?,`updated_at`=? WHERE `id` = ?
+2025-12-24T16:03:24.497Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:03:24.569Z - GET /uploads/vehicles/images/images-1766592076557-405234711.jpg
+2025-12-24T16:03:24.570Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T16:03:24.571Z - GET /images/car-1.jpg
+2025-12-24T16:03:24.573Z - GET /images/car-3.jpg
+2025-12-24T16:03:59.947Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:04:02.864Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T16:04:02.866Z - GET /images/car-1.jpg
+2025-12-24T16:04:02.868Z - GET /images/car-3.jpg
+2025-12-24T16:04:13.574Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:04:34.911Z - GET /api/admin/dashboard
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /dashboard
+Access granted: User 5 (admin) accessing GET /dashboard
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User` WHERE `User`.`role` = 'user';
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle`;
+Executing (default): SELECT count(*) AS `count` FROM `sales` AS `Sale`;
+Executing (default): SELECT count(*) AS `count` FROM `inquiries` AS `Inquiry`;
+Executing (default): SELECT `Sale`.`id`, `Sale`.`vehicle_id`, `Sale`.`customer_id`, `Sale`.`user_id`, `Sale`.`sale_price`, `Sale`.`payment_method`, `Sale`.`payment_status`, `Sale`.`status`, `Sale`.`notes`, `Sale`.`sale_date`, `Sale`.`created_at` AS `createdAt`, `Sale`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt`, `customer`.`id` AS `customer.id`, `customer`.`name` AS `customer.name`, `customer`.`email` AS `customer.email`, `customer`.`phone` AS `customer.phone`, `customer`.`address` AS `customer.address`, `customer`.`user_id` AS `customer.user_id`, `customer`.`created_at` AS `customer.createdAt`, `customer`.`updated_at` AS `customer.updatedAt` FROM `sales` AS `Sale` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Sale`.`vehicle_id` = `vehicle`.`id` LEFT OUTER JOIN `customers` AS `customer` ON `Sale`.`customer_id` = `customer`.`id` ORDER BY `createdAt` DESC LIMIT 5;
+Executing (default): SELECT `Inquiry`.`id`, `Inquiry`.`name`, `Inquiry`.`email`, `Inquiry`.`phone`, `Inquiry`.`subject`, `Inquiry`.`message`, `Inquiry`.`vehicle_id`, `Inquiry`.`user_id`, `Inquiry`.`status`, `Inquiry`.`priority`, `Inquiry`.`created_at` AS `createdAt`, `Inquiry`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id` ORDER BY `createdAt` DESC LIMIT 5;
+Executing (default): SELECT sum(`sale_price`) AS `sum` FROM `sales` AS `Sale` WHERE `Sale`.`status` = 'completed';
+2025-12-24T16:04:41.794Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:04:41.828Z - GET /uploads/vehicles/images/images-1766590019125-15695192.jpg
+2025-12-24T16:04:41.831Z - GET /images/car-1.jpg
+2025-12-24T16:04:41.845Z - GET /images/car-3.jpg
+2025-12-24T16:04:41.880Z - GET /uploads/vehicles/images/images-1766592076557-405234711.jpg
+2025-12-24T16:05:09.261Z - GET /api/admin/users
+2025-12-24T16:05:09.273Z - GET /api/inquiries
 Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
 Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
 Auth success: User 5 (admin) accessing GET /users
 Access granted: User 5 (admin) accessing GET /users
 Executing (default): SELECT count(*) AS `count` FROM `users` AS `User`;
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` ORDER BY `createdAt` DESC LIMIT 0, 10;
 Auth success: User 5 (admin) accessing GET /
 Access granted: User 5 (admin) accessing GET /
-Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` ORDER BY `createdAt` DESC LIMIT 0, 10;
 Executing (default): SELECT count(`Inquiry`.`id`) AS `count` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id`;
 Executing (default): SELECT `Inquiry`.`id`, `Inquiry`.`name`, `Inquiry`.`email`, `Inquiry`.`phone`, `Inquiry`.`subject`, `Inquiry`.`message`, `Inquiry`.`vehicle_id`, `Inquiry`.`user_id`, `Inquiry`.`status`, `Inquiry`.`priority`, `Inquiry`.`created_at` AS `createdAt`, `Inquiry`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id` ORDER BY `createdAt` DESC LIMIT 0, 10;
-2025-12-24T12:31:49.047Z - POST /api/upload/vehicles
+2025-12-24T16:05:10.954Z - GET /api/inquiries
 Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
-Auth success: User 5 (admin) accessing POST /vehicles
-Access granted: User 5 (admin) accessing POST /vehicles
-2025-12-24T12:31:49.157Z - GET /uploads/vehicles/images/images-1766579509065-745257005.png
-2025-12-24T12:31:49.167Z - GET /uploads/vehicles/images/images-1766579509072-626661570.png
-2025-12-24T12:31:49.169Z - GET /uploads/vehicles/images/images-1766579509086-106315258.png
-2025-12-24T12:32:15.830Z - POST /api/upload/vehicles
+Auth success: User 5 (admin) accessing GET /
+Access granted: User 5 (admin) accessing GET /
+Executing (default): SELECT count(`Inquiry`.`id`) AS `count` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id`;
+Executing (default): SELECT `Inquiry`.`id`, `Inquiry`.`name`, `Inquiry`.`email`, `Inquiry`.`phone`, `Inquiry`.`subject`, `Inquiry`.`message`, `Inquiry`.`vehicle_id`, `Inquiry`.`user_id`, `Inquiry`.`status`, `Inquiry`.`priority`, `Inquiry`.`created_at` AS `createdAt`, `Inquiry`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id` ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:05:12.593Z - GET /api/admin/users
 Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
-Auth success: User 5 (admin) accessing POST /vehicles
-Access granted: User 5 (admin) accessing POST /vehicles
-2025-12-24T12:32:19.457Z - POST /api/vehicles
+2025-12-24T16:05:12.601Z - GET /api/inquiries
 Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
-Auth success: User 5 (admin) accessing POST /
-Access granted: User 5 (admin) accessing POST /
-Executing (default): INSERT INTO `vehicles` (`id`,`make`,`model`,`year`,`price`,`mileage`,`fuel_type`,`transmission`,`condition`,`body_type`,`color`,`description`,`features`,`images`,`videos`,`is_verified`,`is_featured`,`is_hot_deal`,`status`,`created_at`,`updated_at`) VALUES (DEFAULT,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
-2025-12-24T12:33:18.492Z - GET /api/vehicles
+Auth success: User 5 (admin) accessing GET /users
+Access granted: User 5 (admin) accessing GET /users
+Executing (default): SELECT count(*) AS `count` FROM `users` AS `User`;
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` ORDER BY `createdAt` DESC LIMIT 0, 10;
+Auth success: User 5 (admin) accessing GET /
+Access granted: User 5 (admin) accessing GET /
+Executing (default): SELECT count(`Inquiry`.`id`) AS `count` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id`;
+Executing (default): SELECT `Inquiry`.`id`, `Inquiry`.`name`, `Inquiry`.`email`, `Inquiry`.`phone`, `Inquiry`.`subject`, `Inquiry`.`message`, `Inquiry`.`vehicle_id`, `Inquiry`.`user_id`, `Inquiry`.`status`, `Inquiry`.`priority`, `Inquiry`.`created_at` AS `createdAt`, `Inquiry`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id` ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:05:18.231Z - GET /api/inquiries
+Executing (default): SELECT `id`, `email`, `full_name`, `phone`, `role`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `users` AS `User` WHERE `User`.`id` = 5;
+Auth success: User 5 (admin) accessing GET /
+Access granted: User 5 (admin) accessing GET /
+Executing (default): SELECT count(`Inquiry`.`id`) AS `count` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id`;
+Executing (default): SELECT `Inquiry`.`id`, `Inquiry`.`name`, `Inquiry`.`email`, `Inquiry`.`phone`, `Inquiry`.`subject`, `Inquiry`.`message`, `Inquiry`.`vehicle_id`, `Inquiry`.`user_id`, `Inquiry`.`status`, `Inquiry`.`priority`, `Inquiry`.`created_at` AS `createdAt`, `Inquiry`.`updated_at` AS `updatedAt`, `vehicle`.`id` AS `vehicle.id`, `vehicle`.`make` AS `vehicle.make`, `vehicle`.`model` AS `vehicle.model`, `vehicle`.`year` AS `vehicle.year`, `vehicle`.`price` AS `vehicle.price`, `vehicle`.`mileage` AS `vehicle.mileage`, `vehicle`.`fuel_type` AS `vehicle.fuel_type`, `vehicle`.`transmission` AS `vehicle.transmission`, `vehicle`.`condition` AS `vehicle.condition`, `vehicle`.`body_type` AS `vehicle.body_type`, `vehicle`.`color` AS `vehicle.color`, `vehicle`.`description` AS `vehicle.description`, `vehicle`.`features` AS `vehicle.features`, `vehicle`.`images` AS `vehicle.images`, `vehicle`.`videos` AS `vehicle.videos`, `vehicle`.`is_verified` AS `vehicle.is_verified`, `vehicle`.`is_featured` AS `vehicle.is_featured`, `vehicle`.`is_hot_deal` AS `vehicle.is_hot_deal`, `vehicle`.`status` AS `vehicle.status`, `vehicle`.`created_at` AS `vehicle.createdAt`, `vehicle`.`updated_at` AS `vehicle.updatedAt` FROM `inquiries` AS `Inquiry` LEFT OUTER JOIN `vehicles` AS `vehicle` ON `Inquiry`.`vehicle_id` = `vehicle`.`id` ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:08:34.116Z - GET /api/vehicles
 Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
 Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
-2025-12-24T12:33:46.803Z - POST /api/auth/logout
+2025-12-24T16:08:39.745Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:09:03.871Z - GET /api/vehicles
+Executing (default): SELECT count(*) AS `count` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available';
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`status` = 'available' ORDER BY `createdAt` DESC LIMIT 0, 10;
+2025-12-24T16:14:05.948Z - GET /api/vehicles/1
+Executing (default): SELECT `id`, `make`, `model`, `year`, `price`, `mileage`, `fuel_type`, `transmission`, `condition`, `body_type`, `color`, `description`, `features`, `images`, `videos`, `is_verified`, `is_featured`, `is_hot_deal`, `status`, `created_at` AS `createdAt`, `updated_at` AS `updatedAt` FROM `vehicles` AS `Vehicle` WHERE `Vehicle`.`id` = '1';
