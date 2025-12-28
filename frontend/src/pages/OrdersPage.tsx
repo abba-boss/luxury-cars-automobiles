@@ -1,7 +1,11 @@
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { LoadingSpinner } from "@/components/ui/loading";
+import { saleService } from "@/services";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Package, 
   Clock, 
@@ -12,24 +16,38 @@ import {
 } from "lucide-react";
 
 const OrdersPage = () => {
-  const orders = [
-    {
-      id: "ORD-001",
-      carName: "2022 Toyota Camry",
-      carImage: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      price: "₦15,500,000",
-      orderDate: "2024-12-10",
-      status: "confirmed"
-    },
-    {
-      id: "ORD-002", 
-      carName: "2021 Honda Accord",
-      carImage: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      price: "₦12,800,000",
-      orderDate: "2024-12-08",
-      status: "pending"
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await saleService.getMyOrders();
+        if (response.success) {
+          setOrders(response.data || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch orders:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchOrders();
     }
-  ];
+  }, [user]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <LoadingSpinner size="lg" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {

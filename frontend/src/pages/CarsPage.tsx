@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { brands, conditions, formatPrice } from "@/data/cars";
-import { localDb } from "@/lib/database";
+import { vehicleService } from "@/services";
 import {
   Search,
   SlidersHorizontal,
@@ -46,13 +46,12 @@ const CarsPage = () => {
     const fetchCars = async () => {
       try {
         console.log('Fetching vehicles from API...');
-        const response = await fetch('http://localhost:3001/api/vehicles');
-        const result = await response.json();
-        console.log('API Response:', result);
+        const response = await vehicleService.getVehicles();
+        console.log('API Response:', response);
         
-        if (result.success && result.data) {
+        if (response.success && response.data) {
           // Map API data to Car interface
-          const mappedCars = result.data.map(vehicle => ({
+          const mappedCars = response.data.map(vehicle => ({
             id: vehicle.id.toString(),
             make: vehicle.make,
             model: vehicle.model,
@@ -63,9 +62,9 @@ const CarsPage = () => {
             transmission: vehicle.transmission,
             fuelType: vehicle.fuel_type,
             color: vehicle.color || '',
-            images: vehicle.images ? vehicle.images.map(img => 
+            images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img => 
               img.startsWith('http') ? img : `http://localhost:3001${img}`
-            ) : [],
+            ) : [`http://localhost:3001/uploads/placeholder-car.svg`],
             description: vehicle.description || '',
             features: vehicle.features || [],
             isVerified: vehicle.is_verified || false,

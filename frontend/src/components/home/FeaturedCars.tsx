@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowUpRight, Eye, Heart, Gauge, Calendar, Fuel, Settings, Palette } from "lucide-react";
 import { formatPrice, formatMileage } from "@/data/cars";
-import { localDb } from "@/lib/database";
+import { vehicleService } from "@/services";
 import { cn } from "@/lib/utils";
 
 export function FeaturedCars() {
@@ -15,19 +15,15 @@ export function FeaturedCars() {
   useEffect(() => {
     const fetchFeaturedCars = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/vehicles');
-        const result = await response.json();
+        const response = await vehicleService.getVehicles({ is_featured: true, limit: 6 });
         
-        if (result.success && result.data) {
-          // Filter for featured cars and map to expected format
-          const featuredVehicles = result.data
-            .filter(vehicle => vehicle.is_featured)
-            .slice(0, 6)
-            .map(vehicle => ({
-              id: vehicle.id.toString(),
-              make: vehicle.make,
-              model: vehicle.model,
-              year: vehicle.year,
+        if (response.success && response.data) {
+          // Map to expected format
+          const featuredVehicles = response.data.map(vehicle => ({
+            id: vehicle.id.toString(),
+            make: vehicle.make,
+            model: vehicle.model,
+            year: vehicle.year,
               price: parseFloat(vehicle.price),
               mileage: vehicle.mileage || 0,
               condition: vehicle.condition,
@@ -36,7 +32,7 @@ export function FeaturedCars() {
               color: vehicle.color || '',
               images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img => 
                 img.startsWith('http') ? img : `http://localhost:3001${img}`
-              ) : [`http://localhost:3001/uploads/vehicles/placeholder.jpg`],
+              ) : [`http://localhost:3001/uploads/placeholder-car.svg`],
               description: vehicle.description || '',
               features: vehicle.features || [],
               isVerified: vehicle.is_verified || false,

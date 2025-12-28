@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import CarsPage from "./pages/CarsPage";
 import CarDetailsPage from "./pages/CarDetailsPage";
@@ -45,140 +46,152 @@ import CheckoutProtection from "./components/auth/CheckoutProtection";
 import LiveChat from "./components/chat/LiveChat";
 import WhatsAppButton from "./components/chat/WhatsAppButton";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        if (error?.status === 401) return false;
+        return failureCount < 3;
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <CartProvider>
-            <Routes>
-            {/* Guest Routes - Public pages with top navbar only */}
-            <Route path="/" element={<Index />} />
-            <Route path="/cars" element={<CarsPage />} />
-            <Route path="/cars/:id" element={<CarDetailsPage />} />
-            <Route path="/valuation" element={<ValuationPage />} />
-            <Route path="/financing" element={<FinancingPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/privacy" element={<PrivacyPolicyPage />} />
-            <Route path="/terms" element={<TermsOfServicePage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/auth" element={<AuthPage />} />
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <CartProvider>
+              <Routes>
+              {/* Guest Routes - Public pages with top navbar only */}
+              <Route path="/" element={<Index />} />
+              <Route path="/cars" element={<CarsPage />} />
+              <Route path="/cars/:id" element={<CarDetailsPage />} />
+              <Route path="/valuation" element={<ValuationPage />} />
+              <Route path="/financing" element={<FinancingPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms" element={<TermsOfServicePage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/auth" element={<AuthPage />} />
 
-            {/* Checkout - Requires login, redirects to auth if not logged in */}
-            <Route path="/checkout" element={
-              <CheckoutProtection>
-                <CheckoutPage />
-              </CheckoutProtection>
-            } />
+              {/* Checkout - Requires login, redirects to auth if not logged in */}
+              <Route path="/checkout" element={
+                <CheckoutProtection>
+                  <CheckoutPage />
+                </CheckoutProtection>
+              } />
 
-            {/* Buyer Routes - Dashboard with sidebar (after login) - Customer only */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute requireCustomer>
-                <DashboardPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/orders" element={
-              <ProtectedRoute requireCustomer>
-                <OrdersPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/saved" element={
-              <ProtectedRoute requireCustomer>
-                <SavedCarsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/messages" element={
-              <ProtectedRoute requireCustomer>
-                <MessagesPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute requireCustomer>
-                <ProfilePage />
-              </ProtectedRoute>
-            } />
+              {/* Buyer Routes - Dashboard with sidebar (after login) - Customer only */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute requireCustomer>
+                  <DashboardPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/orders" element={
+                <ProtectedRoute requireCustomer>
+                  <OrdersPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/saved" element={
+                <ProtectedRoute requireCustomer>
+                  <SavedCarsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/messages" element={
+                <ProtectedRoute requireCustomer>
+                  <MessagesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute requireCustomer>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } />
 
-            {/* Admin Routes - Separate /admin layout with sidebar */}
-            <Route path="/admin" element={
-              <ProtectedRoute requireAdmin>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/add-car" element={
-              <ProtectedRoute requireAdmin>
-                <AdminAddCar />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/edit-car/:id" element={
-              <ProtectedRoute requireAdmin>
-                <AdminEditCar />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/cars" element={
-              <ProtectedRoute requireAdmin>
-                <AdminInventory />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/inventory" element={
-              <ProtectedRoute requireAdmin>
-                <AdminInventory />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/messages" element={
-              <ProtectedRoute requireAdmin>
-                <AdminMessages />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/users" element={
-              <ProtectedRoute requireAdmin>
-                <AdminUsers />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/media" element={
-              <ProtectedRoute requireAdmin>
-                <AdminMedia />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/bookings" element={
-              <ProtectedRoute requireAdmin>
-                <AdminBookings />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/reviews" element={
-              <ProtectedRoute requireAdmin>
-                <AdminReviews />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/homepage" element={
-              <ProtectedRoute requireAdmin>
-                <AdminHomepage />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/notifications" element={
-              <ProtectedRoute requireAdmin>
-                <AdminNotifications />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/settings" element={
-              <ProtectedRoute requireAdmin>
-                <AdminSettings />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <LiveChat />
-          <WhatsAppButton />
-        </CartProvider>
-      </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+              {/* Admin Routes - Separate /admin layout with sidebar */}
+              <Route path="/admin" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/add-car" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminAddCar />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/edit-car/:id" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminEditCar />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/cars" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminInventory />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/inventory" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminInventory />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/messages" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminMessages />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/users" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminUsers />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/media" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminMedia />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/bookings" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminBookings />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/reviews" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminReviews />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/homepage" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminHomepage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/notifications" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminNotifications />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/settings" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminSettings />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <LiveChat />
+            <WhatsAppButton />
+          </CartProvider>
+        </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

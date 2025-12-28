@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X, Upload, Plus, Save, ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { adminService, CreateVehicleData, Vehicle } from "@/services/adminService";
+import { adminService } from "@/services/adminService";
+import { CreateVehicleData, Vehicle } from "@/types/api";
 
 interface VehicleFormProps {
   mode: 'create' | 'edit';
@@ -25,6 +26,16 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadedVideos, setUploadedVideos] = useState<string[]>([]);
   const [newFeature, setNewFeature] = useState("");
+
+  // Predefined feature options
+  const commonFeatures = [
+    "Air Conditioning", "Leather Seats", "Sunroof", "Navigation System", 
+    "Backup Camera", "Bluetooth", "Cruise Control", "Heated Seats",
+    "Premium Sound System", "Keyless Entry", "Push Start", "Parking Sensors",
+    "Lane Departure Warning", "Blind Spot Monitoring", "Adaptive Cruise Control",
+    "Wireless Charging", "Apple CarPlay", "Android Auto", "360° Camera",
+    "Panoramic Sunroof", "Ventilated Seats", "Memory Seats", "Power Tailgate"
+  ];
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState<CreateVehicleData>({
@@ -43,7 +54,9 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
     images: [],
     videos: [],
     is_featured: false,
-    is_hot_deal: false
+    is_hot_deal: false,
+    is_verified: false,
+    status: "available"
   });
 
   // Load vehicle data for edit mode
@@ -75,7 +88,9 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
           images: vehicle.images || [],
           videos: vehicle.videos || [],
           is_featured: vehicle.is_featured,
-          is_hot_deal: vehicle.is_hot_deal
+          is_hot_deal: vehicle.is_hot_deal,
+          is_verified: vehicle.is_verified || false,
+          status: vehicle.status || "available"
         });
         setUploadedImages(vehicle.images || []);
         setUploadedVideos(vehicle.videos || []);
@@ -117,30 +132,40 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
   const handleFileUpload = async (files: FileList, type: 'images' | 'videos') => {
     if (files.length === 0) return;
 
+    console.log(`Uploading ${files.length} ${type}:`, Array.from(files).map(f => f.name));
+    
     setUploading(true);
     try {
       const uploadData = type === 'images' ? { images: files } : { videos: files };
       const response = await adminService.uploadMedia(uploadData);
-      
+
+      console.log('Upload response:', response);
+
       if (response.success && response.data) {
         if (type === 'images' && response.data.images) {
-          const newImages = response.data.images.map(img => img.path);
-          setUploadedImages(prev => [...prev, ...newImages]);
+          const newImages = response.data.images.map(img => img.url);
+          console.log('New images uploaded:', newImages);
+          setUploadedImages(prev => {
+            const updated = [...prev, ...newImages];
+            console.log('Updated uploadedImages:', updated);
+            return updated;
+          });
           setFormData(prev => ({ ...prev, images: [...prev.images, ...newImages] }));
         } else if (type === 'videos' && response.data.videos) {
-          const newVideos = response.data.videos.map(vid => vid.path);
+          const newVideos = response.data.videos.map(vid => vid.url);
           setUploadedVideos(prev => [...prev, ...newVideos]);
           setFormData(prev => ({ ...prev, videos: [...prev.videos, ...newVideos] }));
         }
-        
+
         toast({
           title: "Success",
-          description: `${type} uploaded successfully`
+          description: `${files.length} ${type} uploaded successfully`
         });
       } else {
         throw new Error(response.message || 'Upload failed');
       }
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Error",
         description: `Failed to upload ${type}`,
@@ -402,6 +427,34 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
             <CardTitle>Features</CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Quick Add Common Features */}
+            <div className="mb-4">
+              <Label className="text-sm font-medium mb-2 block">Quick Add Features</Label>
+              <div className="flex flex-wrap gap-2">
+                {commonFeatures.map((feature) => (
+                  <Button
+                    key={feature}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (!formData.features.includes(feature)) {
+                        setFormData(prev => ({
+                          ...prev,
+                          features: [...prev.features, feature]
+                        }));
+                      }
+                    }}
+                    disabled={formData.features.includes(feature)}
+                    className="text-xs"
+                  >
+                    {formData.features.includes(feature) ? "✓ " : "+ "}{feature}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Feature Input */}
             <div className="flex gap-2 mb-4">
               <Input
                 value={newFeature}
@@ -420,6 +473,56 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
                   <X className="w-3 h-3 cursor-pointer" onClick={() => removeFeature(index)} />
                 </Badge>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Status & Verification */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Status & Verification</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="sold">Sold</SelectItem>
+                  <SelectItem value="reserved">Reserved</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="is_verified"
+                checked={formData.is_verified}
+                onCheckedChange={(checked) => handleInputChange('is_verified', checked)}
+              />
+              <Label htmlFor="is_verified">Verified Vehicle</Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="is_featured"
+                checked={formData.is_featured}
+                onCheckedChange={(checked) => handleInputChange('is_featured', checked)}
+              />
+              <Label htmlFor="is_featured">Featured Vehicle</Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="is_hot_deal"
+                checked={formData.is_hot_deal}
+                onCheckedChange={(checked) => handleInputChange('is_hot_deal', checked)}
+              />
+              <Label htmlFor="is_hot_deal">Hot Deal</Label>
             </div>
           </CardContent>
         </Card>
@@ -443,10 +546,15 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
               <div className="grid grid-cols-4 gap-2 mt-2">
                 {uploadedImages.map((img, index) => (
                   <div key={index} className="relative">
-                    <img 
-                      src={img.startsWith('http') ? img : `http://localhost:3001${img}`} 
-                      alt="" 
-                      className="w-full h-20 object-cover rounded" 
+                    <img
+                      src={img.startsWith('http') ? img : `http://localhost:3001${img}`}
+                      alt={`Vehicle image ${index + 1}`}
+                      className="w-full h-20 object-cover rounded"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder-image.jpg';
+                        console.error('Failed to load image:', img);
+                      }}
                     />
                     <X 
                       className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white rounded-full cursor-pointer p-0.5"
@@ -470,8 +578,8 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
               <div className="space-y-2 mt-2">
                 {uploadedVideos.map((vid, index) => (
                   <div key={index} className="flex items-center justify-between p-2 border rounded">
-                    <span className="text-sm">{vid.split('/').pop()}</span>
-                    <X 
+                    <span className="text-sm">{typeof vid === 'string' ? vid.split('/').pop() : 'Video file'}</span>
+                    <X
                       className="w-4 h-4 cursor-pointer text-red-500"
                       onClick={() => removeMedia(vid, 'videos')}
                     />

@@ -1,10 +1,13 @@
 import { useParams, Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/button";
-import { Car360Viewer } from "@/components/car/Car360Viewer";
+import Car360Viewer from "@/components/car/Car360Viewer";
 import { CarVideoSection } from "@/components/car/CarVideoSection";
-import { formatMileage, formatPrice } from "@/data/cars";
 import { useCart } from "@/hooks/useCart";
+import { vehicleService } from "@/services";
+import { useState, useEffect } from "react";
+import { LoadingSpinner } from "@/components/ui/loading";
+import type { Vehicle } from "@/types/api";
 import {
   ArrowLeft,
   Heart,
@@ -23,7 +26,6 @@ import {
   Shield,
   Scale,
 } from "lucide-react";
-import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { SimpleAnimatedPerformanceCircle } from "@/components/car/SimpleAnimatedPerformanceCircle";
@@ -41,71 +43,70 @@ function SpecItem({ label, value }: { label: string; value: string }) {
 }
 
 
+// Helper function to format mileage
+const formatMileage = (mileage: number | undefined): string => {
+  if (!mileage) return '0 km';
+  return `${mileage.toLocaleString()} km`;
+};
+
+// Helper function to convert Vehicle to CartItem format
+const vehicleToCartItem = (vehicle: Vehicle) => ({
+  id: vehicle.id.toString(),
+  make: vehicle.make,
+  model: vehicle.model,
+  year: vehicle.year,
+  price: parseFloat(vehicle.price),
+  image: vehicle.images?.[0] || 'http://localhost:3001/uploads/placeholder-car.svg'
+});
+
 const CarDetailsPage = () => {
   const { id } = useParams();
   const [isSaved, setIsSaved] = useState(false);
-  const [car, setCar] = useState(null);
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { addToCart, isInCart } = useCart();
 
   useEffect(() => {
-    const fetchCar = async () => {
+    const fetchVehicle = async () => {
       if (!id) return;
       
       try {
-        const response = await fetch(`http://localhost:3001/api/vehicles/${id}`);
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-          const vehicleData = result.data;
-          setCar({
-            id: vehicleData.id.toString(),
-            make: vehicleData.make,
-            model: vehicleData.model,
-            year: vehicleData.year,
-            price: parseFloat(vehicleData.price),
-            mileage: vehicleData.mileage || 0,
-            condition: vehicleData.condition,
-            transmission: vehicleData.transmission,
-            fuelType: vehicleData.fuel_type,
-            color: vehicleData.color || '',
-            images: vehicleData.images && vehicleData.images.length > 0 
-              ? vehicleData.images.map(img => img.startsWith('http') ? img : `http://localhost:3001${img}`)
-              : [`http://localhost:3001/uploads/vehicles/placeholder.jpg`],
-            description: vehicleData.description || '',
-            features: vehicleData.features || [],
-            isVerified: vehicleData.is_verified || false,
-            isFeatured: vehicleData.is_featured || false,
-            isHotDeal: vehicleData.is_hot_deal || false
-          });
+        setLoading(true);
+        const response = await vehicleService.getVehicle(Number(id));
+        if (response.success && response.data) {
+          setVehicle(response.data);
+        } else {
+          setError('Vehicle not found');
         }
-      } catch (error) {
-        console.error('Failed to fetch vehicle:', error);
+      } catch (err) {
+        setError('Failed to load vehicle details');
+        console.error('Error fetching vehicle:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCar();
+    fetchVehicle();
   }, [id]);
 
   if (loading) {
     return (
       <PublicLayout>
         <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          <LoadingSpinner size="lg" />
         </div>
       </PublicLayout>
     );
   }
 
-  if (!car) {
+  if (error || !vehicle) {
     return (
       <PublicLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-foreground mb-4">Vehicle Not Found</h1>
-            <p className="text-muted-foreground mb-8">The vehicle you're looking for doesn't exist.</p>
+            <p className="text-muted-foreground mb-8">{error || "The vehicle you're looking for doesn't exist."}</p>
             <Link to="/cars">
               <Button className="btn-tesla">Browse Collection</Button>
             </Link>
@@ -115,27 +116,22 @@ const CarDetailsPage = () => {
     );
   }
 
-  const inCart = isInCart(car.id);
+  const inCart = isInCart(vehicle.id.toString());
 
   const handleAddToCart = () => {
-    addToCart({
-      id: car.id,
-      name: `${car.year} ${car.make} ${car.model}`,
-      price: car.price,
-      image: car.images[0]
-    });
+    addToCart(vehicleToCartItem(vehicle));
     toast.success("Added to cart", {
-      description: `${car.year} ${car.make} ${car.model} has been added to your cart.`,
+      description: `${vehicle.year} ${vehicle.make} ${vehicle.model} has been added to your cart.`,
     });
   };
 
   const specs = [
-    { icon: Gauge, label: "Mileage", value: formatMileage(car.mileage), isMileage: true }, // Mark as mileage
-    { icon: FuelIcon, label: "Fuel Type", value: car.fuelType },
-    { icon: Settings2, label: "Transmission", value: car.transmission },
-    { icon: Palette, label: "Exterior Color", value: car.color },
-    { icon: Timer, label: "Year", value: car.year.toString() },
-    { icon: Zap, label: "Condition", value: car.condition },
+    { icon: Gauge, label: "Mileage", value: formatMileage(vehicle.mileage), isMileage: true },
+    { icon: FuelIcon, label: "Fuel Type", value: vehicle.fuel_type || 'Petrol' },
+    { icon: Settings2, label: "Transmission", value: vehicle.transmission || 'Automatic' },
+    { icon: Palette, label: "Exterior Color", value: vehicle.color || 'Unknown' },
+    { icon: Timer, label: "Year", value: vehicle.year.toString() },
+    { icon: Zap, label: "Condition", value: vehicle.condition || 'Used' },
   ];
 
   const performanceData = [
@@ -165,10 +161,10 @@ const CarDetailsPage = () => {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <span className="inline-block px-4 py-1.5 border border-primary/60 text-primary text-xs font-semibold tracking-[0.2em] mb-4">
-                {car.condition.toUpperCase()}
+                {(vehicle.condition || 'USED').toUpperCase()}
               </span>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
-                {car.year} {car.make} {car.model}
+                {vehicle.year} {vehicle.make} {vehicle.model}
               </h1>
             </div>
             <div className="flex gap-3">
@@ -193,7 +189,7 @@ const CarDetailsPage = () => {
 
         {/* 360 Viewer */}
         <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pb-16">
-          <Car360Viewer images={car.images} carName={`${car.make} ${car.model}`} />
+          <Car360Viewer images={vehicle.images || []} carName={`${vehicle.make} ${vehicle.model}`} />
         </div>
       </section>
 
@@ -213,8 +209,8 @@ const CarDetailsPage = () => {
               >
                 {spec.isMileage ? (
                   <AnimatedMileageMeter
-                    value={car.mileage} // Pass the raw mileage value in km
-                    max={300000} // Set max to 300,000 km as a reasonable maximum for km
+                    value={vehicle.mileage || 0}
+                    max={300000}
                     unit="km"
                     label={spec.label}
                   />
@@ -247,7 +243,7 @@ const CarDetailsPage = () => {
                 </h2>
               </div>
               <p className="text-muted-foreground text-lg leading-relaxed">
-                {car.description} This exceptional vehicle represents the pinnacle of automotive
+                {vehicle.description || 'This exceptional vehicle represents the pinnacle of automotive engineering, combining cutting-edge technology with refined luxury.'}
                 engineering, combining cutting-edge technology with refined luxury. Every detail
                 has been meticulously crafted to deliver an unparalleled driving experience that
                 exceeds expectations.
@@ -304,7 +300,7 @@ const CarDetailsPage = () => {
                 </h2>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {car.features.map((feature, index) => (
+                {(vehicle.features || []).map((feature, index) => (
                   <div
                     key={feature}
                     className="flex items-center gap-3 p-4 bg-card border border-border rounded-lg group hover:border-primary/50 transition-all duration-300 hover:shadow-sm"
@@ -327,11 +323,8 @@ const CarDetailsPage = () => {
               <div className="bg-card border border-border p-8 rounded-2xl">
                 <div className="mb-6">
                   <p className="text-sm text-muted-foreground mb-2">Pricing</p>
-                  <p className="text-3xl font-bold text-primary mb-2">
-                    {formatPrice(car.price)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Add to cart to proceed with purchase
+                  <p className="text-xl font-semibold text-foreground">
+                    Request price or add to cart
                   </p>
                 </div>
 
@@ -357,7 +350,7 @@ const CarDetailsPage = () => {
                 )}
 
                 <p className="text-xs text-muted-foreground text-center mt-4">
-                  Secure checkout available
+                  Price will be revealed in your cart
                 </p>
 
 
@@ -429,7 +422,11 @@ const CarDetailsPage = () => {
       </div>
 
       {/* Video Section */}
-      <CarVideoSection carName={`${car.make} ${car.model}`} posterImage={car.images[0]} />
+      <CarVideoSection 
+        carName={`${vehicle.make} ${vehicle.model}`} 
+        posterImage={vehicle.images?.[0] || 'http://localhost:3001/uploads/placeholder-car.svg'} 
+        videos={vehicle.videos || []}
+      />
     </PublicLayout>
   );
 };

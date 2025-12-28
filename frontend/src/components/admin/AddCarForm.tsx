@@ -14,8 +14,10 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 interface MediaFile {
   filename: string;
   originalName: string;
-  path: string;
+  url: string;  // Cloudinary URL
+  publicId: string; // Cloudinary public ID
   size: number;
+  format: string;
 }
 
 interface VehicleFormData {
@@ -82,14 +84,35 @@ const AddCarForm = () => {
       const result = await response.json();
       if (result.success) {
         if (type === 'images') {
-          setUploadedImages(prev => [...prev, ...result.data.images]);
+          // Map the response to match our MediaFile interface
+          const newImages = result.data.images.map(img => ({
+            filename: img.filename,
+            originalName: img.originalName,
+            url: img.url,
+            publicId: img.publicId,
+            size: img.size,
+            format: img.format
+          }));
+          setUploadedImages(prev => [...prev, ...newImages]);
         } else {
-          setUploadedVideos(prev => [...prev, ...result.data.videos]);
+          // Map the response to match our MediaFile interface
+          const newVideos = result.data.videos.map(vid => ({
+            filename: vid.filename,
+            originalName: vid.originalName,
+            url: vid.url,
+            publicId: vid.publicId,
+            size: vid.size,
+            format: vid.format,
+            duration: vid.duration
+          }));
+          setUploadedVideos(prev => [...prev, ...newVideos]);
         }
         toast({
           title: "Success",
           description: `${type} uploaded successfully`
         });
+      } else {
+        throw new Error(result.message || 'Upload failed');
       }
     } catch (error) {
       toast({
@@ -133,8 +156,8 @@ const AddCarForm = () => {
       const token = localStorage.getItem('auth_token');
       const vehicleData = {
         ...formData,
-        images: uploadedImages.map(img => img.path),
-        videos: uploadedVideos.map(vid => vid.path)
+        images: uploadedImages.map(img => img.url),
+        videos: uploadedVideos.map(vid => vid.url)
       };
 
       const response = await fetch(`${API_URL}/vehicles`, {
@@ -357,8 +380,16 @@ const AddCarForm = () => {
                 <div className="grid grid-cols-4 gap-2 mt-2">
                   {uploadedImages.map((img, index) => (
                     <div key={index} className="relative">
-                      <img src={`http://localhost:3001${img.path}`} alt="" className="w-full h-20 object-cover rounded" />
-                      <X 
+                      <img
+                        src={img.url}
+                        alt=""
+                        className="w-full h-20 object-cover rounded"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-image.jpg'; // fallback image
+                        }}
+                      />
+                      <X
                         className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white rounded-full cursor-pointer"
                         onClick={() => removeMedia(img.filename, 'images')}
                       />
@@ -378,8 +409,11 @@ const AddCarForm = () => {
                 <div className="space-y-2 mt-2">
                   {uploadedVideos.map((vid, index) => (
                     <div key={index} className="flex items-center justify-between p-2 border rounded">
-                      <span>{vid.originalName}</span>
-                      <X 
+                      <div>
+                        <span>{vid.originalName}</span>
+                        <div className="text-xs text-gray-500">{vid.format} - {(vid.size / 1024 / 1024).toFixed(2)} MB</div>
+                      </div>
+                      <X
                         className="w-4 h-4 cursor-pointer text-red-500"
                         onClick={() => removeMedia(vid.filename, 'videos')}
                       />

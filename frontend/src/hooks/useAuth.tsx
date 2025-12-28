@@ -1,51 +1,57 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { localDb } from '@/lib/database';
+import { authService } from '@/services';
+import { ApiError } from '@/lib/api';
+import type { User } from '@/types/api';
 
 interface AuthContextType {
-  user: any | null;
-  session: any | null;
+  user: User | null;
+  session: { user: User } | null;
   loading: boolean;
   isAdmin: boolean;
-  signUp: (email: string, password: string, fullName: string, phone: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Check if user is already logged in on app start
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        const response = await authService.getProfile();
+        if (response.success && response.data) {
+          setUser(response.data);
+        } else {
+          // Invalid token - clear it
+          localStorage.removeItem('auth_token');
+          setUser(null);
+        }
+      }
+    } catch (error) {
+      // Network error or invalid token - clear auth state
+      console.warn('Auth refresh failed:', error);
+      localStorage.removeItem('auth_token');
+      setUser(null);
+    }
+  };
+
   useEffect(() => {
     const checkAuthStatus = async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-          // Try to get user profile using stored token
-          const response = await localDb.auth.getProfile();
-          if (response.success && response.data) {
-            setUser(response.data);
-          } else {
-            // If token is invalid, clear it
-            localStorage.removeItem('auth_token');
-          }
-        }
-      } catch (error) {
-        // If there's an error, clear the token
-        localStorage.removeItem('auth_token');
-      } finally {
-        setLoading(false);
-      }
+      await refreshUser();
+      setLoading(false);
     };
-
     checkAuthStatus();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, phone: string) => {
+  const signUp = async (email: string, password: string, fullName: string, phone?: string) => {
     try {
-      const response = await localDb.auth.register(email, password, fullName, phone);
+      const response = await authService.register(email, password, fullName, phone);
       if (response.success && response.data) {
         setUser(response.data);
         return { error: null };
@@ -53,13 +59,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error(response.message || 'Registration failed') };
       }
     } catch (error) {
-      return { error: error as Error };
+      const message = error instanceof ApiError ? error.message : 'Registration failed';
+      return { error: new Error(message) };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const response = await localDb.auth.login(email, password);
+      const response = await authService.login(email, password);
       if (response.success && response.data) {
         setUser(response.data);
         return { error: null };
@@ -67,18 +74,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error(response.message || 'Login failed') };
       }
     } catch (error) {
-      return { error: error as Error };
+      const message = error instanceof ApiError ? error.message : 'Login failed';
+      return { error: new Error(message) };
     }
   };
 
   const signOut = async () => {
     try {
-      await localDb.auth.logout();
-      setUser(null);
+      await authService.logout();
     } catch (error) {
       console.error('Logout error:', error);
-      // Even if backend logout fails, clear local state
-      localStorage.removeItem('auth_token');
+    } finally {
       setUser(null);
     }
   };
@@ -90,7 +96,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAdmin: user?.role === 'admin',
     signUp,
     signIn,
-    signOut
+    signOut,
+    refreshUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

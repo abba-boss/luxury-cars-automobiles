@@ -1,6 +1,7 @@
 const { Vehicle } = require('../models');
 const { validationResult } = require('express-validator');
 const { Op } = require('sequelize');
+const { deleteMediaFromCloudinary } = require('../utils/cloudinaryUtils');
 
 // Get all vehicles with filtering and pagination
 const getVehicles = async (req, res, next) => {
@@ -160,11 +161,20 @@ const deleteVehicle = async (req, res, next) => {
       });
     }
 
+    // Delete media files from Cloudinary before deleting the vehicle
+    if (vehicle.images && Array.isArray(vehicle.images) && vehicle.images.length > 0) {
+      await deleteMediaFromCloudinary(vehicle.images);
+    }
+
+    if (vehicle.videos && Array.isArray(vehicle.videos) && vehicle.videos.length > 0) {
+      await deleteMediaFromCloudinary(vehicle.videos);
+    }
+
     await vehicle.destroy();
 
     res.json({
       success: true,
-      message: 'Vehicle deleted successfully'
+      message: 'Vehicle and associated media deleted successfully'
     });
   } catch (error) {
     next(error);

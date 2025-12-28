@@ -1,0 +1,10 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#dc2626"/>
+  <rect x="50" y="200" width="700" height="200" rx="20" fill="#ef4444"/>
+  <circle cx="200" cy="450" r="50" fill="#1f2937"/>
+  <circle cx="600" cy="450" r="50" fill="#1f2937"/>
+  <rect x="100" y="250" width="600" height="100" rx="10" fill="#f87171"/>
+  <text x="400" y="320" text-anchor="middle" font-family="Arial" font-size="24" fill="white">
+    Red Sports Car
+  </text>
+</svg>

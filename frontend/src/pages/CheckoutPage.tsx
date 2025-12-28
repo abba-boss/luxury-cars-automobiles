@@ -13,6 +13,7 @@ import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle } from "lucide-react"
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { customerService, saleService } from "@/services";
 import { formatPrice } from "@/data/cars";
 
 const CheckoutPage = () => {
@@ -48,42 +49,30 @@ const CheckoutPage = () => {
     setLoading(true);
     
     try {
-      const customerResponse = await fetch('http://localhost:3001/api/customers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          address: `${formData.address}, ${formData.city}, ${formData.state}`
-        })
+      // Create customer record
+      const customerResponse = await customerService.createCustomer({
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        address: `${formData.address}, ${formData.city}, ${formData.state}`
       });
 
-      const customerResult = await customerResponse.json();
-      
-      if (!customerResult.success) {
+      if (!customerResponse.success) {
         throw new Error('Failed to create customer record');
       }
 
+      // Create sales records for each cart item
       for (const item of items) {
-        const saleResponse = await fetch('http://localhost:3001/api/sales', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            ...(user ? { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` } : {})
-          },
-          body: JSON.stringify({
-            vehicle_id: parseInt(item.id),
-            customer_id: customerResult.data.id,
-            sale_price: item.price,
-            payment_method: formData.paymentMethod,
-            notes: formData.notes
-          })
+        const saleResponse = await saleService.createSale({
+          vehicle_id: parseInt(item.id),
+          customer_id: customerResponse.data!.id,
+          sale_price: item.price,
+          payment_method: formData.paymentMethod,
+          notes: `Order placed via website checkout`
         });
 
-        const saleResult = await saleResponse.json();
-        if (!saleResult.success) {
-          throw new Error(`Failed to process order for ${item.make} ${item.model}`);
+        if (!saleResponse.success) {
+          throw new Error(`Failed to create order for ${item.make} ${item.model}`);
         }
       }
 
@@ -95,9 +84,10 @@ const CheckoutPage = () => {
       navigate('/orders');
       
     } catch (error) {
+      console.error('Checkout error:', error);
       toast({
         title: "Order Failed",
-        description: "There was an error processing your order. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error processing your order. Please try again.",
         variant: "destructive"
       });
     } finally {
