@@ -5,7 +5,7 @@ const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'sarkin_mota_db'
+  database: process.env.DB_NAME || 'luxury_cars_automobiles'
 };
 
 const carMakes = ['Toyota', 'Honda', 'Mercedes-Benz', 'BMW', 'Audi', 'Lexus', 'Nissan', 'Ford', 'Chevrolet', 'Hyundai', 'Kia', 'Mazda', 'Subaru', 'Volkswagen', 'Porsche'];
