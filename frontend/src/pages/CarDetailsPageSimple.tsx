@@ -96,7 +96,10 @@ const CarDetailsPage = () => {
           fuelType: vehicleData.fuel_type,
           color: vehicleData.color || '',
           images: vehicleData.images ? vehicleData.images.map(img => 
-            img.startsWith('http') ? img : `http://localhost:3001${img}`
+            img.startsWith('http') ? img : `http://localhost:3001/uploads/${img}`
+          ) : [`http://localhost:3001/uploads/placeholder-car.svg`],
+          videos: vehicleData.videos ? vehicleData.videos.map(video =>
+            video.startsWith('http') ? video : `http://localhost:3001/uploads/${video}`
           ) : [],
           description: vehicleData.description || '',
           features: vehicleData.features || [],

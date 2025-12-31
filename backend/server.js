@@ -17,12 +17,12 @@ const { sanitizeInput } = require('./middlewares/sanitize');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: { success: false, message: 'Too many requests, please try again later.' }
-});
+// Rate limiting - DISABLED FOR TESTING
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 100, // limit each IP to 100 requests per windowMs
+//   message: { success: false, message: 'Too many requests, please try again later.' }
+// });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -31,8 +31,17 @@ const authLimiter = rateLimit({
 });
 
 // Security middleware
-app.use(helmet());
-app.use(limiter);
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "http://localhost:3001", "https:"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "https:", "'unsafe-inline'"],
+    },
+  },
+}));
+// app.use(limiter);
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://your-frontend-domain.com'] 
@@ -107,6 +116,7 @@ app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 }, express.static(path.join(__dirname, 'uploads')));
 

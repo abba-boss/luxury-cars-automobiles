@@ -28,8 +28,8 @@ const getVehicles = async (req, res, next) => {
     const where = { status };
 
     // Add filters
-    if (make) where.make = { [Op.iLike]: `%${make}%` };
-    if (model) where.model = { [Op.iLike]: `%${model}%` };
+    if (make) where.make = { [Op.like]: `%${make}%` };
+    if (model) where.model = { [Op.like]: `%${model}%` };
     if (year_min || year_max) {
       where.year = {};
       if (year_min) where.year[Op.gte] = year_min;
@@ -49,9 +49,9 @@ const getVehicles = async (req, res, next) => {
     // Search functionality
     if (search) {
       where[Op.or] = [
-        { make: { [Op.iLike]: `%${search}%` } },
-        { model: { [Op.iLike]: `%${search}%` } },
-        { description: { [Op.iLike]: `%${search}%` } }
+        { make: { [Op.like]: `%${search}%` } },
+        { model: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } }
       ];
     }
 

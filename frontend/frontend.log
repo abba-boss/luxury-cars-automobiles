@@ -2,20 +2,19 @@
 > sarkin-mota-frontend@0.0.0 dev
 > vite
 
+Port 8080 is in use, trying another one...
 
-  VITE v5.4.21  ready in 442 ms
+  VITE v5.4.21  ready in 684 ms
 
-  ➜  Local:   http://localhost:8080/
-  ➜  Network: http://192.168.1.75:8080/
+  ➜  Local:   http://localhost:8081/
+  ➜  Network: http://192.168.1.75:8081/
 Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
   npx update-browserslist-db@latest
   Why you should do it regularly: https://github.com/browserslist/update-db#readme
-12:26:43 PM [vite] hmr update /src/components/home/FeaturedCars.tsx, /src/index.css
-12:26:54 PM [vite] hmr update /src/components/home/FeaturedCars.tsx, /src/index.css
-12:27:19 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
-12:28:13 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
-12:33:27 PM [vite] hmr update /src/components/car/Car360Viewer.tsx, /src/index.css
-12:33:43 PM [vite] hmr update /src/components/car/Car360Viewer.tsx, /src/index.css
-12:33:51 PM [vite] hmr update /src/components/car/Car360Viewer.tsx, /src/index.css
-12:35:50 PM [vite] hmr update /src/components/car/Car360Viewer.tsx, /src/index.css
-12:36:21 PM [vite] hmr update /src/components/car/Car360Viewer.tsx, /src/index.css
+12:46:52 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
+12:46:57 PM [vite] hmr update /src/pages/CarDetailsPage.tsx, /src/index.css
+12:47:02 PM [vite] hmr update /src/pages/CarDetailsPage.tsx, /src/index.css
+1:25:10 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
+1:25:26 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
+1:25:39 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
+1:31:03 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css

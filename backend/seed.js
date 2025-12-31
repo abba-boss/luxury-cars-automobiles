@@ -16,8 +16,34 @@ const transmissions = ['Manual', 'Automatic'];
 const conditions = ['Brand New', 'Tokunbo', 'Nigerian Used'];
 const bodyTypes = ['Sedan', 'SUV', 'Hatchback', 'Coupe', 'Convertible', 'Wagon', 'Pickup', 'Crossover'];
 
+const availableImages = [
+  'vehicles/camry-1.jpg', 'vehicles/camry-2.jpg', 'vehicles/camry-3.jpg',
+  'vehicles/accord-1.jpg', 'vehicles/accord-2.jpg', 'vehicles/accord-3.jpg',
+  'vehicles/eclass-1.jpg', 'vehicles/eclass-2.jpg', 'vehicles/eclass-3.jpg',
+  'vehicles/rx350-1.jpg', 'vehicles/rx350-2.jpg', 'vehicles/rx350-3.jpg',
+  'vehicles/x5-1.jpg', 'vehicles/x5-2.jpg', 'vehicles/x5-3.jpg',
+  'vehicles/q7-1.jpg', 'vehicles/q7-2.jpg', 'vehicles/q7-3.jpg',
+  'vehicles/tesla-model-s.jpg', 'vehicles/bmw-x6.jpg', 'vehicles/mercedes-amg.jpg'
+];
+
+const availableVideos = [
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4'
+];
+
+function getRandomImages(count = 3) {
+  const shuffled = [...availableImages].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
+
+function getRandomVideo() {
+  return availableVideos[Math.floor(Math.random() * availableVideos.length)];
+}
+
 const features = [
-  'Air Conditioning', 'Leather Seats', 'Navigation System', 'Bluetooth', 'Backup Camera',
   'Sunroof', 'Heated Seats', 'Cruise Control', 'Keyless Entry', 'Premium Sound System',
   'Parking Sensors', 'Lane Departure Warning', 'Blind Spot Monitoring', 'Adaptive Cruise Control',
   'Apple CarPlay', 'Android Auto', 'Wireless Charging', 'Panoramic Roof', 'Ventilated Seats',
@@ -49,12 +75,8 @@ function generateVehicle(index) {
     color: colors[Math.floor(Math.random() * colors.length)],
     description: `Beautiful ${year} ${make} ${model} in excellent condition. Well maintained with full service history.`,
     features: getRandomElements(features, 3 + Math.floor(Math.random() * 5)),
-    images: [
-      '/placeholder-car.svg',
-      'https://images.unsplash.com/photo-1494976688153-018c804d2e12?w=800',
-      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800'
-    ],
-    videos: ['https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4'],
+    images: getRandomImages(3),
+    videos: [getRandomVideo()],
     is_verified: Math.random() > 0.3,
     is_featured: Math.random() > 0.7,
     is_hot_deal: Math.random() > 0.8,

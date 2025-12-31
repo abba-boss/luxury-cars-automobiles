@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 const CarsPage = () => {
   const [searchParams] = useSearchParams();
   const brandFromUrl = searchParams.get("brand");
+  const categoryFromUrl = searchParams.get("category");
 
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +64,7 @@ const CarsPage = () => {
             fuelType: vehicle.fuel_type,
             color: vehicle.color || '',
             images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img => 
-              img.startsWith('http') ? img : `http://localhost:3001${img}`
+              img.startsWith('http') ? img : `http://localhost:3001/uploads/${img}`
             ) : [`http://localhost:3001/uploads/placeholder-car.svg`],
             description: vehicle.description || '',
             features: vehicle.features || [],
@@ -84,12 +85,35 @@ const CarsPage = () => {
     fetchCars();
   }, []);
 
-  // Update filters when URL brand parameter changes
+  // Update filters when URL parameters change
   useEffect(() => {
     if (brandFromUrl) {
       setSelectedBrands([brandFromUrl]);
     }
-  }, [brandFromUrl]);
+    if (categoryFromUrl) {
+      // Map category to appropriate filters
+      switch (categoryFromUrl) {
+        case 'suv':
+          setSelectedBrands(['BMW', 'Mercedes-Benz', 'Lexus', 'Toyota', 'Honda']);
+          break;
+        case 'sedan':
+          setSelectedBrands(['Toyota', 'Honda', 'Mercedes-Benz', 'BMW']);
+          break;
+        case 'luxury':
+          setSelectedBrands(['Mercedes-Benz', 'BMW', 'Lexus', 'Audi']);
+          break;
+        case 'tokunbo':
+          setSelectedConditions(['Tokunbo']);
+          break;
+        case 'brand-new':
+          setSelectedConditions(['Brand New']);
+          break;
+        case 'sports':
+          setSelectedBrands(['BMW', 'Mercedes-Benz', 'Audi', 'Porsche']);
+          break;
+      }
+    }
+  }, [brandFromUrl, categoryFromUrl]);
 
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000000]);
   const [sortBy, setSortBy] = useState("newest");

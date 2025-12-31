@@ -75,7 +75,21 @@ const CarDetailsPage = () => {
         setLoading(true);
         const response = await vehicleService.getVehicle(Number(id));
         if (response.success && response.data) {
-          setVehicle(response.data);
+          // Map the API response to ensure proper image and video URLs
+          const mappedVehicle = {
+            ...response.data,
+            images: response.data.images && response.data.images.length > 0 
+              ? response.data.images.map(img => 
+                  img.startsWith('http') ? img : `http://localhost:3001/uploads/${img}`
+                )
+              : [`http://localhost:3001/uploads/placeholder-car.svg`],
+            videos: response.data.videos && response.data.videos.length > 0
+              ? response.data.videos.map(video =>
+                  video.startsWith('http') ? video : `http://localhost:3001/uploads/${video}`
+                )
+              : []
+          };
+          setVehicle(mappedVehicle);
         } else {
           setError('Vehicle not found');
         }

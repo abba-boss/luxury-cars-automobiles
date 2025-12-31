@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Test</title>
+</head>
+<body>
+    <h1>Testing Images</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testAPI() {
+            try {
+                const response = await fetch('http://localhost:3001/api/vehicles');
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    const vehicle = data.data[0];
+                    const resultsDiv = document.getElementById('results');
+                    
+                    resultsDiv.innerHTML = `
+                        <h2>${vehicle.make} ${vehicle.model}</h2>
+                        <p>Images: ${vehicle.images.length}</p>
+                        <div>
+                            ${vehicle.images.map(img => {
+                                const fullUrl = img.startsWith('http') ? img : `http://localhost:3001/uploads/${img}`;
+                                return `<img src="${fullUrl}" style="width:200px;margin:10px;" onerror="this.style.border='2px solid red'" onload="this.style.border='2px solid green'">`;
+                            }).join('')}
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('results').innerHTML = '<p>No vehicles found</p>';
+                }
+            } catch (error) {
+                document.getElementById('results').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+        
+        testAPI();
+    </script>
+</body>
+</html>
