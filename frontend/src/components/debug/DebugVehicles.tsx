@@ -7,8 +7,8 @@ const DebugVehicles = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('Fetching from:', 'http://localhost:3001/api/vehicles');
-        const response = await fetch('http://localhost:3001/api/vehicles');
+        console.log('Fetching from:', `${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/vehicles`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/vehicles`);
         console.log('Response status:', response.status);
         const result = await response.json();
         console.log('API Response:', result);

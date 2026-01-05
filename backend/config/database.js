@@ -32,11 +32,9 @@ const options = {
   }
 };
 
+let sequelize;
+
 // Add password to options only if provided
-if (dbPassword && dbPassword.trim() !== '') {
-  options.password = dbPassword;
-}
-// Use 4 parameters when password is provided, otherwise pass options object
 if (dbPassword && dbPassword.trim() !== '') {
   console.log('Connecting with password');
   sequelize = new Sequelize(dbName, dbUser, dbPassword, options);

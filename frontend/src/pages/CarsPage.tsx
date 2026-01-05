@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 const CarsPage = () => {
   const [searchParams] = useSearchParams();
   const brandFromUrl = searchParams.get("brand");
+  const brandIdFromUrl = searchParams.get("brandId");
   const categoryFromUrl = searchParams.get("category");
 
   const [cars, setCars] = useState([]);
@@ -47,43 +48,62 @@ const CarsPage = () => {
     const fetchCars = async () => {
       try {
         console.log('Fetching vehicles from API...');
-        const response = await vehicleService.getVehicles();
+        
+        // Build query parameters
+        const params: any = {};
+        if (brandIdFromUrl) {
+          params.brand_id = brandIdFromUrl;
+        }
+        if (searchQuery) {
+          params.search = searchQuery;
+        }
+        
+        const response = await vehicleService.getVehicles(params);
         console.log('API Response:', response);
         
         if (response.success && response.data) {
-          // Map API data to Car interface
-          const mappedCars = response.data.map(vehicle => ({
-            id: vehicle.id.toString(),
-            make: vehicle.make,
-            model: vehicle.model,
-            year: vehicle.year,
-            price: parseFloat(vehicle.price),
-            mileage: vehicle.mileage || 0,
-            condition: vehicle.condition,
-            transmission: vehicle.transmission,
-            fuelType: vehicle.fuel_type,
-            color: vehicle.color || '',
-            images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img => 
-              img.startsWith('http') ? img : `http://localhost:3001/uploads/${img}`
-            ) : [`http://localhost:3001/uploads/placeholder-car.svg`],
-            description: vehicle.description || '',
-            features: vehicle.features || [],
-            isVerified: vehicle.is_verified || false,
-            isFeatured: vehicle.is_featured || false,
-            isHotDeal: vehicle.is_hot_deal || false,
-            createdAt: vehicle.created_at || new Date().toISOString()
-          }));
+          // Map API data to Car interface and filter out invalid entries
+          const mappedCars = response.data
+            .filter(vehicle => vehicle && vehicle.id && vehicle.make && vehicle.model && vehicle.year)
+            .map(vehicle => ({
+              id: vehicle.id.toString(),
+              make: vehicle.make,
+              model: vehicle.model,
+              year: vehicle.year,
+              price: typeof vehicle.price === 'string' ? parseFloat(vehicle.price) : vehicle.price,
+              mileage: vehicle.mileage || 0,
+              condition: vehicle.condition || 'Tokunbo',
+              transmission: vehicle.transmission || 'Automatic',
+              fuelType: vehicle.fuel_type || 'Petrol',
+              bodyType: vehicle.body_type || '',
+              color: vehicle.color || '',
+              images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img => 
+                img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${img}`
+              ) : [`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`],
+              videos: vehicle.videos || [],
+              description: vehicle.description || '',
+              features: vehicle.features || [],
+              isVerified: vehicle.is_verified || false,
+              isFeatured: vehicle.is_featured || false,
+              isHotDeal: vehicle.is_hot_deal || false,
+              status: vehicle.status || 'available',
+              brandId: vehicle.brand_id,
+              brand: vehicle.brand,
+              createdAt: vehicle.created_at || new Date().toISOString()
+            }));
           console.log('Mapped cars:', mappedCars);
           setCars(mappedCars);
         }
       } catch (error) {
         console.error('Failed to fetch vehicles:', error);
+        // Set empty array to prevent undefined errors
+        setCars([]);
       } finally {
         setLoading(false);
       }
     };
     fetchCars();
-  }, []);
+  }, [brandIdFromUrl, searchQuery]);
 
   // Update filters when URL parameters change
   useEffect(() => {

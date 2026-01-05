@@ -18,6 +18,7 @@ import {
   Home,
   Bell,
   Search,
+  Tag,
   Menu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,7 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
   { icon: Car, label: 'Car Management', href: '/admin/cars' },
   { icon: PlusCircle, label: 'Add New Car', href: '/admin/add-car' },
+  { icon: Tag, label: 'Brand Management', href: '/admin/brands' },
   { icon: Image, label: 'Media Manager', href: '/admin/media' },
   { icon: Users, label: 'User Management', href: '/admin/users' },
   { icon: MessageSquare, label: 'Messages', href: '/admin/messages' },

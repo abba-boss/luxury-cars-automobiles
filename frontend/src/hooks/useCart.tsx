@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CartItem {
   id: string;
@@ -9,26 +10,37 @@ interface CartItem {
   price: number;
   image: string;
   addedAt: Date;
+  userId?: number; // Add user ID to cart items
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (vehicle: Omit<CartItem, 'addedAt'>) => void;
+  addToCart: (vehicle: Omit<CartItem, 'addedAt' | 'userId'>) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
   getTotalPrice: () => number;
   getItemCount: () => number;
   isInCart: (id: string) => boolean;
+  getUserInfo: () => { name: string; email: string } | null;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth(); // Get current user
   const [items, setItems] = useState<CartItem[]>(() => {
     // Load cart from localStorage on initialization
     try {
       const savedCart = localStorage.getItem('cart_items');
-      return savedCart ? JSON.parse(savedCart) : [];
+      if (savedCart) {
+        const parsed = JSON.parse(savedCart);
+        // Convert addedAt back to Date objects
+        return parsed.map((item: any) => ({
+          ...item,
+          addedAt: new Date(item.addedAt)
+        }));
+      }
+      return [];
     } catch {
       return [];
     }
@@ -40,7 +52,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('cart_items', JSON.stringify(items));
   }, [items]);
 
-  const addToCart = (vehicle: Omit<CartItem, 'addedAt'>) => {
+  const addToCart = (vehicle: Omit<CartItem, 'addedAt' | 'userId'>) => {
     setItems(prev => {
       // Check if item already exists
       if (prev.find(item => item.id === vehicle.id)) {
@@ -52,7 +64,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         return prev;
       }
 
-      const newItem = { ...vehicle, addedAt: new Date() };
+      const newItem = { 
+        ...vehicle, 
+        addedAt: new Date(),
+        userId: user?.id // Attach user ID if logged in
+      };
       toast({
         title: "Added to Cart",
         description: `${vehicle.year} ${vehicle.make} ${vehicle.model} added to cart`
@@ -94,6 +110,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return items.some(item => item.id === id);
   };
 
+  const getUserInfo = () => {
+    if (user) {
+      return {
+        name: user.full_name,
+        email: user.email
+      };
+    }
+    return null;
+  };
+
   return (
     <CartContext.Provider value={{
       items,
@@ -102,7 +128,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       clearCart,
       getTotalPrice,
       getItemCount,
-      isInCart
+      isInCart,
+      getUserInfo
     }}>
       {children}
     </CartContext.Provider>

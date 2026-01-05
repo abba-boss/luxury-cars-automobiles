@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
 import {
   User,
   Mail,
@@ -17,6 +18,17 @@ import {
 } from "lucide-react";
 
 const ProfilePage = () => {
+  const { user } = useAuth();
+
+  if (!user) {
+    return (
+      <DashboardLayout title="Profile" subtitle="Manage your account">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Please log in to view your profile.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
   return (
     <DashboardLayout title="Profile" subtitle="Manage your account">
       <div className="max-w-2xl mx-auto space-y-6">
@@ -33,14 +45,19 @@ const ProfilePage = () => {
             </div>
             <div className="flex-1 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                <h2 className="text-xl font-bold text-foreground">John Doe</h2>
+                <h2 className="text-xl font-bold text-foreground">{user.full_name}</h2>
                 <Badge variant="verified" className="gap-1">
                   <Shield className="h-3 w-3" />
                   Verified
                 </Badge>
               </div>
-              <p className="text-muted-foreground">john.doe@example.com</p>
-              <p className="text-sm text-muted-foreground mt-1">Member since January 2024</p>
+              <p className="text-muted-foreground">{user.email}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Member since {new Date(user.created_at).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long' 
+                })}
+              </p>
             </div>
           </div>
         </Card>
@@ -56,13 +73,13 @@ const ProfilePage = () => {
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">
                   First Name
                 </label>
-                <Input defaultValue="John" />
+                <Input defaultValue={user.full_name.split(' ')[0] || ''} />
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">
                   Last Name
                 </label>
-                <Input defaultValue="Doe" />
+                <Input defaultValue={user.full_name.split(' ').slice(1).join(' ') || ''} />
               </div>
             </div>
             <div>
@@ -71,7 +88,7 @@ const ProfilePage = () => {
               </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input defaultValue="john.doe@example.com" className="pl-11" />
+                <Input defaultValue={user.email} className="pl-11" />
               </div>
             </div>
             <div>
@@ -80,7 +97,7 @@ const ProfilePage = () => {
               </label>
               <div className="relative">
                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input defaultValue="+234 801 234 5678" className="pl-11" />
+                <Input defaultValue={user.phone || ''} className="pl-11" />
               </div>
             </div>
             <div>

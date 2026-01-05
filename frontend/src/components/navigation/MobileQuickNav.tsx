@@ -68,7 +68,7 @@ const MobileQuickNav = () => {
   }
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50 md:hidden">
+    <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-30 md:hidden">
       <div className="flex items-center justify-around bg-card border border-border rounded-2xl p-2 shadow-lg backdrop-blur-xl">
         {navItems.map((item, index) => (
           <Button

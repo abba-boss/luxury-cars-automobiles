@@ -29,7 +29,7 @@ const VehicleInquiry = ({ vehicleId, vehicleName }: VehicleInquiryProps) => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/inquiries', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/inquiries`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

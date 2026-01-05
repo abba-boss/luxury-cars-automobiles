@@ -18,21 +18,23 @@ export function FeaturedCars() {
         const response = await vehicleService.getVehicles({ is_featured: true, limit: 6 });
         
         if (response.success && response.data) {
-          // Map to expected format
-          const featuredVehicles = response.data.map(vehicle => ({
-            id: vehicle.id.toString(),
-            make: vehicle.make,
-            model: vehicle.model,
-            year: vehicle.year,
-              price: parseFloat(vehicle.price),
+          // Map to expected format and filter out invalid entries
+          const featuredVehicles = response.data
+            .filter(vehicle => vehicle && vehicle.id && vehicle.make && vehicle.model && vehicle.year)
+            .map(vehicle => ({
+              id: vehicle.id.toString(),
+              make: vehicle.make,
+              model: vehicle.model,
+              year: vehicle.year,
+              price: typeof vehicle.price === 'string' ? parseFloat(vehicle.price) : vehicle.price,
               mileage: vehicle.mileage || 0,
-              condition: vehicle.condition,
-              transmission: vehicle.transmission,
-              fuelType: vehicle.fuel_type,
+              condition: vehicle.condition || 'Used',
+              transmission: vehicle.transmission || 'Manual',
+              fuelType: vehicle.fuel_type || 'Petrol',
               color: vehicle.color || '',
               images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img => 
-                img.startsWith('http') ? img : `http://localhost:3001${img}`
-              ) : [`http://localhost:3001/uploads/placeholder-car.svg`],
+                img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${img}`
+              ) : [`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`],
               description: vehicle.description || '',
               features: vehicle.features || [],
               isVerified: vehicle.is_verified || false,
@@ -44,6 +46,8 @@ export function FeaturedCars() {
         }
       } catch (error) {
         console.error('Failed to fetch featured cars:', error);
+        // Set empty array to prevent undefined errors
+        setCars([]);
       } finally {
         setLoading(false);
       }
@@ -109,7 +113,7 @@ export function FeaturedCars() {
             >
               <Link to={`/cars/${car.id}`}>
                 {/* Image Container */}
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-[3/2] sm:aspect-[4/3] md:aspect-[16/10] overflow-hidden bg-muted">
                   <img
                     src={car.images[0]}
                     alt={`${car.make} ${car.model}`}

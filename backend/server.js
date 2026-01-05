@@ -95,6 +95,10 @@ app.use('/api/auth', authLimiter, authRoutes);
 const vehicleRoutes = require('./routes/vehicles');
 app.use('/api/vehicles', vehicleRoutes);
 
+// Brand routes
+const brandRoutes = require('./routes/brands');
+app.use('/api/brands', brandRoutes);
+
 // Customer routes
 const customerRoutes = require('./routes/customers');
 app.use('/api/customers', customerRoutes);
@@ -110,6 +114,24 @@ app.use('/api/inquiries', inquiryRoutes);
 // Admin routes
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
+
+// New feature routes
+const reviewRoutes = require('./routes/reviews');
+app.use('/api/reviews', reviewRoutes);
+
+const bookingRoutes = require('./routes/bookings');
+app.use('/api/bookings', bookingRoutes);
+
+const favoriteRoutes = require('./routes/favorites');
+app.use('/api/favorites', favoriteRoutes);
+
+// Analytics routes
+const analyticsRoutes = require('./routes/analytics');
+app.use('/api/admin/analytics', analyticsRoutes);
+
+// User analytics routes
+const userAnalyticsRoutes = require('./routes/userAnalytics');
+app.use('/api/user/analytics', userAnalyticsRoutes);
 
 // Serve static files with CORS headers
 app.use('/uploads', (req, res, next) => {

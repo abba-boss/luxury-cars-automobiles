@@ -8,7 +8,7 @@ export function FeaturedCars() {
   useEffect(() => {
     const fetchFeaturedCars = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/vehicles');
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/vehicles`);
         const result = await response.json();
         
         if (result.success && result.data) {

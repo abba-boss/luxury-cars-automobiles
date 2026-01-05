@@ -12,6 +12,7 @@ import { X, Upload, Plus, Save, ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { adminService } from "@/services/adminService";
 import { CreateVehicleData, Vehicle } from "@/types/api";
+import BrandTypeahead from "@/components/ui/BrandTypeahead";
 
 interface VehicleFormProps {
   mode: 'create' | 'edit';
@@ -56,7 +57,12 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
     is_featured: false,
     is_hot_deal: false,
     is_verified: false,
-    status: "available"
+    status: "available",
+    brand_id: undefined,
+    acceleration: "",
+    top_speed: "",
+    power: "",
+    torque: ""
   });
 
   // Load vehicle data for edit mode
@@ -76,8 +82,8 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
           make: vehicle.make,
           model: vehicle.model,
           year: vehicle.year,
-          price: parseFloat(vehicle.price),
-          mileage: vehicle.mileage,
+          price: typeof vehicle.price === 'string' ? (parseFloat(vehicle.price) || 0) : (vehicle.price || 0),
+          mileage: vehicle.mileage || 0,
           fuel_type: vehicle.fuel_type,
           transmission: vehicle.transmission,
           condition: vehicle.condition,
@@ -90,7 +96,12 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
           is_featured: vehicle.is_featured,
           is_hot_deal: vehicle.is_hot_deal,
           is_verified: vehicle.is_verified || false,
-          status: vehicle.status || "available"
+          status: vehicle.status || "available",
+          brand_id: vehicle.brand_id,
+          acceleration: vehicle.acceleration || "",
+          top_speed: vehicle.top_speed || "",
+          power: vehicle.power || "",
+          torque: vehicle.torque || ""
         });
         setUploadedImages(vehicle.images || []);
         setUploadedVideos(vehicle.videos || []);
@@ -118,6 +129,18 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
     if (!formData.color.trim()) newErrors.color = "Color is required";
     if (!formData.description.trim()) newErrors.description = "Description is required";
 
+    console.log('Form validation:', {
+      formData: {
+        make: formData.make,
+        model: formData.model,
+        year: formData.year,
+        price: formData.price,
+        color: formData.color,
+        description: formData.description
+      },
+      errors: newErrors
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -126,6 +149,18 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleNumericChange = (field: keyof CreateVehicleData, value: string, isFloat = false) => {
+    if (value === '') {
+      handleInputChange(field, isFloat ? 0 : 0);
+      return;
+    }
+    
+    const numericValue = isFloat ? parseFloat(value) : parseInt(value);
+    if (!isNaN(numericValue)) {
+      handleInputChange(field, numericValue);
     }
   };
 
@@ -272,6 +307,14 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
+              <BrandTypeahead
+                value={formData.brand_id}
+                onSelect={(brandId) => handleInputChange('brand_id', brandId)}
+                error={errors.brand_id}
+              />
+            </div>
+
+            <div>
               <Label htmlFor="make">Make *</Label>
               <Input
                 id="make"
@@ -301,7 +344,7 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
                 min="1900"
                 max={new Date().getFullYear() + 1}
                 value={formData.year}
-                onChange={(e) => handleInputChange('year', parseInt(e.target.value))}
+                onChange={(e) => handleNumericChange('year', e.target.value)}
                 className={errors.year ? 'border-red-500' : ''}
               />
               {errors.year && <p className="text-red-500 text-sm mt-1">{errors.year}</p>}
@@ -314,7 +357,7 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
                 type="number"
                 min="0"
                 value={formData.price}
-                onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
+                onChange={(e) => handleNumericChange('price', e.target.value, true)}
                 className={errors.price ? 'border-red-500' : ''}
               />
               {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
@@ -327,7 +370,7 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
                 type="number"
                 min="0"
                 value={formData.mileage}
-                onChange={(e) => handleInputChange('mileage', parseInt(e.target.value))}
+                onChange={(e) => handleNumericChange('mileage', e.target.value)}
               />
             </div>
 
@@ -399,6 +442,54 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
                 value={formData.body_type}
                 onChange={(e) => handleInputChange('body_type', e.target.value)}
                 placeholder="e.g., Sedan, SUV, Hatchback"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Performance */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Performance</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <Label htmlFor="acceleration">0-60 mph</Label>
+              <Input
+                id="acceleration"
+                value={formData.acceleration}
+                onChange={(e) => handleInputChange('acceleration', e.target.value)}
+                placeholder="e.g., 5.8s"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="top_speed">Top Speed</Label>
+              <Input
+                id="top_speed"
+                value={formData.top_speed}
+                onChange={(e) => handleInputChange('top_speed', e.target.value)}
+                placeholder="e.g., 155 mph"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="power">Power</Label>
+              <Input
+                id="power"
+                value={formData.power}
+                onChange={(e) => handleInputChange('power', e.target.value)}
+                placeholder="e.g., 335 hp"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="torque">Torque</Label>
+              <Input
+                id="torque"
+                value={formData.torque}
+                onChange={(e) => handleInputChange('torque', e.target.value)}
+                placeholder="e.g., 368 lb-ft"
               />
             </div>
           </CardContent>
@@ -547,7 +638,7 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
                 {uploadedImages.map((img, index) => (
                   <div key={index} className="relative">
                     <img
-                      src={img.startsWith('http') ? img : `http://localhost:3001${img}`}
+                      src={img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${img}`}
                       alt={`Vehicle image ${index + 1}`}
                       className="w-full h-20 object-cover rounded"
                       onError={(e) => {

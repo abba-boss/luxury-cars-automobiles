@@ -7,7 +7,8 @@ import type {
   Sale, 
   Inquiry, 
   AuthResponse,
-  UploadResponse 
+  UploadResponse,
+  Brand
 } from '@/types/api';
 
 export const authService = {
@@ -183,5 +184,132 @@ export const uploadService = {
     }
 
     return api.upload<ApiResponse<UploadResponse>>('/upload/vehicles', formData);
+  }
+};
+
+export const reviewService = {
+  async getVehicleReviews(vehicleId: number, params?: { page?: number; limit?: number }): Promise<ApiResponse<any[]>> {
+    return api.get<ApiResponse<any[]>>(`/reviews/vehicle/${vehicleId}`, params);
+  },
+
+  async createReview(data: { vehicle_id: number; rating: number; comment?: string }): Promise<ApiResponse<any>> {
+    return api.post<ApiResponse<any>>('/reviews', data);
+  },
+
+  async updateReview(id: number, data: { rating: number; comment?: string }): Promise<ApiResponse<any>> {
+    return api.put<ApiResponse<any>>(`/reviews/${id}`, data);
+  },
+
+  async deleteReview(id: number): Promise<ApiResponse<null>> {
+    return api.delete<ApiResponse<null>>(`/reviews/${id}`);
+  }
+};
+
+export const bookingService = {
+  async getUserBookings(params?: { page?: number; limit?: number }): Promise<ApiResponse<any[]>> {
+    return api.get<ApiResponse<any[]>>('/bookings', params);
+  },
+
+  async createBooking(data: {
+    vehicle_id: number;
+    booking_date: string;
+    booking_time: string;
+    type: 'test_drive' | 'inspection' | 'consultation';
+    notes?: string;
+  }): Promise<ApiResponse<any>> {
+    return api.post<ApiResponse<any>>('/bookings', data);
+  },
+
+  async updateBooking(id: number, data: { status?: string; notes?: string }): Promise<ApiResponse<any>> {
+    return api.put<ApiResponse<any>>(`/bookings/${id}`, data);
+  },
+
+  async getAllBookings(params?: { page?: number; limit?: number; status?: string }): Promise<ApiResponse<any[]>> {
+    return api.get<ApiResponse<any[]>>('/bookings/all', params);
+  },
+
+  async updateBookingStatus(id: number, data: { status?: string; notes?: string }): Promise<ApiResponse<any>> {
+    return api.put<ApiResponse<any>>(`/bookings/admin/${id}`, data);
+  }
+};
+
+export const favoriteService = {
+  async getUserFavorites(params?: { page?: number; limit?: number }): Promise<ApiResponse<any[]>> {
+    return api.get<ApiResponse<any[]>>('/favorites', params);
+  },
+
+  async addToFavorites(vehicle_id: number): Promise<ApiResponse<any>> {
+    return api.post<ApiResponse<any>>('/favorites', { vehicle_id });
+  },
+
+  async removeFromFavorites(vehicleId: number): Promise<ApiResponse<null>> {
+    return api.delete<ApiResponse<null>>(`/favorites/${vehicleId}`);
+  },
+
+  async checkFavorite(vehicleId: number): Promise<ApiResponse<{ isFavorite: boolean }>> {
+    return api.get<ApiResponse<{ isFavorite: boolean }>>(`/favorites/check/${vehicleId}`);
+  }
+};
+
+export const analyticsService = {
+  async getOverview(): Promise<ApiResponse<any>> {
+    return api.get<ApiResponse<any>>('/admin/analytics/overview');
+  },
+
+  async getSalesAnalytics(): Promise<ApiResponse<any>> {
+    return api.get<ApiResponse<any>>('/admin/analytics/sales');
+  },
+
+  async getInventoryAnalytics(): Promise<ApiResponse<any>> {
+    return api.get<ApiResponse<any>>('/admin/analytics/inventory');
+  },
+
+  async getUserAnalytics(): Promise<ApiResponse<any>> {
+    return api.get<ApiResponse<any>>('/admin/analytics/users');
+  }
+};
+
+export const userAnalyticsService = {
+  async getActivity(): Promise<ApiResponse<any>> {
+    return api.get<ApiResponse<any>>('/user/analytics/activity');
+  },
+  
+  async getPreferences(): Promise<ApiResponse<any>> {
+    return api.get<ApiResponse<any>>('/user/analytics/preferences');
+  },
+  
+  async getStats(): Promise<ApiResponse<any>> {
+    return api.get<ApiResponse<any>>('/user/analytics/stats');
+  }
+};
+
+export const brandService = {
+  async getBrands(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    include_vehicle_count?: boolean;
+  }): Promise<ApiResponse<Brand[]>> {
+    return api.get<ApiResponse<Brand[]>>('/brands', params);
+  },
+
+  async getBrand(id: number): Promise<ApiResponse<Brand>> {
+    return api.get<ApiResponse<Brand>>(`/brands/${id}`);
+  },
+
+  async createBrand(data: { name: string; image?: string }): Promise<ApiResponse<Brand>> {
+    return api.post<ApiResponse<Brand>>('/brands', data);
+  },
+
+  async updateBrand(id: number, data: { name: string; image?: string }): Promise<ApiResponse<Brand>> {
+    return api.put<ApiResponse<Brand>>(`/brands/${id}`, data);
+  },
+
+  async deleteBrand(id: number): Promise<ApiResponse<null>> {
+    return api.delete<ApiResponse<null>>(`/brands/${id}`);
+  },
+
+  async searchBrands(query: string, limit?: number): Promise<ApiResponse<Brand[]>> {
+    return api.get<ApiResponse<Brand[]>>('/brands/search', { q: query, limit });
   }
 };

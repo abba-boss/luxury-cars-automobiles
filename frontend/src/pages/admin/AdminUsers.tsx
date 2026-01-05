@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import {
   Search,
   MoreVertical,
@@ -39,7 +40,6 @@ import { toast } from 'sonner';
 import { useAdminProfiles, useAdminUserRoles, useAdminFavorites, useAdminInquiries } from '@/hooks/useAdminData';
 import { localDb } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { formatDistanceToNow } from 'date-fns';
 
 const AdminUsers = () => {
   const [searchQuery, setSearchQuery] = useState('');

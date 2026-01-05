@@ -1,4 +1,4 @@
-const { Vehicle } = require('../models');
+const { Vehicle, Brand } = require('../models');
 const { validationResult } = require('express-validator');
 const { Op } = require('sequelize');
 const { deleteMediaFromCloudinary } = require('../utils/cloudinaryUtils');
@@ -21,7 +21,8 @@ const getVehicles = async (req, res, next) => {
       status = 'available',
       is_featured,
       is_hot_deal,
-      search
+      search,
+      brand_id
     } = req.query;
 
     const offset = (page - 1) * limit;
@@ -30,6 +31,7 @@ const getVehicles = async (req, res, next) => {
     // Add filters
     if (make) where.make = { [Op.like]: `%${make}%` };
     if (model) where.model = { [Op.like]: `%${model}%` };
+    if (brand_id) where.brand_id = parseInt(brand_id);
     if (year_min || year_max) {
       where.year = {};
       if (year_min) where.year[Op.gte] = year_min;
@@ -57,6 +59,11 @@ const getVehicles = async (req, res, next) => {
 
     const { count, rows } = await Vehicle.findAndCountAll({
       where,
+      include: [{
+        model: Brand,
+        as: 'brand',
+        attributes: ['id', 'name', 'image']
+      }],
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [['created_at', 'DESC']]
@@ -81,7 +88,13 @@ const getVehicles = async (req, res, next) => {
 const getVehicleById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const vehicle = await Vehicle.findByPk(id);
+    const vehicle = await Vehicle.findByPk(id, {
+      include: [{
+        model: Brand,
+        as: 'brand',
+        attributes: ['id', 'name', 'image']
+      }]
+    });
 
     if (!vehicle) {
       return res.status(404).json({

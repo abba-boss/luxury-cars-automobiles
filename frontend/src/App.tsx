@@ -40,6 +40,7 @@ import AdminHomepage from "./pages/admin/AdminHomepage";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminEditCar from "./pages/admin/AdminEditCar";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminBrands from "./pages/admin/AdminBrands";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import CheckoutProtection from "./components/auth/CheckoutProtection";
@@ -179,6 +180,11 @@ const App = () => (
               <Route path="/admin/settings" element={
                 <ProtectedRoute requireAdmin>
                   <AdminSettings />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/brands" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminBrands />
                 </ProtectedRoute>
               } />
               

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,8 @@ const CheckoutPage = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: user?.full_name || "",
-    email: user?.email || "",
+    fullName: "",
+    email: "",
     phone: "",
     address: "",
     city: "",
@@ -33,6 +33,18 @@ const CheckoutPage = () => {
     notes: "",
     agreeToTerms: false
   });
+
+  // Update form data when user changes
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: user.full_name || "",
+        email: user.email || "",
+        phone: user.phone || ""
+      }));
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -98,6 +98,34 @@ const Vehicle = sequelize.define('Vehicle', {
     type: DataTypes.ENUM('available', 'sold', 'reserved', 'inactive'),
     allowNull: false,
     defaultValue: 'available'
+  },
+  brand_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'brands',
+      key: 'id'
+    }
+  },
+  acceleration: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+    comment: '0-60 mph time (e.g., "5.8s")'
+  },
+  top_speed: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+    comment: 'Top speed (e.g., "155 mph")'
+  },
+  power: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+    comment: 'Engine power (e.g., "335 hp")'
+  },
+  torque: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+    comment: 'Engine torque (e.g., "368 lb-ft")'
   }
 }, {
   tableName: 'vehicles',

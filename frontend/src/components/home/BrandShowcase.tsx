@@ -1,39 +1,57 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-
-const carBrands = [
-  { name: "Toyota", logo: "https://www.carlogos.org/car-logos/toyota-logo.png" },
-  { name: "Lexus", logo: "https://www.carlogos.org/car-logos/lexus-logo.png" },
-  { name: "Mercedes-Benz", logo: "https://www.carlogos.org/car-logos/mercedes-benz-logo.png" },
-  { name: "BMW", logo: "https://www.carlogos.org/car-logos/bmw-logo.png" },
-  { name: "Audi", logo: "https://www.carlogos.org/car-logos/audi-logo.png" },
-  { name: "Honda", logo: "https://www.carlogos.org/car-logos/honda-logo.png" },
-  { name: "Range Rover", logo: "https://www.carlogos.org/car-logos/land-rover-logo.png" },
-  { name: "Porsche", logo: "https://www.carlogos.org/car-logos/porsche-logo.png" },
-  { name: "Ford", logo: "https://www.carlogos.org/car-logos/ford-logo.png" },
-  { name: "Chevrolet", logo: "https://www.carlogos.org/car-logos/chevrolet-logo.png" },
-  { name: "Nissan", logo: "https://www.carlogos.org/car-logos/nissan-logo.png" },
-  { name: "Hyundai", logo: "https://www.carlogos.org/car-logos/hyundai-logo.png" },
-  { name: "Kia", logo: "https://www.carlogos.org/car-logos/kia-logo.png" },
-  { name: "Volkswagen", logo: "https://www.carlogos.org/car-logos/volkswagen-logo.png" },
-  { name: "Jeep", logo: "https://www.carlogos.org/car-logos/jeep-logo.png" },
-  { name: "Mazda", logo: "https://www.carlogos.org/car-logos/mazda-logo.png" },
-  { name: "Infiniti", logo: "https://www.carlogos.org/car-logos/infiniti-logo.png" },
-  { name: "Acura", logo: "https://www.carlogos.org/car-logos/acura-logo.png" },
-  { name: "Volvo", logo: "https://www.carlogos.org/car-logos/volvo-logo.png" },
-  { name: "Jaguar", logo: "https://www.carlogos.org/car-logos/jaguar-logo.png" },
-  { name: "Bentley", logo: "https://www.carlogos.org/car-logos/bentley-logo.png" },
-  { name: "Ferrari", logo: "https://www.carlogos.org/car-logos/ferrari-logo.png" },
-  { name: "Lamborghini", logo: "https://www.carlogos.org/car-logos/lamborghini-logo.png" },
-  { name: "Tesla", logo: "https://www.carlogos.org/car-logos/tesla-logo.png" },
-];
+import { brandService } from "@/services";
+import { Brand } from "@/types/api";
 
 export function BrandShowcase() {
   const navigate = useNavigate();
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleBrandClick = (brandName: string) => {
-    navigate(`/cars?brand=${encodeURIComponent(brandName)}`);
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const response = await brandService.getBrands({ limit: 24 });
+        if (response.success) {
+          setBrands(response.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch brands:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBrands();
+  }, []);
+
+  const handleBrandClick = (brand: Brand) => {
+    navigate(`/cars?brand=${brand.name}&brandId=${brand.id}`);
   };
+
+  if (loading) {
+    return (
+      <section className="section-padding bg-card/50">
+        <div className="max-w-[1800px] mx-auto">
+          <div className="text-center mb-16">
+            <span className="inline-block px-5 py-2 border border-primary/40 text-primary text-xs font-semibold tracking-[0.3em] mb-6 rounded-full bg-primary/5">
+              BRANDS
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Shop By Brand
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Explore our curated collection of premium automobiles from the world's most prestigious manufacturers
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="section-padding bg-card/50">
@@ -53,10 +71,10 @@ export function BrandShowcase() {
 
         {/* Brand Grid - Smaller, Cleaner */}
         <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-3 md:gap-4">
-          {carBrands.map((brand, index) => (
+          {brands.map((brand, index) => (
             <button
-              key={brand.name}
-              onClick={() => handleBrandClick(brand.name)}
+              key={brand.id}
+              onClick={() => handleBrandClick(brand)}
               className={cn(
                 "group relative flex flex-col items-center justify-center p-3 md:p-4 rounded-xl",
                 "transition-all duration-300 ease-out",
@@ -79,27 +97,30 @@ export function BrandShowcase() {
                 "transition-all duration-300 ease-out",
                 "group-hover:scale-110"
               )}>
-                <img
-                  src={brand.logo}
-                  alt={`${brand.name} logo`}
-                  className={cn(
-                    "w-full h-full object-contain",
-                    "filter brightness-75 contrast-125",
-                    "group-hover:brightness-100 group-hover:drop-shadow-[0_0_8px_rgba(215,38,56,0.4)]",
-                    "transition-all duration-300"
-                  )}
-                  style={{ 
-                    filter: "drop-shadow(0 0 0 transparent)",
-                  }}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      parent.innerHTML = `<span class="text-lg font-bold text-muted-foreground group-hover:text-primary transition-colors">${brand.name.charAt(0)}</span>`;
-                    }
-                  }}
-                />
+                {brand.image ? (
+                  <img
+                    src={brand.image}
+                    alt={`${brand.name} logo`}
+                    className={cn(
+                      "w-full h-full object-contain",
+                      "filter brightness-75 contrast-125",
+                      "group-hover:brightness-100 group-hover:drop-shadow-[0_0_8px_rgba(215,38,56,0.4)]",
+                      "transition-all duration-300"
+                    )}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `<span class="text-lg font-bold text-muted-foreground group-hover:text-primary transition-colors">${brand.name.charAt(0)}</span>`;
+                      }
+                    }}
+                  />
+                ) : (
+                  <span className="text-lg font-bold text-muted-foreground group-hover:text-primary transition-colors">
+                    {brand.name.charAt(0)}
+                  </span>
+                )}
               </div>
               
               {/* Brand Name - Only on Hover */}

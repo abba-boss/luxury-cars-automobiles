@@ -79,27 +79,28 @@ const CarDetailsPage = () => {
 
   const fetchVehicle = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/vehicles/${id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/vehicles/${id}`);
       const result = await response.json();
       
       if (result.success && result.data) {
         const vehicleData = result.data;
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
         setVehicle({
           id: vehicleData.id.toString(),
           make: vehicleData.make,
           model: vehicleData.model,
           year: vehicleData.year,
-          price: parseFloat(vehicleData.price),
+          price: typeof vehicleData.price === 'string' ? parseFloat(vehicleData.price) : vehicleData.price,
           mileage: vehicleData.mileage || 0,
           condition: vehicleData.condition,
           transmission: vehicleData.transmission,
           fuelType: vehicleData.fuel_type,
           color: vehicleData.color || '',
           images: vehicleData.images ? vehicleData.images.map(img => 
-            img.startsWith('http') ? img : `http://localhost:3001/uploads/${img}`
-          ) : [`http://localhost:3001/uploads/placeholder-car.svg`],
+            img.startsWith('http') ? img : `${baseUrl}/uploads/${img}`
+          ) : [`${baseUrl}/uploads/placeholder-car.svg`],
           videos: vehicleData.videos ? vehicleData.videos.map(video =>
-            video.startsWith('http') ? video : `http://localhost:3001/uploads/${video}`
+            video.startsWith('http') ? video : `${baseUrl}/uploads/${video}`
           ) : [],
           description: vehicleData.description || '',
           features: vehicleData.features || [],

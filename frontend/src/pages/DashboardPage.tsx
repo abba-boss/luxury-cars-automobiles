@@ -1,206 +1,170 @@
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatsCards } from "@/components/dashboard/StatsCards";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { featuredCars, formatPrice } from "@/data/cars";
+import { KPICard } from "@/components/analytics/KPICard";
+import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
+import { favoriteService, bookingService } from "@/services";
 import {
   Car,
-  Eye,
+  Heart,
   MessageSquare,
+  ShoppingBag,
   TrendingUp,
   Plus,
-  MoreVertical,
-  CheckCircle,
+  Eye,
   Clock,
+  CheckCircle,
   AlertCircle,
+  Calendar,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const DashboardPage = () => {
-  const recentEnquiries = [
+  const { user } = useAuth();
+  const { getItemCount } = useCart();
+  const [stats, setStats] = useState({
+    savedVehicles: 0,
+    activeBookings: 0,
+    messages: 3,
+    totalViews: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      // Fetch favorites count
+      const favoritesResponse = await favoriteService.getFavorites();
+      if (favoritesResponse.success) {
+        setStats(prev => ({ ...prev, savedVehicles: favoritesResponse.data.length }));
+      }
+
+      // Fetch bookings count
+      const bookingsResponse = await bookingService.getUserBookings();
+      if (bookingsResponse.success) {
+        const activeCount = bookingsResponse.data.filter(
+          (booking: any) => booking.status === 'pending' || booking.status === 'confirmed'
+        ).length;
+        setStats(prev => ({ ...prev, activeBookings: activeCount }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const recentActivity = [
     {
       id: 1,
-      carName: "2022 Toyota Camry",
-      customerName: "Adebayo Johnson",
-      message: "Is this car still available?",
+      type: "saved",
+      title: "Saved 2023 BMW X5",
       time: "2 hours ago",
-      status: "pending",
+      status: "new"
     },
     {
       id: 2,
-      carName: "2021 Lexus RX 350",
-      customerName: "Chioma Okonkwo",
-      message: "Can I schedule a test drive?",
-      time: "5 hours ago",
-      status: "replied",
+      type: "inquiry",
+      title: "Inquiry about Toyota Camry",
+      time: "1 day ago",
+      status: "replied"
     },
     {
       id: 3,
-      carName: "2020 Mercedes E-Class",
-      customerName: "Emeka Nwachukwu",
-      message: "What's the lowest price?",
-      time: "1 day ago",
-      status: "pending",
-    },
+      type: "order",
+      title: "Order #12345 confirmed",
+      time: "3 days ago",
+      status: "confirmed"
+    }
   ];
 
   return (
-    <DashboardLayout title="Dashboard" subtitle="Welcome back, Admin">
-      {/* Stats */}
-      <section className="mb-8">
-        <StatsCards />
-      </section>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Inventory */}
-        <div className="lg:col-span-2">
-          <Card variant="premium" className="p-6">
-            <CardHeader className="p-0 mb-6">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Car className="h-5 w-5 text-primary" />
-                  Recent Inventory
-                </CardTitle>
-                <Link to="/add-car">
-                  <Button size="sm" className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Add Car
-                  </Button>
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="space-y-4">
-                {featuredCars.slice(0, 4).map((car) => (
-                  <div
-                    key={car.id}
-                    className="flex items-center gap-4 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                  >
-                    <img
-                      src={car.images[0]}
-                      alt={`${car.make} ${car.model}`}
-                      className="w-16 h-12 rounded-lg object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-foreground truncate">
-                        {car.year} {car.make} {car.model}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {formatPrice(car.price)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {car.isVerified ? (
-                        <Badge variant="verified" className="gap-1">
-                          <CheckCircle className="h-3 w-3" />
-                          Active
-                        </Badge>
-                      ) : (
-                        <Badge variant="muted" className="gap-1">
-                          <Clock className="h-3 w-3" />
-                          Pending
-                        </Badge>
-                      )}
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Enquiries */}
-        <div>
-          <Card variant="premium" className="p-6">
-            <CardHeader className="p-0 mb-6">
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-primary" />
-                Recent Enquiries
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="space-y-4">
-                {recentEnquiries.map((enquiry) => (
-                  <div
-                    key={enquiry.id}
-                    className="p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-foreground text-sm">
-                        {enquiry.customerName}
-                      </h4>
-                      {enquiry.status === "pending" ? (
-                        <Badge variant="hot" className="text-xs">New</Badge>
-                      ) : (
-                        <Badge variant="muted" className="text-xs">Replied</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-1">
-                      {enquiry.carName}
-                    </p>
-                    <p className="text-sm text-foreground/80 truncate">
-                      "{enquiry.message}"
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {enquiry.time}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <Button variant="ghost" className="w-full mt-4">
-                View All Enquiries
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+    <DashboardLayout title="Dashboard" subtitle={`Welcome back, ${user?.full_name || 'Customer'}`}>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <KPICard
+          title="Saved Vehicles"
+          value={stats.savedVehicles}
+          icon={<Heart className="h-4 w-4" />}
+        />
+        <KPICard
+          title="Active Bookings"
+          value={stats.activeBookings}
+          icon={<Calendar className="h-4 w-4" />}
+        />
+        <KPICard
+          title="Total Views"
+          value={stats.totalViews}
+          icon={<Eye className="h-4 w-4" />}
+        />
+        <KPICard
+          title="Cart Items"
+          value={getItemCount()}
+          icon={<ShoppingBag className="h-4 w-4" />}
+        />
       </div>
 
-      {/* Quick Actions */}
-      <section className="mt-8">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link to="/add-car">
-            <Card variant="premium" className="p-4 hover:border-primary/50 transition-all cursor-pointer">
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <Plus className="h-6 w-6 text-primary" />
+      {/* Dashboard Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentActivity.map((activity) => (
+                <div key={activity.id} className="flex items-center gap-4">
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{activity.title}</p>
+                    <p className="text-xs text-muted-foreground">{activity.time}</p>
+                  </div>
+                  <Badge variant={activity.status === 'new' ? 'default' : 'secondary'}>
+                    {activity.status}
+                  </Badge>
                 </div>
-                <span className="font-medium text-foreground text-sm">Add New Car</span>
-              </div>
-            </Card>
-          </Link>
-          <Link to="/cars">
-            <Card variant="premium" className="p-4 hover:border-primary/50 transition-all cursor-pointer">
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                  <Car className="h-6 w-6 text-blue-400" />
-                </div>
-                <span className="font-medium text-foreground text-sm">Manage Inventory</span>
-              </div>
-            </Card>
-          </Link>
-          <Card variant="premium" className="p-4 hover:border-primary/50 transition-all cursor-pointer">
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                <Eye className="h-6 w-6 text-emerald-400" />
-              </div>
-              <span className="font-medium text-foreground text-sm">View Analytics</span>
+              ))}
             </div>
-          </Card>
-          <Card variant="premium" className="p-4 hover:border-primary/50 transition-all cursor-pointer">
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-amber-400" />
-              </div>
-              <span className="font-medium text-foreground text-sm">Promotions</span>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link to="/cars">
+                  <Car className="w-4 h-4 mr-2" />
+                  Browse Vehicles
+                </Link>
+              </Button>
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link to="/saved-cars">
+                  <Heart className="w-4 h-4 mr-2" />
+                  View Saved Cars
+                </Link>
+              </Button>
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link to="/bookings">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  My Bookings
+                </Link>
+              </Button>
             </div>
-          </Card>
-        </div>
-      </section>
+          </CardContent>
+        </Card>
+      </div>
     </DashboardLayout>
   );
 };

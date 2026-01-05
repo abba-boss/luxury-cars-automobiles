@@ -1,78 +1,68 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Car,
-  Users,
-  DollarSign,
-  TrendingUp,
-  Plus,
-  Eye,
-  MessageSquare,
-  ShoppingCart,
-  Package,
-  Activity,
+import AdminLayout from '../../components/layout/AdminLayout';
+import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/badge';
+import { KPICard } from '../../components/analytics/KPICard';
+import { SalesChart } from '../../components/analytics/SalesChart';
+import { BrandChart } from '../../components/analytics/BrandChart';
+import { StatusChart } from '../../components/analytics/StatusChart';
+import { UserGrowthChart } from '../../components/analytics/UserGrowthChart';
+import { analyticsService } from '../../services';
+import { 
+  Car, 
+  Users, 
+  DollarSign, 
   Calendar,
-  ArrowRight,
+  Activity,
+  Plus
 } from 'lucide-react';
-import AdminLayout from '@/components/layout/AdminLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { adminService } from '@/services/adminService';
 
-const AdminDashboard = () => {
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalVehicles: 0,
-    totalSales: 0,
-    totalInquiries: 0,
-    revenue: 0
-  });
-  const [recentSales, setRecentSales] = useState([]);
-  const [recentInquiries, setRecentInquiries] = useState([]);
+const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
+  const [overview, setOverview] = useState<any>(null);
+  const [salesData, setSalesData] = useState<any>(null);
+  const [inventoryData, setInventoryData] = useState<any>(null);
+  const [userData, setUserData] = useState<any>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchAnalytics = async () => {
     try {
-      const response = await adminService.getDashboardStats();
-      if (response.success && response.data) {
-        setStats(response.data.stats);
-        setRecentSales(response.data.recentSales || []);
-        setRecentInquiries(response.data.recentInquiries || []);
-      }
+      setLoading(true);
+      const [overviewRes, salesRes, inventoryRes, userRes] = await Promise.all([
+        analyticsService.getOverview(),
+        analyticsService.getSalesAnalytics(),
+        analyticsService.getInventoryAnalytics(),
+        analyticsService.getUserAnalytics()
+      ]);
+      
+      setOverview(overviewRes.data);
+      setSalesData(salesRes.data);
+      setInventoryData(inventoryRes.data);
+      setUserData(userRes.data);
+      setIsDemo(overviewRes.isDemo || salesRes.isDemo || inventoryRes.isDemo || userRes.isDemo);
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+      console.error('Failed to fetch analytics:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      pending: "outline",
-      confirmed: "secondary",
-      completed: "default",
-      cancelled: "destructive",
-      new: "outline",
-      in_progress: "secondary",
-      resolved: "default",
-      closed: "destructive"
-    };
-    return <Badge variant={variants[status] || "outline"}>{status}</Badge>;
-  };
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <LoadingSpinner />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -80,212 +70,168 @@ const AdminDashboard = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back! Here's what's happening.</p>
+            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+            <p className="text-muted-foreground">
+              Welcome back! Here's what's happening with your dealership.
+            </p>
           </div>
-          <div className="flex gap-2">
-            <Button asChild>
-              <Link to="/admin/add-car">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Vehicle
-              </Link>
-            </Button>
+          <Button onClick={fetchAnalytics} variant="outline">
+            <Activity className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+
+        {/* KPI Cards */}
+        {overview && (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <KPICard
+              title="Total Revenue"
+              value={overview.totalRevenue}
+              icon={<DollarSign className="h-4 w-4" />}
+              format="currency"
+              isDemo={isDemo}
+            />
+            <KPICard
+              title="Total Vehicles"
+              value={overview.totalVehicles}
+              icon={<Car className="h-4 w-4" />}
+              isDemo={isDemo}
+            />
+            <KPICard
+              title="Total Users"
+              value={overview.totalUsers}
+              icon={<Users className="h-4 w-4" />}
+              isDemo={isDemo}
+            />
+            <KPICard
+              title="Total Bookings"
+              value={overview.totalBookings}
+              icon={<Calendar className="h-4 w-4" />}
+              isDemo={isDemo}
+            />
           </div>
+        )}
+
+        {/* Charts Grid */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Sales Revenue Chart */}
+          {salesData && (
+            <SalesChart 
+              data={salesData.salesByMonth || []} 
+              loading={!salesData}
+            />
+          )}
+
+          {/* Vehicle Status Distribution */}
+          {inventoryData && (
+            <StatusChart 
+              data={inventoryData.statusDistribution || []} 
+              loading={!inventoryData}
+            />
+          )}
+
+          {/* Top Selling Brands */}
+          {salesData && (
+            <BrandChart
+              data={salesData.topBrands || []}
+              loading={!salesData}
+              title="Top Selling Brands"
+              dataKey="sales_count"
+              color="#3b82f6"
+            />
+          )}
+
+          {/* User Growth */}
+          {userData && (
+            <UserGrowthChart 
+              data={userData.userGrowth || []} 
+              loading={!userData}
+            />
+          )}
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Vehicles</p>
-                  <p className="text-2xl font-bold">{loading ? '...' : stats.totalVehicles}</p>
-                </div>
-                <Car className="w-8 h-8 text-blue-500" />
-              </div>
-              <div className="mt-2">
-                <Link to="/admin/inventory" className="text-sm text-blue-600 hover:underline">
-                  View inventory →
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                  <p className="text-2xl font-bold">{loading ? '...' : stats.totalUsers}</p>
-                </div>
-                <Users className="w-8 h-8 text-green-500" />
-              </div>
-              <div className="mt-2">
-                <Link to="/admin/users" className="text-sm text-green-600 hover:underline">
-                  Manage users →
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Sales</p>
-                  <p className="text-2xl font-bold">{loading ? '...' : stats.totalSales}</p>
-                </div>
-                <ShoppingCart className="w-8 h-8 text-purple-500" />
-              </div>
-              <div className="mt-2">
-                <span className="text-sm text-muted-foreground">
-                  Revenue: {loading ? '...' : formatCurrency(stats.revenue)}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Inquiries</p>
-                  <p className="text-2xl font-bold">{loading ? '...' : stats.totalInquiries}</p>
-                </div>
-                <MessageSquare className="w-8 h-8 text-orange-500" />
-              </div>
-              <div className="mt-2">
-                <Link to="/admin/messages" className="text-sm text-orange-600 hover:underline">
-                  View messages →
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Sales */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Recent Sales</CardTitle>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/admin/bookings">
-                  <Eye className="w-4 h-4 mr-2" />
-                  View All
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-4">Loading...</div>
-              ) : recentSales.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                  No recent sales
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {recentSales.slice(0, 5).map((sale: any, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="font-medium">
-                          {sale.vehicle?.make} {sale.vehicle?.model}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {sale.customer?.name}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{formatCurrency(parseFloat(sale.sale_price))}</p>
-                        {getStatusBadge(sale.status)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Recent Inquiries */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Recent Inquiries</CardTitle>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/admin/messages">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  View All
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-4">Loading...</div>
-              ) : recentInquiries.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                  No recent inquiries
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {recentInquiries.slice(0, 5).map((inquiry: any, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{inquiry.subject}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {inquiry.name} • {inquiry.email}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        {getStatusBadge(inquiry.status)}
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(inquiry.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {/* Inventory by Brand */}
+        {inventoryData && (
+          <div className="grid gap-6">
+            <BrandChart
+              data={inventoryData.vehiclesByBrand || []}
+              loading={!inventoryData}
+              title="Inventory by Brand"
+              dataKey="count"
+              color="hsl(var(--primary))"
+            />
+          </div>
+        )}
 
         {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button variant="outline" className="h-20 flex-col" asChild>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+              <Plus className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button asChild className="w-full justify-start" variant="ghost">
                 <Link to="/admin/add-car">
-                  <Plus className="w-6 h-6 mb-2" />
-                  Add Vehicle
+                  <Car className="w-4 h-4 mr-2" />
+                  Add New Vehicle
                 </Link>
               </Button>
-              
-              <Button variant="outline" className="h-20 flex-col" asChild>
-                <Link to="/admin/inventory">
-                  <Package className="w-6 h-6 mb-2" />
-                  Manage Inventory
+              <Button asChild className="w-full justify-start" variant="ghost">
+                <Link to="/admin/bookings">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Manage Bookings
                 </Link>
               </Button>
-              
-              <Button variant="outline" className="h-20 flex-col" asChild>
+              <Button asChild className="w-full justify-start" variant="ghost">
                 <Link to="/admin/users">
-                  <Users className="w-6 h-6 mb-2" />
-                  User Management
+                  <Users className="w-4 h-4 mr-2" />
+                  View Users
                 </Link>
               </Button>
-              
-              <Button variant="outline" className="h-20 flex-col" asChild>
-                <Link to="/admin/messages">
-                  <MessageSquare className="w-6 h-6 mb-2" />
-                  View Messages
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {userData?.recentActivity && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">New Bookings (30d)</span>
+                    <Badge variant="secondary">{userData.recentActivity.bookings}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">New Reviews (30d)</span>
+                    <Badge variant="secondary">{userData.recentActivity.reviews}</Badge>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">System Status</CardTitle>
+              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">API Status</span>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">Online</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Database</span>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </AdminLayout>
   );

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import {
   Search,
   Mail,
@@ -21,7 +22,6 @@ import { useAdminInquiries } from '@/hooks/useAdminData';
 import { localDb } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
 import type { Inquiry } from '@/hooks/useAdminData';
 
 const AdminMessages = () => {

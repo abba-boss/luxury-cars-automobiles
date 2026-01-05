@@ -9,7 +9,8 @@ import { formatPrice } from "@/data/cars";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { items, removeFromCart, clearCart, getTotalPrice, getItemCount } = useCart();
+  const { items, removeFromCart, clearCart, getTotalPrice, getItemCount, getUserInfo } = useCart();
+  const userInfo = getUserInfo();
 
   if (items.length === 0) {
     return (
@@ -42,6 +43,11 @@ const CartPage = () => {
             <p className="text-muted-foreground">
               {getItemCount()} {getItemCount() === 1 ? 'vehicle' : 'vehicles'} in your cart
             </p>
+            {userInfo && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Shopping as: {userInfo.name} ({userInfo.email})
+              </p>
+            )}
           </div>
           <Button variant="outline" onClick={clearCart}>
             Clear Cart
@@ -75,7 +81,7 @@ const CartPage = () => {
                             {item.year} {item.make} {item.model}
                           </h3>
                           <p className="text-sm text-muted-foreground">
-                            Added on {item.addedAt.toLocaleDateString()}
+                            Added on {new Date(item.addedAt).toLocaleDateString()}
                           </p>
                         </div>
                         <Button

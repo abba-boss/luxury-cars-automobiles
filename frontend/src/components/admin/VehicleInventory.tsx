@@ -270,7 +270,7 @@ const VehicleInventory = () => {
                         <div className="flex items-center gap-3">
                           {vehicle.images?.[0] && (
                             <img
-                              src={typeof vehicle.images[0] === 'string' && vehicle.images[0].startsWith('http') ? vehicle.images[0] : `http://localhost:3001${vehicle.images[0]}`}
+                              src={typeof vehicle.images[0] === 'string' && vehicle.images[0].startsWith('http') ? vehicle.images[0] : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${vehicle.images[0]}`}
                               alt=""
                               className="w-12 h-12 rounded object-cover"
                               onError={(e) => {

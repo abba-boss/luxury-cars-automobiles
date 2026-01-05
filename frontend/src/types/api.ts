@@ -27,7 +27,7 @@ export interface Vehicle {
   make: string;
   model: string;
   year: number;
-  price: string;
+  price: number; // Changed from string to number for consistency
   mileage?: number;
   fuel_type?: string;
   transmission?: string;
@@ -42,6 +42,22 @@ export interface Vehicle {
   is_featured?: boolean;
   is_hot_deal?: boolean;
   status?: string;
+  brand_id?: number;
+  brand?: Brand;
+  acceleration?: string;
+  top_speed?: string;
+  power?: string;
+  torque?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Brand {
+  id: number;
+  name: string;
+  image?: string;
+  vehicle_count?: number;
+  vehicles?: Vehicle[];
   created_at: string;
   updated_at: string;
 }
@@ -65,6 +81,11 @@ export interface CreateVehicleData {
   is_hot_deal: boolean;
   is_verified: boolean;
   status: string;
+  brand_id?: number;
+  acceleration?: string;
+  top_speed?: string;
+  power?: string;
+  torque?: string;
 }
 
 export interface Customer {

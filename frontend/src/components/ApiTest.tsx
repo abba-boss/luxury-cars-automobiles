@@ -6,7 +6,7 @@ const ApiTest = () => {
   useEffect(() => {
     const test = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/vehicles');
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/vehicles`);
         const data = await response.json();
         setResult(`Success: ${data.data?.length || 0} vehicles found`);
       } catch (error) {

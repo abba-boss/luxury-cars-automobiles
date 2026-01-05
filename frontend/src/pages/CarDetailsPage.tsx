@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Car360Viewer from "@/components/car/Car360Viewer";
 import { CarVideoSection } from "@/components/car/CarVideoSection";
 import { useCart } from "@/hooks/useCart";
-import { vehicleService } from "@/services";
+import { vehicleService, favoriteService } from "@/services";
 import { useState, useEffect } from "react";
 import { LoadingSpinner } from "@/components/ui/loading";
 import type { Vehicle } from "@/types/api";
@@ -31,6 +31,11 @@ import { toast } from "sonner";
 import { SimpleAnimatedPerformanceCircle } from "@/components/car/SimpleAnimatedPerformanceCircle";
 import { AnimatedSpecItem } from "@/components/car/AnimatedSpecItem";
 import { AnimatedMileageMeter } from "@/components/car/AnimatedMileageMeter";
+import { FavoriteButton } from "@/components/ui/FavoriteButton";
+import { ReviewForm } from "@/components/reviews/ReviewForm";
+import { ReviewList } from "@/components/reviews/ReviewList";
+import { BookingForm } from "@/components/booking/BookingForm";
+import { useAuth } from "@/hooks/useAuth";
 
 // Tesla-style Spec Item
 function SpecItem({ label, value }: { label: string; value: string }) {
@@ -55,8 +60,8 @@ const vehicleToCartItem = (vehicle: Vehicle) => ({
   make: vehicle.make,
   model: vehicle.model,
   year: vehicle.year,
-  price: parseFloat(vehicle.price),
-  image: vehicle.images?.[0] || 'http://localhost:3001/uploads/placeholder-car.svg'
+  price: typeof vehicle.price === 'string' ? parseFloat(vehicle.price) : vehicle.price,
+  image: vehicle.images?.[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`
 });
 
 const CarDetailsPage = () => {
@@ -65,7 +70,32 @@ const CarDetailsPage = () => {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reviewRefresh, setReviewRefresh] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
   const { addToCart, isInCart } = useCart();
+  const { user } = useAuth();
+
+  // Check if vehicle is in favorites
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (!id || !user) return;
+      
+      try {
+        const response = await favoriteService.checkFavorite(parseInt(id));
+        if (response.success) {
+          setIsFavorite(response.data.isFavorite);
+        }
+      } catch (error) {
+        console.error('Failed to check favorite status:', error);
+      }
+    };
+
+    checkFavoriteStatus();
+  }, [id, user]);
+
+  const refreshReviews = () => {
+    setReviewRefresh(prev => prev + 1);
+  };
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -80,12 +110,12 @@ const CarDetailsPage = () => {
             ...response.data,
             images: response.data.images && response.data.images.length > 0 
               ? response.data.images.map(img => 
-                  img.startsWith('http') ? img : `http://localhost:3001/uploads/${img}`
+                  img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${img}`
                 )
-              : [`http://localhost:3001/uploads/placeholder-car.svg`],
+              : [`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`],
             videos: response.data.videos && response.data.videos.length > 0
               ? response.data.videos.map(video =>
-                  video.startsWith('http') ? video : `http://localhost:3001/uploads/${video}`
+                  video.startsWith('http') ? video : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${video}`
                 )
               : []
           };
@@ -146,13 +176,15 @@ const CarDetailsPage = () => {
     { icon: Palette, label: "Exterior Color", value: vehicle.color || 'Unknown' },
     { icon: Timer, label: "Year", value: vehicle.year.toString() },
     { icon: Zap, label: "Condition", value: vehicle.condition || 'Used' },
+    ...(vehicle.body_type ? [{ icon: Scale, label: "Body Type", value: vehicle.body_type }] : []),
+    ...(vehicle.brand?.name ? [{ icon: Shield, label: "Brand", value: vehicle.brand.name }] : []),
   ];
 
   const performanceData = [
-    { value: 85, label: "0-60 mph", unit: "5.8s" },
-    { value: 75, label: "Top Speed", unit: "155 mph" },
-    { value: 90, label: "Power", unit: "335 hp" },
-    { value: 80, label: "Torque", unit: "368 lb-ft" },
+    { value: 85, label: "0-60 mph", unit: vehicle.acceleration || "5.8s" },
+    { value: 75, label: "Top Speed", unit: vehicle.top_speed || "155 mph" },
+    { value: 90, label: "Power", unit: vehicle.power || "335 hp" },
+    { value: 80, label: "Torque", unit: vehicle.torque || "368 lb-ft" },
   ];
 
   return (
@@ -177,19 +209,19 @@ const CarDetailsPage = () => {
               <span className="inline-block px-4 py-1.5 border border-primary/60 text-primary text-xs font-semibold tracking-[0.2em] mb-4">
                 {(vehicle.condition || 'USED').toUpperCase()}
               </span>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
                 {vehicle.year} {vehicle.make} {vehicle.model}
               </h1>
             </div>
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="icon"
-                className="w-12 h-12 rounded-full border-border hover:border-primary hover:bg-primary/10"
-                onClick={() => setIsSaved(!isSaved)}
-              >
-                <Heart className={cn("h-5 w-5", isSaved && "fill-primary text-primary")} />
-              </Button>
+              {user && (
+                <FavoriteButton
+                  vehicleId={vehicle.id}
+                  isFavorite={isFavorite}
+                  onToggle={setIsFavorite}
+                  className="w-12 h-12 rounded-full border-border hover:border-primary hover:bg-primary/10"
+                />
+              )}
               <Button
                 variant="outline"
                 size="icon"
@@ -438,9 +470,44 @@ const CarDetailsPage = () => {
       {/* Video Section */}
       <CarVideoSection 
         carName={`${vehicle.make} ${vehicle.model}`} 
-        posterImage={vehicle.images?.[0] || 'http://localhost:3001/uploads/placeholder-car.svg'} 
+        posterImage={vehicle.images?.[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`} 
         videos={vehicle.videos || []}
       />
+
+      {/* Reviews and Booking Section */}
+      <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Reviews Section */}
+          <div className="space-y-8">
+            <h2 className="text-2xl font-bold">Reviews & Ratings</h2>
+            <ReviewList vehicleId={vehicle.id} refreshTrigger={reviewRefresh} />
+            {user && (
+              <ReviewForm 
+                vehicleId={vehicle.id} 
+                onReviewSubmitted={refreshReviews} 
+              />
+            )}
+          </div>
+
+          {/* Booking Section */}
+          <div className="space-y-8">
+            <h2 className="text-2xl font-bold">Book a Visit</h2>
+            {user ? (
+              <BookingForm 
+                vehicleId={vehicle.id} 
+                vehicleName={`${vehicle.make} ${vehicle.model}`} 
+              />
+            ) : (
+              <div className="text-center p-8 border border-border rounded-lg">
+                <p className="text-muted-foreground mb-4">Please log in to book a visit</p>
+                <Button asChild>
+                  <Link to="/auth">Login</Link>
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </PublicLayout>
   );
 };
