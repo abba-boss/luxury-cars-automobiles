@@ -9,6 +9,10 @@ const Booking = require('./Booking');
 const Favorite = require('./Favorite');
 const Notification = require('./Notification');
 const Brand = require('./Brand');
+const Conversation = require('./Conversation');
+const ConversationParticipant = require('./ConversationParticipant');
+const Message = require('./Message');
+const MessageReadStatus = require('./MessageReadStatus');
 
 // Initialize all models
 const models = {
@@ -21,7 +25,11 @@ const models = {
   Booking,
   Favorite,
   Notification,
-  Brand
+  Brand,
+  Conversation,
+  ConversationParticipant,
+  Message,
+  MessageReadStatus
 };
 
 // Set up associations
@@ -68,6 +76,32 @@ models.Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 // Brand associations
 models.Brand.hasMany(models.Vehicle, { foreignKey: 'brand_id', as: 'vehicles' });
 models.Vehicle.belongsTo(models.Brand, { foreignKey: 'brand_id', as: 'brand' });
+
+// Chat associations
+User.hasMany(models.Conversation, { foreignKey: 'created_by', as: 'createdConversations' });
+models.Conversation.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+
+models.Conversation.hasMany(models.ConversationParticipant, { foreignKey: 'conversation_id', as: 'participants' });
+models.ConversationParticipant.belongsTo(models.Conversation, { foreignKey: 'conversation_id', as: 'conversation' });
+
+User.hasMany(models.ConversationParticipant, { foreignKey: 'user_id', as: 'participatedConversations' });
+models.ConversationParticipant.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+models.Conversation.hasMany(models.Message, { foreignKey: 'conversation_id', as: 'messages' });
+models.Message.belongsTo(models.Conversation, { foreignKey: 'conversation_id', as: 'conversation' });
+
+User.hasMany(models.Message, { foreignKey: 'sender_id', as: 'sentMessages' });
+models.Message.belongsTo(User, { foreignKey: 'sender_id', as: 'sender' });
+
+models.Message.hasMany(models.MessageReadStatus, { foreignKey: 'message_id', as: 'readStatuses' });
+models.MessageReadStatus.belongsTo(models.Message, { foreignKey: 'message_id', as: 'message' });
+
+User.hasMany(models.MessageReadStatus, { foreignKey: 'user_id', as: 'messageReadStatuses' });
+models.MessageReadStatus.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+// Parent message association for replies
+models.Message.belongsTo(models.Message, { foreignKey: 'parent_message_id', as: 'parentMessage' });
+models.Message.hasMany(models.Message, { foreignKey: 'parent_message_id', as: 'replies' });
 
 module.exports = {
   sequelize,

@@ -9,12 +9,15 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 const { sequelize } = require('./models');
 const authRoutes = require('./routes/auth');
 const errorHandler = require('./middlewares/errorHandler');
 const { sanitizeInput } = require('./middlewares/sanitize');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // Rate limiting - DISABLED FOR TESTING
@@ -133,6 +136,10 @@ app.use('/api/admin/analytics', analyticsRoutes);
 const userAnalyticsRoutes = require('./routes/userAnalytics');
 app.use('/api/user/analytics', userAnalyticsRoutes);
 
+// Chat routes
+const chatRoutes = require('./routes/chat');
+app.use('/api/chat', chatRoutes);
+
 // Serve static files with CORS headers
 app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -144,6 +151,208 @@ app.use('/uploads', (req, res, next) => {
 
 // Serve frontend public files
 app.use(express.static(path.join(__dirname, '../frontend/public')));
+
+// Initialize Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: process.env.NODE_ENV === 'production'
+      ? ['https://your-frontend-domain.com']
+      : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8080', 'http://localhost:8081'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
+});
+
+// Socket.IO connection handling
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth.token || socket.handshake.query.token;
+
+    if (!token) {
+      return next(new Error('Authentication error: No token provided'));
+    }
+
+    // Verify JWT token using the same logic as rbac middleware
+    const jwt = require('jsonwebtoken');
+    const { User } = require('./models');
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Validate token payload structure
+    if (!decoded.userId || !decoded.email || !decoded.role) {
+      return next(new Error('Invalid token payload'));
+    }
+
+    // Fetch fresh user data from database (never trust token alone)
+    const user = await User.findByPk(decoded.userId, {
+      attributes: { exclude: ['password'] }
+    });
+
+    if (!user) {
+      return next(new Error('Authentication error: User not found'));
+    }
+
+    // Verify user is active
+    if (user.status !== 'active') {
+      return next(new Error('Account is not active'));
+    }
+
+    // Verify role hasn't changed (prevent role spoofing)
+    if (user.role !== decoded.role) {
+      return next(new Error('Role mismatch'));
+    }
+
+    socket.user = user;
+    next();
+  } catch (error) {
+    next(new Error('Authentication error'));
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log(`User ${socket.user.full_name} connected with socket ID: ${socket.id}`);
+
+  // Join user to their own room for direct messages
+  socket.join(`user_${socket.user.id}`);
+
+  // Join user to their role room for system notifications
+  socket.join(`role_${socket.user.role}`);
+
+  // Handle joining conversation rooms
+  socket.on('join_conversation', (conversationId) => {
+    socket.join(`conversation_${conversationId}`);
+    console.log(`User ${socket.user.id} joined conversation ${conversationId}`);
+  });
+
+  // Handle leaving conversation rooms
+  socket.on('leave_conversation', (conversationId) => {
+    socket.leave(`conversation_${conversationId}`);
+    console.log(`User ${socket.user.id} left conversation ${conversationId}`);
+  });
+
+  // Handle sending messages
+  socket.on('send_message', async (data) => {
+    try {
+      const { conversationId, content, messageType = 'text', fileUrl, fileName } = data;
+
+      // Verify user is participant in conversation
+      const { ConversationParticipant, Message, User } = require('./models');
+      const participant = await ConversationParticipant.findOne({
+        where: {
+          conversation_id: conversationId,
+          user_id: socket.user.id
+        }
+      });
+
+      if (!participant) {
+        socket.emit('error', { message: 'Not authorized to send message in this conversation' });
+        return;
+      }
+
+      // Create message in database
+      const message = await Message.create({
+        conversation_id: conversationId,
+        sender_id: socket.user.id,
+        content,
+        message_type: messageType,
+        file_url: fileUrl,
+        file_name: fileName
+      });
+
+      // Get full message with sender info
+      const fullMessage = await Message.findByPk(message.id, {
+        include: [
+          {
+            model: User,
+            as: 'sender',
+            attributes: ['id', 'full_name', 'role']
+          }
+        ]
+      });
+
+      // Emit message to conversation room
+      io.to(`conversation_${conversationId}`).emit('new_message', fullMessage);
+
+      // Update message status to delivered for all participants except sender
+      const participants = await ConversationParticipant.findAll({
+        where: { conversation_id: conversationId }
+      });
+
+      for (const participant of participants) {
+        if (participant.user_id !== socket.user.id) {
+          io.to(`user_${participant.user_id}`).emit('message_delivered', {
+            messageId: message.id,
+            conversationId
+          });
+        }
+      }
+    } catch (error) {
+      socket.emit('error', { message: error.message });
+    }
+  });
+
+  // Handle typing indicators
+  socket.on('typing_start', (data) => {
+    const { conversationId } = data;
+    socket.to(`conversation_${conversationId}`).emit('user_typing', {
+      userId: socket.user.id,
+      userName: socket.user.full_name,
+      conversationId
+    });
+  });
+
+  socket.on('typing_stop', (data) => {
+    const { conversationId } = data;
+    socket.to(`conversation_${conversationId}`).emit('user_stopped_typing', {
+      userId: socket.user.id,
+      conversationId
+    });
+  });
+
+  // Handle read receipts
+  socket.on('message_read', async (data) => {
+    try {
+      const { conversationId, messageId } = data;
+
+      // Update message status to read in database
+      const { Message, MessageReadStatus } = require('./models');
+      await Message.update(
+        { status: 'read' },
+        { where: { id: messageId, conversation_id: conversationId } }
+      );
+
+      // Create or update read status
+      await MessageReadStatus.upsert({
+        message_id: messageId,
+        user_id: socket.user.id,
+        read_at: new Date()
+      });
+
+      // Emit read receipt to sender
+      const message = await Message.findByPk(messageId);
+      if (message && message.sender_id !== socket.user.id) {
+        io.to(`user_${message.sender_id}`).emit('message_read', {
+          messageId,
+          userId: socket.user.id,
+          conversationId
+        });
+      }
+    } catch (error) {
+      socket.emit('error', { message: error.message });
+    }
+  });
+
+  // Handle user online/offline status
+  socket.on('set_online_status', async (status) => {
+    // In a real implementation, you would update user status in database
+    console.log(`User ${socket.user.id} set status to ${status}`);
+  });
+
+  // Handle disconnection
+  socket.on('disconnect', () => {
+    console.log(`User ${socket.user.id} disconnected`);
+  });
+});
 
 // RBAC demonstration routes
 const rbacRoutes = require('./routes/rbac');
@@ -186,11 +395,12 @@ const startServer = async () => {
 
   try {
     // Start server
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV}`);
       console.log(`🗄️  Database: ${process.env.DB_NAME}`);
       console.log(`🔒 Security: Rate limiting enabled`);
+      console.log(`💬 Socket.IO: Enabled`);
     });
 
   } catch (error) {
@@ -203,12 +413,18 @@ const startServer = async () => {
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
   await sequelize.close();
+  server.close(() => {
+    console.log('HTTP server closed');
+  });
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
   await sequelize.close();
+  server.close(() => {
+    console.log('HTTP server closed');
+  });
   process.exit(0);
 });
 
