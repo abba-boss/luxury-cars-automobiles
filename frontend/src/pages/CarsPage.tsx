@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { CarCard } from "@/components/cars/CarCard";
 import { Button } from "@/components/ui/button";
@@ -28,10 +28,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const CarsPage = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const brandFromUrl = searchParams.get("brand");
   const brandIdFromUrl = searchParams.get("brandId");
   const categoryFromUrl = searchParams.get("category");
+  const navigate = useNavigate();
 
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,19 +49,56 @@ const CarsPage = () => {
     const fetchCars = async () => {
       try {
         console.log('Fetching vehicles from API...');
-        
+
+        // Get body_type from URL parameters
+        const bodyTypeFromUrl = searchParams.get('body_type');
+
         // Build query parameters
         const params: any = {};
         if (brandIdFromUrl) {
           params.brand_id = brandIdFromUrl;
         }
+        // Use brandFromUrl for make parameter if no brand_id is specified
+        if (brandFromUrl && !brandIdFromUrl) {
+          params.make = brandFromUrl;
+        }
+        // If no body_type from URL, check if we have a category and map it to body_type
+        if (bodyTypeFromUrl) {
+          params.body_type = bodyTypeFromUrl;
+        } else if (categoryFromUrl) {
+          // Map category to appropriate body_type for API filtering
+          switch (categoryFromUrl) {
+            case 'suv':
+              params.body_type = 'SUV';
+              break;
+            case 'sedan':
+              params.body_type = 'Sedan';
+              break;
+            case 'luxury':
+              params.body_type = 'Luxury';
+              break;
+            case 'sports':
+              params.body_type = 'Sports';
+              break;
+          }
+        }
         if (searchQuery) {
           params.search = searchQuery;
         }
-        
+        // Add other filters
+        if (selectedConditions.length > 0) {
+          params.condition = selectedConditions[0];  // Use first (and should be only) selected condition
+        }
+        if (selectedTransmission.length > 0) {
+          params.transmission = selectedTransmission[0];  // Use first selected transmission
+        }
+        if (selectedFuelType.length > 0) {
+          params.fuel_type = selectedFuelType[0];  // Use first selected fuel type
+        }
+
         const response = await vehicleService.getVehicles(params);
         console.log('API Response:', response);
-        
+
         if (response.success && response.data) {
           // Map API data to Car interface and filter out invalid entries
           const mappedCars = response.data
@@ -77,9 +115,9 @@ const CarsPage = () => {
               fuelType: vehicle.fuel_type || 'Petrol',
               bodyType: vehicle.body_type || '',
               color: vehicle.color || '',
-              images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img => 
+              images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img =>
                 img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${img}`
-              ) : [`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`],
+              ) : [],
               videos: vehicle.videos || [],
               description: vehicle.description || '',
               features: vehicle.features || [],
@@ -103,12 +141,15 @@ const CarsPage = () => {
       }
     };
     fetchCars();
-  }, [brandIdFromUrl, searchQuery]);
+  }, [brandIdFromUrl, brandFromUrl, categoryFromUrl, searchQuery, selectedConditions, selectedTransmission, selectedFuelType]);
 
   // Update filters when URL parameters change
   useEffect(() => {
     if (brandFromUrl) {
       setSelectedBrands([brandFromUrl]);
+    } else {
+      // If no brand in URL, ensure selectedBrands is empty
+      setSelectedBrands([]);
     }
     if (categoryFromUrl) {
       // Map category to appropriate filters
@@ -142,18 +183,15 @@ const CarsPage = () => {
     const matchesSearch =
       searchQuery === "" ||
       `${car.make} ${car.model}`.toLowerCase().includes(searchQuery.toLowerCase());
+    // Only apply brand filter if we're not already filtering by brand via API
+    // If brandFromUrl is set, the API already filtered by brand, so we don't filter again
     const matchesBrand =
-      selectedBrands.length === 0 || selectedBrands.includes(car.make);
-    const matchesCondition =
-      selectedConditions.length === 0 || selectedConditions.includes(car.condition);
-    const matchesTransmission =
-      selectedTransmission.length === 0 || selectedTransmission.includes(car.transmission);
-    const matchesFuelType =
-      selectedFuelType.length === 0 || selectedFuelType.includes(car.fuelType);
+      (!brandFromUrl && (selectedBrands.length === 0 || selectedBrands.includes(car.make))) ||
+      (brandFromUrl && car.make === brandFromUrl);
     const matchesPrice =
       car.price >= priceRange[0] && car.price <= priceRange[1];
 
-    return matchesSearch && matchesBrand && matchesCondition && matchesTransmission && matchesFuelType && matchesPrice;
+    return matchesSearch && matchesBrand && matchesPrice;
   });
 
   const sortedCars = [...filteredCars].sort((a, b) => {
@@ -170,32 +208,127 @@ const CarsPage = () => {
   });
 
   const toggleBrand = (brand: string) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
-    );
+    setSelectedBrands((prev) => {
+      let newSelectedBrands;
+      if (prev.includes(brand)) {
+        newSelectedBrands = prev.filter((b) => b !== brand);
+      } else {
+        newSelectedBrands = [...prev, brand];
+      }
+
+      // Update URL parameters
+      const newParams = new URLSearchParams(searchParams);
+      if (newSelectedBrands.length > 0) {
+        newParams.set('brand', newSelectedBrands[0]); // Use first brand for API call
+      } else {
+        newParams.delete('brand');
+      }
+
+      // Also clear brandId and category if we're using brand filtering
+      if (newSelectedBrands.length > 0) {
+        newParams.delete('brandId');
+        newParams.delete('category');
+      }
+
+      navigate(`?${newParams.toString()}`, { replace: true });
+
+      return newSelectedBrands;
+    });
   };
 
   const toggleCondition = (condition: string) => {
-    setSelectedConditions((prev) =>
-      prev.includes(condition)
-        ? prev.filter((c) => c !== condition)
-        : [...prev, condition]
-    );
+    setSelectedConditions((prev) => {
+      let newSelectedConditions;
+      if (prev.includes(condition)) {
+        newSelectedConditions = prev.filter((c) => c !== condition);
+      } else {
+        newSelectedConditions = [condition];  // Only allow single selection
+      }
+
+      // Update URL parameters
+      const newParams = new URLSearchParams(searchParams);
+      if (newSelectedConditions.length > 0) {
+        newParams.set('condition', newSelectedConditions[0]);
+      } else {
+        newParams.delete('condition');
+      }
+
+      // Clear category when condition is selected
+      if (newSelectedConditions.length > 0) {
+        newParams.delete('category');
+      }
+
+      navigate(`?${newParams.toString()}`, { replace: true });
+
+      return newSelectedConditions;
+    });
   };
 
   const toggleTransmission = (transmission: string) => {
-    setSelectedTransmission((prev) =>
-      prev.includes(transmission) ? prev.filter((t) => t !== transmission) : [...prev, transmission]
-    );
+    setSelectedTransmission((prev) => {
+      let newSelectedTransmission;
+      if (prev.includes(transmission)) {
+        newSelectedTransmission = prev.filter((t) => t !== transmission);
+      } else {
+        newSelectedTransmission = [transmission];  // Only allow single selection
+      }
+
+      // Update URL parameters
+      const newParams = new URLSearchParams(searchParams);
+      if (newSelectedTransmission.length > 0) {
+        newParams.set('transmission', newSelectedTransmission[0]);
+      } else {
+        newParams.delete('transmission');
+      }
+
+      // Clear category when transmission is selected
+      if (newSelectedTransmission.length > 0) {
+        newParams.delete('category');
+      }
+
+      navigate(`?${newParams.toString()}`, { replace: true });
+
+      return newSelectedTransmission;
+    });
   };
 
   const toggleFuelType = (fuelType: string) => {
-    setSelectedFuelType((prev) =>
-      prev.includes(fuelType) ? prev.filter((f) => f !== fuelType) : [...prev, fuelType]
-    );
+    setSelectedFuelType((prev) => {
+      let newSelectedFuelType;
+      if (prev.includes(fuelType)) {
+        newSelectedFuelType = prev.filter((f) => f !== fuelType);
+      } else {
+        newSelectedFuelType = [fuelType];  // Only allow single selection
+      }
+
+      // Update URL parameters
+      const newParams = new URLSearchParams(searchParams);
+      if (newSelectedFuelType.length > 0) {
+        newParams.set('fuel_type', newSelectedFuelType[0]);
+      } else {
+        newParams.delete('fuel_type');
+      }
+
+      // Clear category when fuel type is selected
+      if (newSelectedFuelType.length > 0) {
+        newParams.delete('category');
+      }
+
+      navigate(`?${newParams.toString()}`, { replace: true });
+
+      return newSelectedFuelType;
+    });
   };
 
   const clearFilters = () => {
+    // Clear URL parameters
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('brand');
+    newParams.delete('brandId');
+    newParams.delete('body_type');
+    newParams.delete('category');
+    navigate(`?${newParams.toString()}`, { replace: true });
+
     setSelectedBrands([]);
     setSelectedConditions([]);
     setSelectedTransmission([]);
@@ -205,10 +338,12 @@ const CarsPage = () => {
   };
 
   const activeFiltersCount =
-    selectedBrands.length +
+    (brandFromUrl ? 1 : selectedBrands.length) +
     selectedConditions.length +
     selectedTransmission.length +
     selectedFuelType.length +
+    (searchParams.get('body_type') ? 1 : 0) +
+    (categoryFromUrl ? 1 : 0) +
     (priceRange[0] > 0 || priceRange[1] < 100000000 ? 1 : 0);
 
   return (
@@ -415,7 +550,56 @@ const CarsPage = () => {
       {activeFiltersCount > 0 && (
         <div className="flex flex-wrap items-center gap-3 mb-8 p-4 bg-secondary/50 rounded-xl">
           <span className="text-sm text-muted-foreground font-medium">Active filters:</span>
-          {selectedBrands.map((brand) => (
+          {/* Show category from URL if present */}
+          {categoryFromUrl && (
+            <Badge
+              key={`category-${categoryFromUrl}`}
+              variant="secondary"
+              className="gap-1 cursor-pointer px-3 py-1 text-xs"
+              onClick={() => {
+                const newParams = new URLSearchParams(searchParams);
+                newParams.delete('category');
+                navigate(`?${newParams.toString()}`, { replace: true });
+              }}
+            >
+              {categoryFromUrl.charAt(0).toUpperCase() + categoryFromUrl.slice(1)}
+              <X className="h-3 w-3" />
+            </Badge>
+          )}
+          {/* Show brand from URL if present */}
+          {brandFromUrl && (
+            <Badge
+              key={`url-brand-${brandFromUrl}`}
+              variant="secondary"
+              className="gap-1 cursor-pointer px-3 py-1 text-xs"
+              onClick={() => {
+                const newParams = new URLSearchParams(searchParams);
+                newParams.delete('brand');
+                navigate(`?${newParams.toString()}`, { replace: true });
+              }}
+            >
+              {brandFromUrl}
+              <X className="h-3 w-3" />
+            </Badge>
+          )}
+          {/* Show body type from URL if present */}
+          {searchParams.get('body_type') && !categoryFromUrl && ( // Only show body_type if no category is active
+            <Badge
+              key={`body-type-${searchParams.get('body_type')}`}
+              variant="secondary"
+              className="gap-1 cursor-pointer px-3 py-1 text-xs"
+              onClick={() => {
+                const newParams = new URLSearchParams(searchParams);
+                newParams.delete('body_type');
+                navigate(`?${newParams.toString()}`, { replace: true });
+              }}
+            >
+              {searchParams.get('body_type')}
+              <X className="h-3 w-3" />
+            </Badge>
+          )}
+          {/* Show other selected brands if no brand from URL */}
+          {!brandFromUrl && selectedBrands.map((brand) => (
             <Badge
               key={brand}
               variant="secondary"

@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/button";
-import Car360Viewer from "@/components/car/Car360Viewer";
+import { Car360Viewer } from "@/components/car/Car360Viewer";
 import { CarVideoSection } from "@/components/car/CarVideoSection";
 import { useCart } from "@/hooks/useCart";
 import { vehicleService, favoriteService } from "@/services";
@@ -108,11 +108,11 @@ const CarDetailsPage = () => {
           // Map the API response to ensure proper image and video URLs
           const mappedVehicle = {
             ...response.data,
-            images: response.data.images && response.data.images.length > 0 
-              ? response.data.images.map(img => 
+            images: response.data.images && response.data.images.length > 0
+              ? response.data.images.map(img =>
                   img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${img}`
                 )
-              : [`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`],
+              : [],
             videos: response.data.videos && response.data.videos.length > 0
               ? response.data.videos.map(video =>
                   video.startsWith('http') ? video : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${video}`
@@ -452,8 +452,7 @@ const CarDetailsPage = () => {
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-foreground">luxury car</h4>
-                    {/* Replaced "Sarkin Mota" brand name with generic term */}
+                    <h4 className="font-semibold text-foreground">Sarkin Mota</h4>
                     <div className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-emerald-500" />
                       <span className="text-sm text-emerald-500">Verified Dealer</span>

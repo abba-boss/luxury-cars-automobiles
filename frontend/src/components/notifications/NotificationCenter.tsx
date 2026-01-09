@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, X, Car, MessageSquare, Calendar, Info, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,72 +7,84 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-
-interface Notification {
-  id: string;
-  type: 'car' | 'message' | 'appointment' | 'info';
-  title: string;
-  description: string;
-  time: string;
-  read: boolean;
-}
-
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    type: 'car',
-    title: 'New Arrival',
-    description: '2024 Mercedes-Benz S-Class is now available',
-    time: '5 min ago',
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'message',
-    title: 'New Message',
-    description: 'You have a new inquiry about BMW X5',
-    time: '1 hour ago',
-    read: false,
-  },
-  {
-    id: '3',
-    type: 'appointment',
-    title: 'Test Drive Confirmed',
-    description: 'Your test drive for Toyota Land Cruiser is confirmed',
-    time: '2 hours ago',
-    read: true,
-  },
-  {
-    id: '4',
-    type: 'info',
-    title: 'Price Drop Alert',
-    description: 'A car in your wishlist has a new price',
-    time: '1 day ago',
-    read: true,
-  },
-];
+import { notificationService } from '@/services';
+import { useToast } from '@/hooks/use-toast';
+import type { Notification as NotificationType } from '@/types/api';
 
 const NotificationCenter = () => {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await notificationService.getUserNotifications();
+      if (response.success && response.data) {
+        setNotifications(response.data);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load notifications",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  useEffect(() => {
+    if (isOpen) {
+      fetchNotifications();
+    }
+  }, [isOpen]);
+
+  const markAsRead = async (id: number) => {
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications(prev =>
+        prev.map(n => n.id === id ? { ...n, is_read: true } : n)
+      );
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to mark notification as read",
+        variant: "destructive"
+      });
+    }
   };
 
-  const clearAll = () => {
-    setNotifications([]);
+  const markAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to mark all notifications as read",
+        variant: "destructive"
+      });
+    }
   };
 
-  const getIcon = (type: Notification['type']) => {
+  const clearAll = async () => {
+    try {
+      await notificationService.deleteAllNotifications();
+      setNotifications([]);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to clear notifications",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const getIcon = (type: string) => {
     switch (type) {
       case 'car':
         return <Car className="w-4 h-4" />;
@@ -82,10 +94,12 @@ const NotificationCenter = () => {
         return <Calendar className="w-4 h-4" />;
       case 'info':
         return <Info className="w-4 h-4" />;
+      default:
+        return <Info className="w-4 h-4" />;
     }
   };
 
-  const getIconColor = (type: Notification['type']) => {
+  const getIconColor = (type: string) => {
     switch (type) {
       case 'car':
         return 'bg-primary/20 text-primary';
@@ -95,6 +109,8 @@ const NotificationCenter = () => {
         return 'bg-emerald-500/20 text-emerald-400';
       case 'info':
         return 'bg-amber-500/20 text-amber-400';
+      default:
+        return 'bg-gray-500/20 text-gray-400';
     }
   };
 
@@ -135,7 +151,11 @@ const NotificationCenter = () => {
 
         {/* Notifications List */}
         <div className="max-h-[400px] overflow-y-auto">
-          {notifications.length === 0 ? (
+          {loading ? (
+            <div className="p-8 text-center">
+              <p className="text-muted-foreground">Loading notifications...</p>
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground">No notifications</p>
@@ -147,7 +167,7 @@ const NotificationCenter = () => {
                 onClick={() => markAsRead(notification.id)}
                 className={cn(
                   'p-4 border-b border-border/50 cursor-pointer transition-colors hover:bg-secondary/50',
-                  !notification.read && 'bg-primary/5'
+                  !notification.is_read && 'bg-primary/5'
                 )}
               >
                 <div className="flex gap-3">
@@ -164,15 +184,15 @@ const NotificationCenter = () => {
                       <p className="font-medium text-sm text-foreground truncate">
                         {notification.title}
                       </p>
-                      {!notification.read && (
+                      {!notification.is_read && (
                         <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
-                      {notification.description}
+                      {notification.message}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {notification.time}
+                      {new Date(notification.created_at).toLocaleDateString()}
                     </p>
                   </div>
                 </div>

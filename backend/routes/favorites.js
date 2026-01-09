@@ -6,7 +6,7 @@ const { body } = require('express-validator');
 
 // Validation middleware
 const favoriteValidation = [
-  body('vehicle_id').isInt().withMessage('Valid vehicle ID is required')
+  body('vehicle_id').isInt({ min: 1 }).withMessage('Valid vehicle ID is required')
 ];
 
 // All routes require authentication

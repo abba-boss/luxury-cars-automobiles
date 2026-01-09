@@ -26,14 +26,13 @@ const AboutPage = () => {
               <div>
                 <h2 className="text-3xl font-bold text-foreground mb-6">Our Story</h2>
                 <p className="text-muted-foreground mb-4">
-                  {/* Replaced "Sarkin Mota" brand name with generic term */}
                   Founded by Dr. Aliyu Mohammad (Al-Amin), a graduate of Ahmadu Bello University Zaria,
-                  luxury car has grown from a vision to deliver quality vehicles to customers across Nigeria.
+                  Sarkin Mota Automobiles has grown from a vision to deliver quality vehicles to customers across Nigeria.
                   Starting with a passion for automobiles and leveraging digital content strategy,
                   Dr. Aliyu built a trusted brand known for transparency and quality.
                 </p>
                 <p className="text-muted-foreground mb-4">
-                  Our name luxury car (which means "Master of Cars" in Hausa) reflects our commitment to being the
+                  Our name Sarkin Mota (which means "Master of Cars" in Hausa) reflects our commitment to being the
                   premier destination for automotive excellence in Nigeria. We've built our reputation on integrity,
                   quality, and customer satisfaction.
                 </p>

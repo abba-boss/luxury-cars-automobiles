@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Star,
   Search,
@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { reviewService } from '@/services';
 
 interface Review {
   id: string;
@@ -46,70 +47,56 @@ interface Review {
   verified: boolean;
 }
 
-const mockReviews: Review[] = [
-  {
-    id: '1',
-    author: 'John Doe',
-    email: 'john@email.com',
-    rating: 5,
-    title: 'Excellent service!',
-    content: 'The team at luxury car was incredibly professional. The car was exactly as described and the buying process was smooth.',
-    // Replaced "Sarkin Mota" brand name with generic term
-    carName: '2024 Mercedes-Benz S-Class',
-    status: 'approved',
-    createdAt: '2024-05-10',
-    helpful: 24,
-    verified: true,
-  },
-  {
-    id: '2',
-    author: 'Sarah Williams',
-    email: 'sarah@email.com',
-    rating: 4,
-    title: 'Great experience overall',
-    content: 'Very satisfied with my purchase. The only reason for 4 stars is the delivery took a bit longer than expected.',
-    carName: '2023 BMW X7',
-    status: 'pending',
-    createdAt: '2024-05-12',
-    helpful: 8,
-    verified: true,
-  },
-  {
-    id: '3',
-    author: 'Anonymous',
-    email: 'anon@email.com',
-    rating: 2,
-    title: 'Disappointed with the condition',
-    content: 'The car had some minor issues that were not mentioned in the listing. Communication could have been better.',
-    carName: '2022 Toyota Land Cruiser',
-    status: 'pending',
-    createdAt: '2024-05-14',
-    helpful: 2,
-    verified: false,
-  },
-  {
-    id: '4',
-    author: 'Michael Chen',
-    email: 'michael@email.com',
-    rating: 5,
-    title: 'Best car buying experience!',
-    content: 'From start to finish, everything was perfect. The 360° view feature on the website helped me make my decision.',
-    carName: '2024 Range Rover Sport',
-    status: 'approved',
-    createdAt: '2024-05-08',
-    helpful: 45,
-    verified: true,
-  },
-];
-
 const AdminReviews = () => {
-  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [ratingFilter, setRatingFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [ratingFilter, setRatingFilter] = useState('all');
+
+  // Fetch reviews from API
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        setLoading(true);
+        const response = await reviewService.getAllReviews({
+          page: 1,
+          limit: 50,
+          status: statusFilter !== 'all' ? statusFilter : undefined,
+          rating: ratingFilter !== 'all' ? parseInt(ratingFilter) : undefined,
+          search: searchQuery || undefined
+        });
+
+        if (response.success && response.data) {
+          // Transform the API response to match our interface
+          const transformedReviews = response.data.map((review: any) => ({
+            id: review.id.toString(),
+            author: review.user?.full_name || 'Anonymous',
+            email: review.user?.email || 'N/A',
+            rating: review.rating,
+            title: review.title || `Review for ${review.vehicle?.make} ${review.vehicle?.model}` || 'Vehicle Review',
+            content: review.comment || 'No comment provided',
+            carName: `${review.vehicle?.make} ${review.vehicle?.model}` || 'Unknown Vehicle',
+            status: review.status || 'pending',
+            createdAt: review.created_at || review.createdAt,
+            helpful: review.helpful_votes || 0,
+            verified: review.verified_purchase || false
+          }));
+          setReviews(transformedReviews);
+        }
+      } catch (error) {
+        console.error('Failed to fetch reviews:', error);
+        toast.error('Failed to load reviews');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [statusFilter, ratingFilter, searchQuery]);
 
   const filteredReviews = reviews.filter((review) => {
-    const matchesSearch = 
+    const matchesSearch =
       review.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
       review.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
       review.carName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -118,17 +105,43 @@ const AdminReviews = () => {
     return matchesSearch && matchesStatus && matchesRating;
   });
 
-  const updateStatus = (id: string, status: Review['status']) => {
-    setReviews(reviews.map(r => r.id === id ? { ...r, status } : r));
-    toast.success(`Review ${status}`);
+  const updateStatus = async (id: string, status: Review['status']) => {
+    try {
+      await reviewService.updateReviewStatus(id, status);
+      setReviews(reviews.map(r => r.id === id ? { ...r, status } : r));
+      toast.success(`Review ${status}`);
+    } catch (error) {
+      console.error('Failed to update review status:', error);
+      toast.error('Failed to update review status');
+    }
   };
 
-  const deleteReview = (id: string) => {
-    setReviews(reviews.filter(r => r.id !== id));
-    toast.success('Review deleted');
+  const deleteReview = async (id: string) => {
+    try {
+      await reviewService.adminDeleteReview(id);
+      setReviews(reviews.filter(r => r.id !== id));
+      toast.success('Review deleted');
+    } catch (error) {
+      console.error('Failed to delete review:', error);
+      toast.error('Failed to delete review');
+    }
   };
 
-  const averageRating = (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+  };
+
+  const handleRatingFilterChange = (value: string) => {
+    setRatingFilter(value);
+  };
+
+  const averageRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : '0';
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -153,6 +166,16 @@ const AdminReviews = () => {
       </div>
     );
   };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>

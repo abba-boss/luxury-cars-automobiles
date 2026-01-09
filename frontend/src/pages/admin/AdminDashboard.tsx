@@ -11,10 +11,10 @@ import { BrandChart } from '../../components/analytics/BrandChart';
 import { StatusChart } from '../../components/analytics/StatusChart';
 import { UserGrowthChart } from '../../components/analytics/UserGrowthChart';
 import { analyticsService } from '../../services';
-import { 
-  Car, 
-  Users, 
-  DollarSign, 
+import {
+  Car,
+  Users,
+  DollarSign,
   Calendar,
   Activity,
   Plus
@@ -37,7 +37,7 @@ const AdminDashboard: React.FC = () => {
         analyticsService.getInventoryAnalytics(),
         analyticsService.getUserAnalytics()
       ]);
-      
+
       setOverview(overviewRes.data);
       setSalesData(salesRes.data);
       setInventoryData(inventoryRes.data);
@@ -116,16 +116,16 @@ const AdminDashboard: React.FC = () => {
         <div className="grid gap-6 md:grid-cols-2">
           {/* Sales Revenue Chart */}
           {salesData && (
-            <SalesChart 
-              data={salesData.salesByMonth || []} 
+            <SalesChart
+              data={salesData.salesByMonth || []}
               loading={!salesData}
             />
           )}
 
           {/* Vehicle Status Distribution */}
           {inventoryData && (
-            <StatusChart 
-              data={inventoryData.statusDistribution || []} 
+            <StatusChart
+              data={inventoryData.statusDistribution || []}
               loading={!inventoryData}
             />
           )}
@@ -143,8 +143,8 @@ const AdminDashboard: React.FC = () => {
 
           {/* User Growth */}
           {userData && (
-            <UserGrowthChart 
-              data={userData.userGrowth || []} 
+            <UserGrowthChart
+              data={userData.userGrowth || []}
               loading={!userData}
             />
           )}

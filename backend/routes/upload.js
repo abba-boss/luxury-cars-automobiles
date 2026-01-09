@@ -90,9 +90,26 @@ router.post('/vehicles', authenticateUser, requireAdmin, (req, res, next) => {
     if (req.files.images) {
       for (const file of req.files.images) {
         try {
+          // Determine resource type based on file extension and MIME type
+          const fileExtension = path.extname(file.originalname).toLowerCase();
+          const isVideo = file.mimetype.startsWith('video/');
+          const isImage = file.mimetype.startsWith('image/');
+
+          // Determine the appropriate resource type for Cloudinary
+          let resourceType = 'image'; // Default for images field
+          let folder = 'sarkin_mota/vehicles/images';
+
+          if (isImage || ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(fileExtension)) {
+            resourceType = 'image';
+            folder = 'sarkin_mota/vehicles/images';
+          } else if (isVideo || ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv'].includes(fileExtension)) {
+            resourceType = 'video';
+            folder = 'sarkin_mota/vehicles/videos';
+          }
+
           const result = await cloudinary.uploader.upload(file.path, {
-            folder: 'sarkin_mota/vehicles/images',
-            resource_type: 'image',
+            folder: folder,
+            resource_type: resourceType,
             use_filename: false,
             unique_filename: true,
           });
@@ -100,14 +117,22 @@ router.post('/vehicles', authenticateUser, requireAdmin, (req, res, next) => {
           // Remove temporary file
           fs.unlinkSync(file.path);
 
-          uploadedFiles.images.push({
+          const mediaFile = {
             filename: path.basename(result.public_id),
             originalName: file.originalname,
             url: result.secure_url,
             publicId: result.public_id,
             size: result.bytes,
             format: result.format
-          });
+          };
+
+          // Add duration for videos
+          if (resourceType === 'video' || (result.resource_type && result.resource_type === 'video')) {
+            mediaFile.duration = result.duration;
+          }
+
+          // Add to images array since it was uploaded to the images field
+          uploadedFiles.images.push(mediaFile);
         } catch (uploadError) {
           // Remove temporary file even if upload fails
           if (fs.existsSync(file.path)) {
@@ -123,9 +148,26 @@ router.post('/vehicles', authenticateUser, requireAdmin, (req, res, next) => {
     if (req.files.videos) {
       for (const file of req.files.videos) {
         try {
+          // Determine resource type based on file extension and MIME type
+          const fileExtension = path.extname(file.originalname).toLowerCase();
+          const isVideo = file.mimetype.startsWith('video/');
+          const isImage = file.mimetype.startsWith('image/');
+
+          // Determine the appropriate resource type for Cloudinary
+          let resourceType = 'video'; // Default for videos field
+          let folder = 'sarkin_mota/vehicles/videos';
+
+          if (isImage || ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(fileExtension)) {
+            resourceType = 'image';
+            folder = 'sarkin_mota/vehicles/images';
+          } else if (isVideo || ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv'].includes(fileExtension)) {
+            resourceType = 'video';
+            folder = 'sarkin_mota/vehicles/videos';
+          }
+
           const result = await cloudinary.uploader.upload(file.path, {
-            folder: 'sarkin_mota/vehicles/videos',
-            resource_type: 'video',
+            folder: folder,
+            resource_type: resourceType,
             use_filename: false,
             unique_filename: true,
             chunk_size: 6000000, // 6MB chunk size for large files
@@ -134,21 +176,28 @@ router.post('/vehicles', authenticateUser, requireAdmin, (req, res, next) => {
           // Remove temporary file
           fs.unlinkSync(file.path);
 
-          uploadedFiles.videos.push({
+          const mediaFile = {
             filename: path.basename(result.public_id),
             originalName: file.originalname,
             url: result.secure_url,
             publicId: result.public_id,
             size: result.bytes,
-            format: result.format,
-            duration: result.duration
-          });
+            format: result.format
+          };
+
+          // Add duration for videos
+          if (resourceType === 'video' || (result.resource_type && result.resource_type === 'video')) {
+            mediaFile.duration = result.duration;
+          }
+
+          // Add to videos array since it was uploaded to the videos field
+          uploadedFiles.videos.push(mediaFile);
         } catch (uploadError) {
           // Remove temporary file even if upload fails
           if (fs.existsSync(file.path)) {
             fs.unlinkSync(file.path);
           }
-          console.error('Cloudinary video upload error:', uploadError);
+          console.error('Cloudinary upload error:', uploadError);
           throw uploadError;
         }
       }

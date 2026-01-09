@@ -21,8 +21,7 @@ const VendorsPage = () => {
     },
     {
       id: "sm-2",
-      name: "luxury car Sales Team",
-      // Replaced "Sarkin Mota" brand name with generic term
+      name: "Sarkin Mota Sales Team",
       title: "Professional Sales",
       rating: 4.9,
       sales: 12000,
@@ -31,8 +30,7 @@ const VendorsPage = () => {
     },
     {
       id: "sm-3",
-      name: "luxury car Operations",
-      // Replaced "Sarkin Mota" brand name with generic term
+      name: "Sarkin Mota Operations",
       title: "Operations & Logistics",
       rating: 4.8,
       sales: 0,
@@ -48,8 +46,7 @@ const VendorsPage = () => {
   );
 
   return (
-    <Layout title="Our Team" subtitle="Meet the automotive experts at luxury car">
-      {/* Replaced "Sarkin Mota" brand name with generic term */}
+    <Layout title="Our Team" subtitle="Meet the automotive experts at Sarkin Mota">
       {/* Search */}
       <div className="relative max-w-md mb-8">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

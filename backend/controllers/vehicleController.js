@@ -6,18 +6,19 @@ const { deleteMediaFromCloudinary } = require('../utils/cloudinaryUtils');
 // Get all vehicles with filtering and pagination
 const getVehicles = async (req, res, next) => {
   try {
-    const { 
-      page = 1, 
-      limit = 10, 
-      make, 
-      model, 
-      year_min, 
-      year_max, 
-      price_min, 
+    const {
+      page = 1,
+      limit = 10,
+      make,
+      model,
+      year_min,
+      year_max,
+      price_min,
       price_max,
       condition,
       transmission,
       fuel_type,
+      body_type,
       status = 'available',
       is_featured,
       is_hot_deal,
@@ -45,6 +46,7 @@ const getVehicles = async (req, res, next) => {
     if (condition) where.condition = condition;
     if (transmission) where.transmission = transmission;
     if (fuel_type) where.fuel_type = fuel_type;
+    if (body_type) where.body_type = body_type;
     if (is_featured !== undefined) where.is_featured = is_featured === 'true';
     if (is_hot_deal !== undefined) where.is_hot_deal = is_hot_deal === 'true';
     

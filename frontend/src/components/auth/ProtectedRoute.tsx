@@ -7,10 +7,10 @@ interface ProtectedRouteProps {
   requireCustomer?: boolean;
 }
 
-const ProtectedRoute = ({ 
-  children, 
-  requireAdmin = false, 
-  requireCustomer = false 
+const ProtectedRoute = ({
+  children,
+  requireAdmin = false,
+  requireCustomer = false
 }: ProtectedRouteProps) => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
@@ -27,7 +27,7 @@ const ProtectedRoute = ({
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // Admin-only routes
+  // Admin-only routes - show access denied to non-admins
   if (requireAdmin && !isAdmin) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -40,7 +40,7 @@ const ProtectedRoute = ({
     );
   }
 
-  // Customer-only routes
+  // Customer-only routes - redirect admins to admin dashboard
   if (requireCustomer && isAdmin) {
     return <Navigate to="/admin" replace />;
   }

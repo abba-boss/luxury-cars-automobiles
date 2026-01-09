@@ -1,4 +1,6 @@
+import { useState, useEffect } from "react";
 import { Shield, Award, Clock, Headphones } from "lucide-react";
+import { vehicleService } from "@/services";
 
 const features = [
   {
@@ -24,6 +26,25 @@ const features = [
 ];
 
 export function WhyChooseUs() {
+  const [vehicleCount, setVehicleCount] = useState(0);
+
+  useEffect(() => {
+    const fetchTotalVehicles = async () => {
+      try {
+        const response = await vehicleService.getVehicles({ limit: 1, page: 1 });
+        if (response.success && response.pagination) {
+          setVehicleCount(response.pagination.total || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch total vehicle count:', error);
+        // Set a default value if API fails
+        setVehicleCount(0);
+      }
+    };
+
+    fetchTotalVehicles();
+  }, []);
+
   return (
     <section className="section-padding bg-background">
       <div className="max-w-[1800px] mx-auto">
@@ -38,8 +59,7 @@ export function WhyChooseUs() {
               <span className="text-gradient-gold block">in Every Detail</span>
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8">
-              {/* Replaced "Sarkin Mota" brand name with generic term */}
-              At luxury car, we don't just sell cars — we curate automotive experiences.
+              At Sarkin Mota, we don't just sell cars — we curate automotive experiences.
               Our commitment to excellence ensures that every vehicle we present meets
               the highest standards of quality, performance, and luxury.
             </p>
@@ -47,7 +67,7 @@ export function WhyChooseUs() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8 pt-8 border-t border-border">
               <div>
-                <p className="text-3xl md:text-4xl font-bold text-primary mb-1">500+</p>
+                <p className="text-3xl md:text-4xl font-bold text-primary mb-1">{vehicleCount}+</p>
                 <p className="text-sm text-muted-foreground">Vehicles Sold</p>
               </div>
               <div>

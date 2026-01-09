@@ -93,11 +93,11 @@ const getSalesAnalytics = async (req, res, next) => {
   try {
     // Sales by month (last 12 months)
     const salesByMonth = await sequelize.query(`
-      SELECT 
+      SELECT
         DATE_FORMAT(sale_date, '%Y-%m') as month,
         COUNT(*) as count,
         SUM(sale_price) as revenue
-      FROM sales 
+      FROM sales
       WHERE sale_date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
       GROUP BY DATE_FORMAT(sale_date, '%Y-%m')
       ORDER BY month ASC
@@ -105,7 +105,7 @@ const getSalesAnalytics = async (req, res, next) => {
 
     // Top selling brands
     const topBrands = await sequelize.query(`
-      SELECT 
+      SELECT
         v.make as brand,
         COUNT(s.id) as sales_count,
         SUM(s.sale_price) as total_revenue
@@ -190,10 +190,10 @@ const getUserAnalytics = async (req, res, next) => {
   try {
     // User growth by month (last 12 months)
     const userGrowth = await sequelize.query(`
-      SELECT 
+      SELECT
         DATE_FORMAT(created_at, '%Y-%m') as month,
         COUNT(*) as new_users
-      FROM users 
+      FROM users
       WHERE role = 'user' AND created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
       GROUP BY DATE_FORMAT(created_at, '%Y-%m')
       ORDER BY month ASC

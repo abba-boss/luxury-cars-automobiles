@@ -88,8 +88,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
             {!collapsed && (
               <div className="animate-fade-in">
-                {/* Replaced "Sarkin Mota" brand name with generic term */}
-                <span className="font-bold text-foreground text-lg">luxury car</span>
+                <span className="font-bold text-foreground text-lg">Sarkin Mota</span>
                 <p className="text-xs text-muted-foreground">Admin Panel</p>
               </div>
             )}

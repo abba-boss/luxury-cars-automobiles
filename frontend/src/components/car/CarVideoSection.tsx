@@ -10,24 +10,20 @@ interface CarVideoSectionProps {
 }
 
 const videoCategories = [
-  { key: 'exterior', label: 'Exterior', icon: CarIcon },
-  { key: 'interior', label: 'Interior', icon: Gauge },
-  { key: 'engine', label: 'Engine / Sound', icon: Settings },
-  { key: 'performance', label: 'Performance', icon: Volume2 }
+  { key: "exterior", label: "Exterior", icon: CarIcon },
+  { key: "interior", label: "Interior", icon: Gauge },
+  { key: "engine", label: "Engine / Sound", icon: Settings },
+  { key: "performance", label: "Performance", icon: Volume2 },
 ];
 
 export function CarVideoSection({ carName, posterImage, videos = [] }: CarVideoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [activeCategory, setActiveCategory] = useState('exterior');
-  const [videoError, setVideoError] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("exterior");
 
-  // Don't render if no videos are available
+  // If no videos are available, don't render the component
   if (!videos || videos.length === 0) {
-    console.log('No videos available:', videos);
     return null;
   }
-
-  console.log('Videos available:', videos);
 
   const nextVideo = (e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -43,10 +39,6 @@ export function CarVideoSection({ carName, posterImage, videos = [] }: CarVideoS
     e?.preventDefault();
     setActiveCategory(category);
     setCurrentIndex(0);
-  };
-
-  const handleVideoError = () => {
-    setVideoError(true);
   };
 
   return (
@@ -66,15 +58,21 @@ export function CarVideoSection({ carName, posterImage, videos = [] }: CarVideoS
         </div>
 
         {/* Main Video Player - Using exact same styling as ImageGallery */}
-        <div className="relative aspect-[16/10] overflow-hidden bg-muted group rounded-2xl">
-          <video
-            src={videos[currentIndex]}
-            poster={posterImage}
-            className="w-full h-full object-cover transition-transform duration-500"
-            controls
-            key={currentIndex}
-            onError={handleVideoError}
-          />
+        <div className="relative aspect-video overflow-hidden bg-muted group rounded-2xl car-video-player">
+          <div className="absolute inset-0 flex items-center justify-center">
+            {/* Native HTML5 video player as fallback */}
+            <video
+              key={videos[currentIndex]}
+              src={videos[currentIndex]}
+              poster={posterImage}
+              controls
+              className="w-full h-full object-contain bg-black"
+              onError={(e) => console.error("Video error:", e)}
+              onLoadedMetadata={(e) => console.log("Video loaded:", e.currentTarget.src)}
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
 
           {/* Navigation arrows - Exact same as ImageGallery */}
           {videos.length > 1 && (
@@ -107,8 +105,8 @@ export function CarVideoSection({ carName, posterImage, videos = [] }: CarVideoS
                 size="sm"
                 className={cn(
                   "h-7 px-2 text-xs rounded-full backdrop-blur-sm transition-all duration-200",
-                  activeCategory === key 
-                    ? "bg-primary text-primary-foreground" 
+                  activeCategory === key
+                    ? "bg-primary text-primary-foreground"
                     : "bg-white/80 text-gray-700 hover:bg-white"
                 )}
                 onClick={(e) => selectCategory(key, e)}

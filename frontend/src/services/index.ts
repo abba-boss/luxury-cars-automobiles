@@ -188,26 +188,38 @@ export const uploadService = {
 };
 
 export const reviewService = {
-  async getVehicleReviews(vehicleId: number, params?: { page?: number; limit?: number }): Promise<ApiResponse<any[]>> {
-    return api.get<ApiResponse<any[]>>(`/reviews/vehicle/${vehicleId}`, params);
+  async getVehicleReviews(vehicleId: number, params?: { page?: number; limit?: number }): Promise<ApiResponse<Review[]>> {
+    return api.get<ApiResponse<Review[]>>(`/reviews/vehicle/${vehicleId}`, params);
   },
 
-  async createReview(data: { vehicle_id: number; rating: number; comment?: string }): Promise<ApiResponse<any>> {
-    return api.post<ApiResponse<any>>('/reviews', data);
+  async getAllReviews(params?: { page?: number; limit?: number; status?: string; rating?: number; search?: string }): Promise<ApiResponse<{ data: Review[]; pagination?: any }>> {
+    return api.get<ApiResponse<{ data: Review[]; pagination?: any }>>('/reviews', params);
   },
 
-  async updateReview(id: number, data: { rating: number; comment?: string }): Promise<ApiResponse<any>> {
-    return api.put<ApiResponse<any>>(`/reviews/${id}`, data);
+  async createReview(data: { vehicle_id: number; rating: number; comment?: string }): Promise<ApiResponse<Review>> {
+    return api.post<ApiResponse<Review>>('/reviews', data);
+  },
+
+  async updateReview(id: number, data: { rating: number; comment?: string }): Promise<ApiResponse<Review>> {
+    return api.put<ApiResponse<Review>>(`/reviews/${id}`, data);
   },
 
   async deleteReview(id: number): Promise<ApiResponse<null>> {
     return api.delete<ApiResponse<null>>(`/reviews/${id}`);
+  },
+
+  async updateReviewStatus(id: number, status: string): Promise<ApiResponse<Review>> {
+    return api.put<ApiResponse<Review>>(`/reviews/${id}/status`, { status });
+  },
+
+  async adminDeleteReview(id: number): Promise<ApiResponse<null>> {
+    return api.delete<ApiResponse<null>>(`/reviews/${id}/admin`);
   }
 };
 
 export const bookingService = {
-  async getUserBookings(params?: { page?: number; limit?: number }): Promise<ApiResponse<any[]>> {
-    return api.get<ApiResponse<any[]>>('/bookings', params);
+  async getUserBookings(params?: { page?: number; limit?: number }): Promise<ApiResponse<Booking[]>> {
+    return api.get<ApiResponse<Booking[]>>('/bookings', params);
   },
 
   async createBooking(data: {
@@ -216,30 +228,30 @@ export const bookingService = {
     booking_time: string;
     type: 'test_drive' | 'inspection' | 'consultation';
     notes?: string;
-  }): Promise<ApiResponse<any>> {
-    return api.post<ApiResponse<any>>('/bookings', data);
+  }): Promise<ApiResponse<Booking>> {
+    return api.post<ApiResponse<Booking>>('/bookings', data);
   },
 
-  async updateBooking(id: number, data: { status?: string; notes?: string }): Promise<ApiResponse<any>> {
-    return api.put<ApiResponse<any>>(`/bookings/${id}`, data);
+  async updateBooking(id: number, data: { status?: string; notes?: string }): Promise<ApiResponse<Booking>> {
+    return api.put<ApiResponse<Booking>>(`/bookings/${id}`, data);
   },
 
-  async getAllBookings(params?: { page?: number; limit?: number; status?: string }): Promise<ApiResponse<any[]>> {
-    return api.get<ApiResponse<any[]>>('/bookings/all', params);
+  async getAllBookings(params?: { page?: number; limit?: number; status?: string }): Promise<ApiResponse<Booking[]>> {
+    return api.get<ApiResponse<Booking[]>>('/bookings/all', params);
   },
 
-  async updateBookingStatus(id: number, data: { status?: string; notes?: string }): Promise<ApiResponse<any>> {
-    return api.put<ApiResponse<any>>(`/bookings/admin/${id}`, data);
+  async updateBookingStatus(id: number, data: { status?: string; notes?: string }): Promise<ApiResponse<Booking>> {
+    return api.put<ApiResponse<Booking>>(`/bookings/admin/${id}`, data);
   }
 };
 
 export const favoriteService = {
-  async getUserFavorites(params?: { page?: number; limit?: number }): Promise<ApiResponse<any[]>> {
-    return api.get<ApiResponse<any[]>>('/favorites', params);
+  async getUserFavorites(params?: { page?: number; limit?: number }): Promise<ApiResponse<Favorite[]>> {
+    return api.get<ApiResponse<Favorite[]>>('/favorites', params);
   },
 
-  async addToFavorites(vehicle_id: number): Promise<ApiResponse<any>> {
-    return api.post<ApiResponse<any>>('/favorites', { vehicle_id });
+  async addToFavorites(vehicle_id: number): Promise<ApiResponse<Favorite>> {
+    return api.post<ApiResponse<Favorite>>('/favorites', { vehicle_id });
   },
 
   async removeFromFavorites(vehicleId: number): Promise<ApiResponse<null>> {
@@ -248,6 +260,111 @@ export const favoriteService = {
 
   async checkFavorite(vehicleId: number): Promise<ApiResponse<{ isFavorite: boolean }>> {
     return api.get<ApiResponse<{ isFavorite: boolean }>>(`/favorites/check/${vehicleId}`);
+  }
+};
+
+export const notificationService = {
+  async getUserNotifications(params?: { page?: number; limit?: number; is_read?: boolean }): Promise<ApiResponse<Notification[]>> {
+    return api.get<ApiResponse<Notification[]>>('/notifications', params);
+  },
+
+  async markAsRead(id: number): Promise<ApiResponse<Notification>> {
+    return api.put<ApiResponse<Notification>>(`/notifications/${id}/read`);
+  },
+
+  async markAllAsRead(): Promise<ApiResponse<null>> {
+    return api.put<ApiResponse<null>>('/notifications/read-all');
+  },
+
+  async deleteNotification(id: number): Promise<ApiResponse<null>> {
+    return api.delete<ApiResponse<null>>(`/notifications/${id}`);
+  },
+
+  async deleteAllNotifications(): Promise<ApiResponse<null>> {
+    return api.delete<ApiResponse<null>>('/notifications');
+  },
+
+  async createNotification(data: { user_id: number; type: string; title: string; message: string }): Promise<ApiResponse<Notification>> {
+    return api.post<ApiResponse<Notification>>('/notifications', data);
+  }
+};
+
+export const paymentService = {
+  async getUserPayments(params?: { page?: number; limit?: number }): Promise<ApiResponse<Payment[]>> {
+    return api.get<ApiResponse<Payment[]>>('/payments/history', params);
+  },
+
+  async createPaymentIntent(data: { sale_id: number; amount: number; payment_method: string }): Promise<ApiResponse<Payment>> {
+    return api.post<ApiResponse<Payment>>('/payments/intent', data);
+  },
+
+  async confirmPayment(paymentId: number, data: { transaction_id: string }): Promise<ApiResponse<Payment>> {
+    return api.post<ApiResponse<Payment>>(`/payments/confirm/${paymentId}`, data);
+  },
+
+  async getPaymentStatus(paymentId: number): Promise<ApiResponse<Payment>> {
+    return api.get<ApiResponse<Payment>>(`/payments/status/${paymentId}`);
+  },
+
+  async getAllPayments(params?: { page?: number; limit?: number; status?: string }): Promise<ApiResponse<Payment[]>> {
+    return api.get<ApiResponse<Payment[]>>('/payments', params);
+  }
+};
+
+export const financingService = {
+  async getUserFinancingApplications(params?: { page?: number; limit?: number }): Promise<ApiResponse<FinancingApplication[]>> {
+    return api.get<ApiResponse<FinancingApplication[]>>('/financing', params);
+  },
+
+  async applyForFinancing(data: {
+    vehicle_id: number;
+    loan_amount: number;
+    down_payment?: number;
+    credit_score?: number;
+    employment_status?: string;
+    annual_income?: number;
+  }): Promise<ApiResponse<FinancingApplication>> {
+    return api.post<ApiResponse<FinancingApplication>>('/financing', data);
+  },
+
+  async updateFinancingApplication(id: number, data: {
+    loan_amount?: number;
+    down_payment?: number;
+    credit_score?: number;
+    employment_status?: string;
+    annual_income?: number;
+  }): Promise<ApiResponse<FinancingApplication>> {
+    return api.put<ApiResponse<FinancingApplication>>(`/financing/${id}`, data);
+  },
+
+  async getAllFinancingApplications(params?: { page?: number; limit?: number; status?: string }): Promise<ApiResponse<FinancingApplication[]>> {
+    return api.get<ApiResponse<FinancingApplication[]>>('/financing/all', params);
+  },
+
+  async updateApplicationStatus(id: number, data: { status: string; interest_rate?: number; term_months?: number }): Promise<ApiResponse<FinancingApplication>> {
+    return api.put<ApiResponse<FinancingApplication>>(`/financing/${id}/status`, data);
+  }
+};
+
+export const cartService = {
+  async getUserCart(): Promise<ApiResponse<CartData>> {
+    return api.get<ApiResponse<CartData>>('/carts');
+  },
+
+  async addItemToCart(data: { vehicle_id: number; quantity?: number }): Promise<ApiResponse<CartData>> {
+    return api.post<ApiResponse<CartData>>('/carts/items', data);
+  },
+
+  async updateCartItem(id: number, data: { quantity: number }): Promise<ApiResponse<CartData>> {
+    return api.put<ApiResponse<CartData>>(`/carts/items/${id}`, data);
+  },
+
+  async removeCartItem(id: number): Promise<ApiResponse<CartData>> {
+    return api.delete<ApiResponse<CartData>>(`/carts/items/${id}`);
+  },
+
+  async clearCart(): Promise<ApiResponse<CartData>> {
+    return api.delete<ApiResponse<CartData>>('/carts');
   }
 };
 

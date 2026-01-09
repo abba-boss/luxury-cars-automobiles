@@ -26,12 +26,19 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const from = location.state?.from?.pathname || '/dashboard';
+  const from = location.state?.from?.pathname;
   const message = location.state?.message;
 
   useEffect(() => {
     if (!loading && user) {
-      navigate(from, { replace: true });
+      // Redirect based on user role
+      if (user.role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        // For regular users, redirect to dashboard or the original requested page
+        const redirectPath = from && from !== '/auth' ? from : '/dashboard';
+        navigate(redirectPath, { replace: true });
+      }
     }
   }, [user, loading, navigate, from]);
 
@@ -135,9 +142,8 @@ const AuthPage = () => {
             <div className="w-14 h-14 bg-primary rounded-full flex items-center justify-center mb-4">
               <span className="text-primary-foreground font-bold text-2xl">SM</span>
             </div>
-            <h1 className="text-3xl font-bold text-foreground">luxury car</h1>
-            {/* Replaced "Sarkin Mota" brand name with generic term */}
-            <p className="text-muted-foreground text-sm tracking-widest">AUTOMOBILES</p>
+            <h1 className="text-3xl font-bold text-foreground">Sarkin Mota</h1>
+            <p className="text-muted-foreground text-sm tracking-widest">AUTOS</p>
           </div>
           
           <div className="space-y-6">
@@ -169,8 +175,7 @@ const AuthPage = () => {
             <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-2">
               <span className="text-primary-foreground font-bold text-xl">SM</span>
             </div>
-            <h1 className="text-xl font-bold text-foreground">luxury car</h1>
-            {/* Replaced "Sarkin Mota" brand name with generic term */}
+            <h1 className="text-xl font-bold text-foreground">Sarkin Mota</h1>
           </div>
 
           <div className="text-center lg:text-left">

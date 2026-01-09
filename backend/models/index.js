@@ -13,6 +13,11 @@ const Conversation = require('./Conversation');
 const ConversationParticipant = require('./ConversationParticipant');
 const Message = require('./Message');
 const MessageReadStatus = require('./MessageReadStatus');
+const OrderConversation = require('./OrderConversation');
+const Payment = require('./Payment');
+const FinancingApplication = require('./FinancingApplication');
+const Cart = require('./Cart');
+const CartItem = require('./CartItem');
 
 // Initialize all models
 const models = {
@@ -29,7 +34,12 @@ const models = {
   Conversation,
   ConversationParticipant,
   Message,
-  MessageReadStatus
+  MessageReadStatus,
+  OrderConversation,
+  Payment,
+  FinancingApplication,
+  Cart,
+  CartItem
 };
 
 // Set up associations
@@ -102,6 +112,34 @@ models.MessageReadStatus.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 // Parent message association for replies
 models.Message.belongsTo(models.Message, { foreignKey: 'parent_message_id', as: 'parentMessage' });
 models.Message.hasMany(models.Message, { foreignKey: 'parent_message_id', as: 'replies' });
+
+// Order conversation associations
+models.Sale.hasOne(models.OrderConversation, { foreignKey: 'sale_id', as: 'orderConversation' });
+models.OrderConversation.belongsTo(models.Sale, { foreignKey: 'sale_id', as: 'sale' });
+
+models.Conversation.hasOne(models.OrderConversation, { foreignKey: 'conversation_id', as: 'orderConversation' });
+models.OrderConversation.belongsTo(models.Conversation, { foreignKey: 'conversation_id', as: 'conversation' });
+
+// Payment associations
+models.Sale.hasMany(models.Payment, { foreignKey: 'sale_id', as: 'payments' });
+models.Payment.belongsTo(models.Sale, { foreignKey: 'sale_id', as: 'sale' });
+
+// Financing Application associations
+User.hasMany(models.FinancingApplication, { foreignKey: 'user_id', as: 'financingApplications' });
+models.FinancingApplication.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+models.Vehicle.hasMany(models.FinancingApplication, { foreignKey: 'vehicle_id', as: 'financingApplications' });
+models.FinancingApplication.belongsTo(models.Vehicle, { foreignKey: 'vehicle_id', as: 'vehicle' });
+
+// Cart associations
+User.hasOne(models.Cart, { foreignKey: 'user_id', as: 'cart' });
+models.Cart.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+models.Cart.hasMany(models.CartItem, { foreignKey: 'cart_id', as: 'items' });
+models.CartItem.belongsTo(models.Cart, { foreignKey: 'cart_id', as: 'cart' });
+
+models.Vehicle.hasMany(models.CartItem, { foreignKey: 'vehicle_id', as: 'cartItems' });
+models.CartItem.belongsTo(models.Vehicle, { foreignKey: 'vehicle_id', as: 'vehicle' });
 
 module.exports = {
   sequelize,

@@ -74,11 +74,9 @@ const mockSections: FeaturedSection[] = [
 const AdminHomepage = () => {
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(mockHeroSlides);
   const [sections, setSections] = useState<FeaturedSection[]>(mockSections);
-  const [siteTitle, setSiteTitle] = useState('luxury car');
-  // Replaced "Sarkin Mota" brand name with generic term
+  const [siteTitle, setSiteTitle] = useState('Sarkin Mota');
   const [siteTagline, setSiteTagline] = useState('Trusted Cars. Transparent Deals.');
-  const [footerText, setFooterText] = useState('© 2024 luxury car. All rights reserved.');
-  // Replaced "Sarkin Mota" brand name with generic term
+  const [footerText, setFooterText] = useState('© 2024 Sarkin Mota. All rights reserved.');
   const [showWhatsApp, setShowWhatsApp] = useState(true);
   const [showLiveChat, setShowLiveChat] = useState(true);
 

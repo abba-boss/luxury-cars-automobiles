@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Menu, X, User, Search, Settings, LogOut, Phone, MessageCircle } from "lucide-react";
+import { ShoppingCart, Menu, X, User, Search, Settings, LogOut, Phone, MessageCircle, LayoutDashboard, Car, Users, MessageSquare as MessageSquareLucide, Package, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/hooks/useCart";
@@ -71,8 +71,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 <span className="text-primary-foreground font-bold text-lg">SM</span>
               </div>
               <div className="hidden sm:block">
-                <p className="font-bold text-foreground tracking-wide">LUXURY CARS</p>
-                <p className="text-[10px] text-muted-foreground tracking-[0.2em]">DEALERSHIP</p>
+                <p className="font-bold text-foreground tracking-wide">SARKIN MOTA</p>
+                <p className="text-[10px] text-muted-foreground tracking-[0.2em]">AUTOS</p>
               </div>
             </Link>
 
@@ -163,19 +163,55 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                      <User className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/saved')}>
-                      Saved Cars
-                    </DropdownMenuItem>
-                    {isAdmin && (
+                    {isAdmin ? (
+                      // Admin menu
                       <>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate('/admin')}>
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Admin Dashboard
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate('/admin/cars')}>
+                          <Car className="mr-2 h-4 w-4" />
+                          Car Management
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/admin/users')}>
+                          <Users className="mr-2 h-4 w-4" />
+                          User Management
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/admin/messages')}>
+                          <MessageSquareLucide className="mr-2 h-4 w-4" />
+                          Messages
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
                           <Settings className="mr-2 h-4 w-4" />
-                          Admin Panel
+                          Settings
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      // User menu
+                      <>
+                        <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Dashboard
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/orders')}>
+                          <Package className="mr-2 h-4 w-4" />
+                          My Orders
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/saved')}>
+                          <Heart className="mr-2 h-4 w-4" />
+                          Saved Cars
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/messages')}>
+                          <MessageSquareLucide className="mr-2 h-4 w-4" />
+                          Messages
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate('/profile')}>
+                          <User className="mr-2 h-4 w-4" />
+                          Profile
                         </DropdownMenuItem>
                       </>
                     )}
@@ -342,8 +378,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                   <span className="text-primary-foreground font-bold text-xl">SM</span>
                 </div>
                 <div>
-                  <p className="font-bold text-foreground text-lg tracking-wide">LUXURY CARS</p>
-                  <p className="text-xs text-muted-foreground tracking-[0.2em]">DEALERSHIP</p>
+                  <p className="font-bold text-foreground text-lg tracking-wide">SARKIN MOTA</p>
+                  <p className="text-xs text-muted-foreground tracking-[0.2em]">AUTOS</p>
                 </div>
               </Link>
               <p className="text-muted-foreground max-w-md leading-relaxed">
@@ -397,7 +433,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
           {/* Bottom */}
           <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Luxury Cars Dealership. All rights reserved.
+              © {new Date().getFullYear()} Sarkin Mota Automobiles. All rights reserved.
             </p>
             <div className="flex gap-8 text-sm text-muted-foreground">
               <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>

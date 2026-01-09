@@ -1,54 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Shield, Award, Zap, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const features = [
-  {
-    id: "demo-drive",
-    icon: Calendar,
-    title: "Book Demo Drive",
-    description: "Experience the thrill firsthand. Schedule a personalized test drive at your convenience.",
-    cta: "Schedule Now",
-    href: "/book-demo",
-  },
-  {
-    id: "inspection",
-    icon: Shield,
-    title: "Vehicle Inspection",
-    description: "Every vehicle undergoes a rigorous 200-point inspection by certified technicians.",
-    cta: "Learn More",
-    href: "/inspection",
-  },
-  {
-    id: "certified",
-    icon: Award,
-    title: "Certified Pre-Owned",
-    description: "Our certified vehicles come with extended warranty and comprehensive service history.",
-    cta: "View CPO",
-    href: "/certified",
-  },
-];
-
-const stats = [
-  { value: "500+", label: "Premium Vehicles" },
-  { value: "98%", label: "Customer Satisfaction" },
-  { value: "24/7", label: "Support Available" },
-  { value: "15+", label: "Years Experience" },
-];
-
-const highlights = [
-  "Transparent pricing with no hidden fees",
-  "Flexible financing options available",
-  "Nationwide delivery to your doorstep",
-  "30-day money-back guarantee",
-  "Complimentary first service",
-  "24/7 roadside assistance",
-];
+import { vehicleService } from "@/services";
 
 export function TeslaFeatures() {
   const [activeFeature, setActiveFeature] = useState(0);
+  const [vehicleCount, setVehicleCount] = useState(0);
+
+  const features = [
+    {
+      id: "demo-drive",
+      icon: Calendar,
+      title: "Book Demo Drive",
+      description: "Experience the thrill firsthand. Schedule a personalized test drive at your convenience.",
+      cta: "Schedule Now",
+      href: "/book-demo",
+    },
+    {
+      id: "inspection",
+      icon: Shield,
+      title: "Vehicle Inspection",
+      description: "Every vehicle undergoes a rigorous 200-point inspection by certified technicians.",
+      cta: "Learn More",
+      href: "/inspection",
+    },
+    {
+      id: "certified",
+      icon: Award,
+      title: "Certified Pre-Owned",
+      description: "Our certified vehicles come with extended warranty and comprehensive service history.",
+      cta: "View CPO",
+      href: "/certified",
+    },
+  ];
+
+  // Fetch total vehicle count
+  useEffect(() => {
+    const fetchTotalVehicles = async () => {
+      try {
+        const response = await vehicleService.getVehicles({ limit: 1, page: 1 });
+        if (response.success && response.pagination) {
+          setVehicleCount(response.pagination.total || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch total vehicle count:', error);
+      }
+    };
+
+    fetchTotalVehicles();
+  }, []);
+
+  const stats = [
+    { value: `${vehicleCount}+`, label: "Premium Vehicles" },
+    { value: "98%", label: "Customer Satisfaction" },
+    { value: "24/7", label: "Support Available" },
+    { value: "15+", label: "Years Experience" },
+  ];
+
+  const highlights = [
+    "Transparent pricing with no hidden fees",
+    "Flexible financing options available",
+    "Nationwide delivery to your doorstep",
+    "30-day money-back guarantee",
+    "Complimentary first service",
+    "24/7 roadside assistance",
+  ];
 
   return (
     <section className="relative py-32 bg-background overflow-hidden">

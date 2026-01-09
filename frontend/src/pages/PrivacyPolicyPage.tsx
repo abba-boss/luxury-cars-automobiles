@@ -24,9 +24,8 @@ const PrivacyPolicyPage = () => {
             <section>
               <h2 className="text-2xl font-bold text-foreground mb-6">Effective Date</h2>
               <p className="text-muted-foreground mb-4">
-                {/* Replaced "Sarkin Mota" brand name with generic term */}
                 This Privacy Policy is effective as of December 2024 and governs our privacy practices for
-                luxury car, operating at 3F3G+74Q, Olusegun Obasanjo Way, beside NNPC Mega Gas Station,
+                Sarkin Mota Automobiles, operating at 3F3G+74Q, Olusegun Obasanjo Way, beside NNPC Mega Gas Station,
                 Central Business District, Abuja 900103, FCT, Nigeria.
               </p>
             </section>

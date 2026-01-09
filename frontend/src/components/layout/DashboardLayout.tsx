@@ -61,8 +61,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
           <div className="p-6 border-b border-border">
             <div className="flex items-center justify-between">
               <Link to="/" className="text-xl font-bold text-primary">
-                {/* Replaced "Sarkin Mota" brand name with generic term */}
-                luxury car
+                Sarkin Mota
               </Link>
               <Button
                 variant="ghost"

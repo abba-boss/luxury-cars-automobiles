@@ -1,4 +1,4 @@
-const { Sale, Vehicle, Customer } = require('../models');
+const { Sale, Vehicle, Customer, Conversation, ConversationParticipant, OrderConversation, User, Message } = require('../models');
 const { validationResult } = require('express-validator');
 
 // Get all sales (Admin only)
@@ -14,7 +14,37 @@ const getSales = async (req, res, next) => {
       where,
       include: [
         { model: Vehicle, as: 'vehicle' },
-        { model: Customer, as: 'customer' }
+        { model: Customer, as: 'customer' },
+        {
+          model: OrderConversation,
+          as: 'orderConversation',
+          include: [
+            {
+              model: Conversation,
+              as: 'conversation',
+              include: [
+                {
+                  model: ConversationParticipant,
+                  as: 'participants',
+                  include: [
+                    {
+                      model: User,
+                      as: 'user',
+                      attributes: ['id', 'full_name', 'email', 'role']
+                    }
+                  ]
+                },
+                {
+                  model: Message,
+                  as: 'messages',
+                  limit: 1,
+                  order: [['created_at', 'DESC']],
+                  separate: true
+                }
+              ]
+            }
+          ]
+        }
       ],
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -46,7 +76,37 @@ const getUserSales = async (req, res, next) => {
       where: { user_id: req.user.id },
       include: [
         { model: Vehicle, as: 'vehicle' },
-        { model: Customer, as: 'customer' }
+        { model: Customer, as: 'customer' },
+        {
+          model: OrderConversation,
+          as: 'orderConversation',
+          include: [
+            {
+              model: Conversation,
+              as: 'conversation',
+              include: [
+                {
+                  model: ConversationParticipant,
+                  as: 'participants',
+                  include: [
+                    {
+                      model: User,
+                      as: 'user',
+                      attributes: ['id', 'full_name', 'email', 'role']
+                    }
+                  ]
+                },
+                {
+                  model: Message,
+                  as: 'messages',
+                  limit: 1,
+                  order: [['created_at', 'DESC']],
+                  separate: true
+                }
+              ]
+            }
+          ]
+        }
       ],
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -118,13 +178,83 @@ const createSale = async (req, res, next) => {
     // Update vehicle status to reserved
     await vehicle.update({ status: 'reserved' }, { transaction });
 
+    // Create a conversation for this order
+    const conversation = await Conversation.create({
+      type: 'private',
+      created_by: req.user?.id,
+      name: `Order #${sale.id} - ${vehicle.make} ${vehicle.model}`
+    }, { transaction });
+
+    // Add participants (customer/user and admin)
+    // Find an admin user to add to the conversation
+    const adminUser = await User.findOne({
+      where: { role: 'admin', status: 'active' },
+      transaction
+    });
+
+    const participants = [
+      {
+        conversation_id: conversation.id,
+        user_id: req.user?.id,
+        role: 'sender'
+      }
+    ];
+
+    if (adminUser) {
+      participants.push({
+        conversation_id: conversation.id,
+        user_id: adminUser.id,
+        role: 'recipient'
+      });
+    }
+
+    await ConversationParticipant.bulkCreate(participants, { transaction });
+
+    // Link the order to the conversation
+    await OrderConversation.create({
+      sale_id: sale.id,
+      conversation_id: conversation.id,
+      status: 'active'
+    }, { transaction });
+
+    // Create initial system message
+    await Message.create({
+      conversation_id: conversation.id,
+      sender_id: req.user?.id,
+      content: `Order created for ${vehicle.make} ${vehicle.model} (${vehicle.year})\nPrice: ${sale_price}\n\nYour order has been received and is pending confirmation from our team.`,
+      message_type: 'system'
+    }, { transaction });
+
     await transaction.commit();
 
     // Fetch the complete sale with associations
     const completeSale = await Sale.findByPk(sale.id, {
       include: [
         { model: Vehicle, as: 'vehicle' },
-        { model: Customer, as: 'customer' }
+        { model: Customer, as: 'customer' },
+        {
+          model: OrderConversation,
+          as: 'orderConversation',
+          include: [
+            {
+              model: Conversation,
+              as: 'conversation',
+              include: [
+                {
+                  model: ConversationParticipant,
+                  as: 'participants',
+                  include: [
+                    {
+                      model: User,
+                      as: 'user',
+                      attributes: ['id', 'full_name', 'email', 'role']
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       ]
     });
 

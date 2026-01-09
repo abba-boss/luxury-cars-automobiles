@@ -128,6 +128,20 @@ app.use('/api/bookings', bookingRoutes);
 const favoriteRoutes = require('./routes/favorites');
 app.use('/api/favorites', favoriteRoutes);
 
+const notificationRoutes = require('./routes/notifications');
+app.use('/api/notifications', notificationRoutes);
+
+// Payment and financing routes
+const paymentRoutes = require('./routes/payments');
+app.use('/api/payments', paymentRoutes);
+
+const financingRoutes = require('./routes/financing');
+app.use('/api/financing', financingRoutes);
+
+// Cart routes
+const cartRoutes = require('./routes/carts');
+app.use('/api/carts', cartRoutes);
+
 // Analytics routes
 const analyticsRoutes = require('./routes/analytics');
 app.use('/api/admin/analytics', analyticsRoutes);
@@ -236,7 +250,7 @@ io.on('connection', (socket) => {
       const { conversationId, content, messageType = 'text', fileUrl, fileName } = data;
 
       // Verify user is participant in conversation
-      const { ConversationParticipant, Message, User } = require('./models');
+      const { ConversationParticipant, Message, User, OrderConversation, Sale, Vehicle } = require('./models');
       const participant = await ConversationParticipant.findOne({
         where: {
           conversation_id: conversationId,
@@ -272,6 +286,36 @@ io.on('connection', (socket) => {
 
       // Emit message to conversation room
       io.to(`conversation_${conversationId}`).emit('new_message', fullMessage);
+
+      // Check if this is an order conversation and emit order update
+      const orderConversation = await OrderConversation.findOne({
+        where: { conversation_id: conversationId },
+        include: [
+          {
+            model: Sale,
+            as: 'sale',
+            include: [
+              { model: Vehicle, as: 'vehicle' }
+            ]
+          }
+        ]
+      });
+
+      if (orderConversation) {
+        // Emit order message update to all participants
+        const participants = await ConversationParticipant.findAll({
+          where: { conversation_id: conversationId }
+        });
+
+        for (const participant of participants) {
+          io.to(`user_${participant.user_id}`).emit('order_message_update', {
+            orderId: orderConversation.sale_id,
+            conversationId,
+            message: fullMessage,
+            orderDetails: orderConversation.sale
+          });
+        }
+      }
 
       // Update message status to delivered for all participants except sender
       const participants = await ConversationParticipant.findAll({

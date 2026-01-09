@@ -60,7 +60,7 @@ export function CarCard({ car, className }: CarCardProps) {
       model: car.model,
       year: car.year,
       price: car.price,
-      image: car.images[0] || '/placeholder-car.svg'
+      image: (car.images && car.images[0]) || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`
     });
   };
 
@@ -72,7 +72,7 @@ export function CarCard({ car, className }: CarCardProps) {
       {/* Image Container */}
       <div className="relative aspect-[3/2] sm:aspect-[4/3] md:aspect-[16/10] overflow-hidden">
         <img
-          src={imageError ? '/placeholder-car.svg' : car.images[0]}
+          src={imageError || !car.images[0] ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg` : car.images[0]}
           alt={`${car.make} ${car.model}`}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"

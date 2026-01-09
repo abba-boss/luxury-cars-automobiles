@@ -23,7 +23,19 @@ import { useToast } from "@/hooks/use-toast";
 
 const AddCarPage = () => {
   const { toast } = useToast();
-  const [images, setImages] = useState<string[]>([]);
+
+  // Separate state for each image category
+  const [exteriorImages, setExteriorImages] = useState<string[]>([]);
+  const [interiorImages, setInteriorImages] = useState<string[]>([]);
+  const [engineImages, setEngineImages] = useState<string[]>([]);
+  const [wheelsImages, setWheelsImages] = useState<string[]>([]);
+
+  // Separate state for each video category
+  const [exteriorVideos, setExteriorVideos] = useState<string[]>([]);
+  const [interiorVideos, setInteriorVideos] = useState<string[]>([]);
+  const [engineSoundVideos, setEngineSoundVideos] = useState<string[]>([]);
+  const [performanceVideos, setPerformanceVideos] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -37,26 +49,143 @@ const AddCarPage = () => {
     description: "",
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image uploads by category
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, category: 'exterior' | 'interior' | 'engine' | 'wheels') => {
     const files = e.target.files;
     if (files) {
       const newImages = Array.from(files).map((file) =>
         URL.createObjectURL(file)
       );
-      setImages((prev) => [...prev, ...newImages].slice(0, 10));
+
+      switch(category) {
+        case 'exterior':
+          setExteriorImages((prev) => [...prev, ...newImages].slice(0, 10));
+          break;
+        case 'interior':
+          setInteriorImages((prev) => [...prev, ...newImages].slice(0, 10));
+          break;
+        case 'engine':
+          setEngineImages((prev) => [...prev, ...newImages].slice(0, 10));
+          break;
+        case 'wheels':
+          setWheelsImages((prev) => [...prev, ...newImages].slice(0, 10));
+          break;
+      }
     }
   };
 
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+  // Handle video uploads by category
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>, category: 'exterior' | 'interior' | 'engineSound' | 'performance') => {
+    const files = e.target.files;
+    if (files) {
+      const newVideos = Array.from(files).map((file) =>
+        URL.createObjectURL(file)
+      );
+
+      switch(category) {
+        case 'exterior':
+          setExteriorVideos((prev) => [...prev, ...newVideos].slice(0, 5));
+          break;
+        case 'interior':
+          setInteriorVideos((prev) => [...prev, ...newVideos].slice(0, 5));
+          break;
+        case 'engineSound':
+          setEngineSoundVideos((prev) => [...prev, ...newVideos].slice(0, 5));
+          break;
+        case 'performance':
+          setPerformanceVideos((prev) => [...prev, ...newVideos].slice(0, 5));
+          break;
+      }
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Remove image by category
+  const removeImage = (index: number, category: 'exterior' | 'interior' | 'engine' | 'wheels') => {
+    switch(category) {
+      case 'exterior':
+        setExteriorImages((prev) => prev.filter((_, i) => i !== index));
+        break;
+      case 'interior':
+        setInteriorImages((prev) => prev.filter((_, i) => i !== index));
+        break;
+      case 'engine':
+        setEngineImages((prev) => prev.filter((_, i) => i !== index));
+        break;
+      case 'wheels':
+        setWheelsImages((prev) => prev.filter((_, i) => i !== index));
+        break;
+    }
+  };
+
+  // Remove video by category
+  const removeVideo = (index: number, category: 'exterior' | 'interior' | 'engineSound' | 'performance') => {
+    switch(category) {
+      case 'exterior':
+        setExteriorVideos((prev) => prev.filter((_, i) => i !== index));
+        break;
+      case 'interior':
+        setInteriorVideos((prev) => prev.filter((_, i) => i !== index));
+        break;
+      case 'engineSound':
+        setEngineSoundVideos((prev) => prev.filter((_, i) => i !== index));
+        break;
+      case 'performance':
+        setPerformanceVideos((prev) => prev.filter((_, i) => i !== index));
+        break;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Car listing created!",
-      description: "Your car has been submitted for review.",
-    });
+
+    // Combine all images and videos into a single object for submission
+    const vehicleData = {
+      ...formData,
+      year: parseInt(formData.year),
+      price: parseFloat(formData.price),
+      mileage: parseInt(formData.mileage),
+      images: [
+        ...exteriorImages,
+        ...interiorImages,
+        ...engineImages,
+        ...wheelsImages
+      ],
+      videos: [
+        ...exteriorVideos,
+        ...interiorVideos,
+        ...engineSoundVideos,
+        ...performanceVideos
+      ],
+      // Optionally, you can add metadata to identify image types
+      imageMetadata: {
+        exterior: exteriorImages.length,
+        interior: interiorImages.length,
+        engine: engineImages.length,
+        wheels: wheelsImages.length
+      },
+      videoMetadata: {
+        exterior: exteriorVideos.length,
+        interior: interiorVideos.length,
+        engineSound: engineSoundVideos.length,
+        performance: performanceVideos.length
+      }
+    };
+
+    try {
+      // Here you would typically make an API call to submit the vehicle
+      // await vehicleService.createVehicle(vehicleData);
+
+      toast({
+        title: "Car listing created!",
+        description: "Your car has been submitted for review.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit vehicle. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleInputChange = (
@@ -71,7 +200,7 @@ const AddCarPage = () => {
   return (
     <Layout title="Add New Car" subtitle="List your vehicle for sale">
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-        {/* Image Upload */}
+        {/* Image Upload Sections */}
         <Card variant="premium" className="p-6 mb-6">
           <CardHeader className="p-0 mb-6">
             <CardTitle className="flex items-center gap-2">
@@ -79,48 +208,355 @@ const AddCarPage = () => {
               Vehicle Photos
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Upload up to 10 high-quality photos of the vehicle
+              Upload high-quality photos for each category
             </p>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-              {images.map((image, index) => (
-                <div
-                  key={index}
-                  className="relative aspect-square rounded-xl overflow-hidden group"
-                >
-                  <img
-                    src={image}
-                    alt={`Car ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                  {index === 0 && (
-                    <Badge className="absolute bottom-2 left-2" variant="default">
-                      Cover
-                    </Badge>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Exterior Images */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 text-foreground">Exterior</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {exteriorImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-square rounded-xl overflow-hidden group"
+                    >
+                      <img
+                        src={image}
+                        alt={`Exterior ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index, 'exterior')}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      {index === 0 && (
+                        <Badge className="absolute bottom-2 left-2" variant="default">
+                          Cover
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
+                  {exteriorImages.length < 10 && (
+                    <label className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors bg-secondary/50">
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-xs text-muted-foreground">Add Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, 'exterior')}
+                      />
+                    </label>
                   )}
                 </div>
-              ))}
-              {images.length < 10 && (
-                <label className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors bg-secondary/50">
-                  <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                  <span className="text-xs text-muted-foreground">Add Photo</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleImageUpload}
-                  />
-                </label>
-              )}
+              </div>
+
+              {/* Interior Images */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 text-foreground">Interior</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {interiorImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-square rounded-xl overflow-hidden group"
+                    >
+                      <img
+                        src={image}
+                        alt={`Interior ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index, 'interior')}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {interiorImages.length < 10 && (
+                    <label className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors bg-secondary/50">
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-xs text-muted-foreground">Add Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, 'interior')}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Engine Images */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 text-foreground">Engine</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {engineImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-square rounded-xl overflow-hidden group"
+                    >
+                      <img
+                        src={image}
+                        alt={`Engine ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index, 'engine')}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {engineImages.length < 10 && (
+                    <label className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors bg-secondary/50">
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-xs text-muted-foreground">Add Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, 'engine')}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Wheels Images */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 text-foreground">Wheels</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {wheelsImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-square rounded-xl overflow-hidden group"
+                    >
+                      <img
+                        src={image}
+                        alt={`Wheels ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index, 'wheels')}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {wheelsImages.length < 10 && (
+                    <label className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors bg-secondary/50">
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-xs text-muted-foreground">Add Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, 'wheels')}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Video Upload Sections */}
+        <Card variant="premium" className="p-6 mb-6">
+          <CardHeader className="p-0 mb-6">
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5 text-primary" />
+              Vehicle Videos
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Upload videos for each category
+            </p>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Exterior Videos */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 text-foreground">Exterior</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  {exteriorVideos.map((video, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-video rounded-xl overflow-hidden group"
+                    >
+                      <video
+                        src={video}
+                        controls
+                        className="w-full h-full object-contain bg-black"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeVideo(index, 'exterior')}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                        Video {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                  {exteriorVideos.length < 5 && (
+                    <label className="aspect-video rounded-xl border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors bg-secondary/50">
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-xs text-muted-foreground">Add Video</span>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleVideoUpload(e, 'exterior')}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Interior Videos */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 text-foreground">Interior</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  {interiorVideos.map((video, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-video rounded-xl overflow-hidden group"
+                    >
+                      <video
+                        src={video}
+                        controls
+                        className="w-full h-full object-contain bg-black"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeVideo(index, 'interior')}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                        Video {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                  {interiorVideos.length < 5 && (
+                    <label className="aspect-video rounded-xl border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors bg-secondary/50">
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-xs text-muted-foreground">Add Video</span>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleVideoUpload(e, 'interior')}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Engine / Sound Videos */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 text-foreground">Engine / Sound</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  {engineSoundVideos.map((video, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-video rounded-xl overflow-hidden group"
+                    >
+                      <video
+                        src={video}
+                        controls
+                        className="w-full h-full object-contain bg-black"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeVideo(index, 'engineSound')}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                        Video {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                  {engineSoundVideos.length < 5 && (
+                    <label className="aspect-video rounded-xl border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors bg-secondary/50">
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-xs text-muted-foreground">Add Video</span>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleVideoUpload(e, 'engineSound')}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Performance Videos */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 text-foreground">Performance</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  {performanceVideos.map((video, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-video rounded-xl overflow-hidden group"
+                    >
+                      <video
+                        src={video}
+                        controls
+                        className="w-full h-full object-contain bg-black"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeVideo(index, 'performance')}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                        Video {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                  {performanceVideos.length < 5 && (
+                    <label className="aspect-video rounded-xl border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors bg-secondary/50">
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-xs text-muted-foreground">Add Video</span>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => handleVideoUpload(e, 'performance')}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

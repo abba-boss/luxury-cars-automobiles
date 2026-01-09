@@ -24,10 +24,9 @@ const TermsOfServicePage = () => {
             <section>
               <h2 className="text-2xl font-bold text-foreground mb-6">Effective Date</h2>
               <p className="text-muted-foreground mb-4">
-                {/* Replaced "Sarkin Mota" brand name with generic term */}
                 These Terms of Service are effective as of December 2024 and govern your use of
-                luxury car services, including our website and related services.
-                luxury car operates at 3F3G+74Q, Olusegun Obasanjo Way, beside NNPC Mega Gas Station,
+                Sarkin Mota Automobiles services, including our website and related services.
+                Sarkin Mota operates at 3F3G+74Q, Olusegun Obasanjo Way, beside NNPC Mega Gas Station,
                 Central Business District, Abuja 900103, FCT, Nigeria.
               </p>
             </section>

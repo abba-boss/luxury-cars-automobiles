@@ -1,5 +1,6 @@
 const { Review, User, Vehicle } = require('../models');
 const { validationResult } = require('express-validator');
+const { Op } = require('sequelize');
 
 // Get reviews for a vehicle
 const getVehicleReviews = async (req, res, next) => {
@@ -159,9 +160,118 @@ const deleteReview = async (req, res, next) => {
   }
 };
 
+// Get all reviews (admin only)
+const getAllReviews = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, status, rating, search } = req.query;
+    const offset = (page - 1) * limit;
+
+    let whereClause = {};
+
+    // Apply filters
+    if (status && status !== 'all') {
+      whereClause.status = status;
+    }
+    if (rating && rating !== 'all') {
+      whereClause.rating = parseInt(rating);
+    }
+    if (search) {
+      whereClause[Op.or] = [
+        { '$user.full_name$': { [Op.like]: `%${search}%` } },
+        { comment: { [Op.like]: `%${search}%` } }
+      ];
+    }
+
+    const { count, rows } = await Review.findAndCountAll({
+      where: whereClause,
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'full_name', 'email']
+        },
+        {
+          model: Vehicle,
+          as: 'vehicle',
+          attributes: ['id', 'make', 'model', 'year']
+        }
+      ],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [['created_at', 'DESC']]
+    });
+
+    res.json({
+      success: true,
+      data: rows,
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(count / limit)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update review status (admin only)
+const updateReviewStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const review = await Review.findByPk(id);
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: 'Review not found'
+      });
+    }
+
+    await review.update({ status });
+
+    res.json({
+      success: true,
+      message: 'Review status updated successfully',
+      data: review
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete review (admin only)
+const adminDeleteReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const review = await Review.findByPk(id);
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: 'Review not found'
+      });
+    }
+
+    await review.destroy();
+
+    res.json({
+      success: true,
+      message: 'Review deleted successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getVehicleReviews,
   createReview,
   updateReview,
-  deleteReview
+  deleteReview,
+  getAllReviews,
+  updateReviewStatus,
+  adminDeleteReview
 };

@@ -413,3 +413,12 @@
   content: '';
   @apply absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none;
 }
+
+.car-video-player .plyr__video-wrapper,
+.car-video-player video {
+  @apply bg-black object-contain;
+}
+
+.car-video-player .plyr__controls {
+  @apply rounded-b-2xl bg-black/70 backdrop-blur;
+}

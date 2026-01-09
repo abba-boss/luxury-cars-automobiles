@@ -13,6 +13,7 @@ import { ArrowLeft, CreditCard, Truck, Shield, CheckCircle } from "lucide-react"
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useChat } from "@/contexts/ChatContext";
 import { customerService, saleService } from "@/services";
 import { formatPrice } from "@/data/cars";
 
@@ -21,6 +22,7 @@ const CheckoutPage = () => {
   const { items, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { socket } = useChat();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -48,7 +50,7 @@ const CheckoutPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.agreeToTerms) {
       toast({
         title: "Terms Required",
@@ -58,43 +60,98 @@ const CheckoutPage = () => {
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to place an order",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
     setLoading(true);
-    
+
     try {
-      // Create customer record
+      // Create customer record with full address
+      const fullAddress = `${formData.address}, ${formData.city}, ${formData.state}`;
       const customerResponse = await customerService.createCustomer({
         name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
-        address: `${formData.address}, ${formData.city}, ${formData.state}`
+        address: fullAddress
       });
 
       if (!customerResponse.success) {
         throw new Error('Failed to create customer record');
       }
 
-      // Create sales records for each cart item
-      for (const item of items) {
+      const customerId = customerResponse.data?.id;
+      if (!customerId) {
+        throw new Error('Customer ID not returned');
+      }
+
+      // Create sales/orders for each cart item
+      const orderPromises = items.map(async (item) => {
+        const orderNotes = `
+Customer Details:
+- Name: ${formData.fullName}
+- Email: ${formData.email}
+- Phone: ${formData.phone}
+- Address: ${fullAddress}
+
+Vehicle: ${item.year} ${item.make} ${item.model}
+Price: ${formatPrice(item.price)}
+Payment Method: ${formData.paymentMethod}
+
+${formData.notes ? `Additional Notes: ${formData.notes}` : ''}
+        `.trim();
+
+        // Create the sale/order - this will automatically create a conversation
         const saleResponse = await saleService.createSale({
-          vehicle_id: parseInt(item.id),
-          customer_id: customerResponse.data!.id,
+          vehicle_id: item.id,
+          customer_id: customerId,
           sale_price: item.price,
           payment_method: formData.paymentMethod,
-          notes: `Order placed via website checkout`
+          payment_status: 'pending',
+          status: 'pending',
+          notes: orderNotes
         });
 
         if (!saleResponse.success) {
           throw new Error(`Failed to create order for ${item.make} ${item.model}`);
         }
+
+        return saleResponse.data;
+      });
+
+      const orders = await Promise.all(orderPromises);
+
+      // Emit real-time notification to admin for each order
+      if (socket) {
+        orders.forEach((order) => {
+          if (order) {
+            socket.emit('new_order_created', {
+              orderId: order.id,
+              customerId: customerId,
+              customerName: formData.fullName,
+              orderDetails: order,
+              timestamp: new Date().toISOString()
+            });
+          }
+        });
       }
 
       clearCart();
+      
       toast({
         title: "Order Placed Successfully!",
-        description: "We'll contact you shortly to complete the process"
+        description: `${orders.length} order(s) created. You can now chat with our team about your order(s).`,
       });
+
+      // Navigate to orders page where they can see their orders and chat
       navigate('/orders');
-      
+
     } catch (error) {
       console.error('Checkout error:', error);
       toast({
@@ -177,16 +234,17 @@ const CheckoutPage = () => {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="address">Address *</Label>
+                    <Label htmlFor="address">Street Address *</Label>
                     <Textarea
                       id="address"
                       value={formData.address}
                       onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                      placeholder="Enter your street address"
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="state">State *</Label>
+                    <Label htmlFor="state">State/Province *</Label>
                     <Input
                       id="state"
                       value={formData.state}
@@ -210,8 +268,24 @@ const CheckoutPage = () => {
                       <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
                       <SelectItem value="cash">Cash Payment</SelectItem>
                       <SelectItem value="financing">Financing</SelectItem>
+                      <SelectItem value="card">Credit/Debit Card</SelectItem>
                     </SelectContent>
                   </Select>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Additional Notes (Optional)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Textarea
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                    placeholder="Any special requests or questions about your order?"
+                    rows={4}
+                  />
                 </CardContent>
               </Card>
 
@@ -222,7 +296,7 @@ const CheckoutPage = () => {
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, agreeToTerms: checked as boolean }))}
                 />
                 <Label htmlFor="terms" className="text-sm">
-                  I agree to the terms and conditions
+                  I agree to the terms and conditions and understand that this order will be reviewed by our team
                 </Label>
               </div>
             </div>
@@ -236,8 +310,8 @@ const CheckoutPage = () => {
                   <div className="space-y-3">
                     {items.map((item) => (
                       <div key={item.id} className="flex justify-between text-sm">
-                        <span>{item.year} {item.make} {item.model}</span>
-                        <span>{formatPrice(item.price)}</span>
+                        <span className="flex-1">{item.year} {item.make} {item.model}</span>
+                        <span className="font-semibold">{formatPrice(item.price)}</span>
                       </div>
                     ))}
                   </div>
@@ -249,10 +323,29 @@ const CheckoutPage = () => {
                     <span className="text-primary">{formatPrice(getTotalPrice())}</span>
                   </div>
 
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      <span>Secure checkout</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Truck className="w-4 h-4" />
+                      <span>Delivery available</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Chat support included</span>
+                    </div>
+                  </div>
+
                   <Button type="submit" disabled={loading} className="w-full" size="lg">
                     {loading ? "Processing..." : "Place Order"}
                     <CreditCard className="w-4 h-4 ml-2" />
                   </Button>
+
+                  <p className="text-xs text-center text-muted-foreground">
+                    After placing your order, you'll be able to chat with our team in real-time
+                  </p>
                 </CardContent>
               </Card>
             </div>

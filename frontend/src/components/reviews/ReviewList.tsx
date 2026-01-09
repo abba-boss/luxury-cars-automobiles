@@ -3,17 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Star, User } from 'lucide-react';
 import { reviewService } from '@/services';
 import { cn } from '@/lib/utils';
-
-interface Review {
-  id: number;
-  rating: number;
-  comment: string;
-  created_at: string;
-  user: {
-    id: number;
-    full_name: string;
-  };
-}
+import type { Review as ReviewType } from '@/types/api';
 
 interface ReviewListProps {
   vehicleId: number;
@@ -21,7 +11,7 @@ interface ReviewListProps {
 }
 
 export function ReviewList({ vehicleId, refreshTrigger }: ReviewListProps) {
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<ReviewType[]>([]);
   const [loading, setLoading] = useState(true);
   const [averageRating, setAverageRating] = useState(0);
 
@@ -30,10 +20,10 @@ export function ReviewList({ vehicleId, refreshTrigger }: ReviewListProps) {
       const response = await reviewService.getVehicleReviews(vehicleId);
       if (response.success && response.data) {
         setReviews(response.data);
-        
+
         // Calculate average rating
         if (response.data.length > 0) {
-          const avg = response.data.reduce((sum: number, review: Review) => sum + review.rating, 0) / response.data.length;
+          const avg = response.data.reduce((sum: number, review: ReviewType) => sum + review.rating, 0) / response.data.length;
           setAverageRating(Math.round(avg * 10) / 10);
         }
       }

@@ -198,8 +198,7 @@ const AdminSettings = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label>Business Name</Label>
-                  <Input defaultValue="luxury car" className="mt-1 rounded-xl" />
-                  {/* Replaced "Sarkin Mota" brand name with generic term */}
+                  <Input defaultValue="Sarkin Mota" className="mt-1 rounded-xl" />
                 </div>
                 <div>
                   <Label>Registration Number</Label>

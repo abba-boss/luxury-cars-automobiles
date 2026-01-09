@@ -49,6 +49,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
+    // Handle new order requests
+    newSocket.on('new_order_request', (orderRequest) => {
+      console.log('New order request received:', orderRequest);
+      // Update unread count for order requests
+      setUnreadCount(prev => prev + 1);
+    });
+
     // Handle message delivery
     newSocket.on('message_delivered', (data) => {
       console.log('Message delivered:', data);
