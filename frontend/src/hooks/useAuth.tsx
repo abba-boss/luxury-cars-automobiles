@@ -47,6 +47,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     };
     checkAuthStatus();
+
+    // Set up periodic token refresh (every 15 minutes)
+    const tokenRefreshInterval = setInterval(async () => {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        const isValid = await authService.refreshToken();
+        if (!isValid) {
+          // Token is invalid, redirect to login
+          window.location.href = '/auth';
+        }
+      }
+    }, 15 * 60 * 1000); // 15 minutes
+
+    // Cleanup interval on unmount
+    return () => clearInterval(tokenRefreshInterval);
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, phone?: string) => {

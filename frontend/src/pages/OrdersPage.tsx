@@ -62,28 +62,21 @@ const OrdersPage = () => {
 
     const handleOrderMessageUpdate = (data: any) => {
       console.log('Order message update:', data);
-      // Refresh orders to show updated message count
-      if (user) {
-        const fetchOrders = async () => {
-          let response;
-          if (user.role === 'admin') {
-            response = await saleService.getSales();
-          } else {
-            response = await saleService.getMyOrders();
-          }
-          
-          if (response.success) {
-            setOrders(response.data || []);
-            // Update selected order if it matches
-            if (selectedOrder && selectedOrder.id === data.orderId) {
-              const updatedOrder = response.data.find((o: any) => o.id === data.orderId);
-              if (updatedOrder) {
-                setSelectedOrder(updatedOrder);
-              }
-            }
-          }
-        };
-        fetchOrders();
+      // Update the specific order in the list if it exists
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order.id === data.orderId
+            ? { ...order, orderConversation: data.orderDetails.orderConversation }
+            : order
+        )
+      );
+
+      // Update selected order if it matches
+      if (selectedOrder && selectedOrder.id === data.orderId) {
+        setSelectedOrder(prevOrder => ({
+          ...prevOrder,
+          orderConversation: data.orderDetails.orderConversation
+        }));
       }
     };
 

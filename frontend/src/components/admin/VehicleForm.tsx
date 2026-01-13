@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, Upload, Plus, Save, ArrowLeft, Loader2 } from "lucide-react";
+import { X, Upload, Plus, Save, ArrowLeft, Loader2, Download, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { adminService } from "@/services/adminService";
 import { CreateVehicleData, Vehicle } from "@/types/api";
+import { productSearchService, ExternalProduct } from "@/services/productSearchService";
 import BrandTypeahead from "@/components/ui/BrandTypeahead";
 
 interface VehicleFormProps {
@@ -24,9 +25,15 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadedVideos, setUploadedVideos] = useState<string[]>([]);
   const [newFeature, setNewFeature] = useState("");
+  const [importProductId, setImportProductId] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<ExternalProduct[]>([]);
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
   // Predefined feature options
   const commonFeatures = [
@@ -238,9 +245,135 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
     }
   };
 
+  const handleImportProduct = async () => {
+    if (!importProductId.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a product ID to import",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setImporting(true);
+    try {
+      const response = await productSearchService.getExternalProductDetails(importProductId);
+
+      if (response.success && response.data) {
+        const product = response.data;
+
+        // Update form data with imported product data
+        setFormData(prev => ({
+          ...prev,
+          make: product.make,
+          model: product.model,
+          year: product.year,
+          price: product.price,
+          mileage: product.mileage || 0,
+          fuel_type: product.fuel_type,
+          transmission: product.transmission,
+          condition: product.condition,
+          body_type: product.body_type,
+          color: product.color,
+          description: product.description,
+          features: product.features,
+          is_featured: false,
+          is_hot_deal: false,
+          is_verified: false,
+          status: "available"
+        }));
+
+        // Update uploaded media
+        setUploadedImages(product.images);
+        setUploadedVideos(product.videos || []);
+
+        toast({
+          title: "Success",
+          description: `Imported ${product.make} ${product.model} successfully`
+        });
+      } else {
+        throw new Error(response.message || "Failed to import product");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to import product",
+        variant: "destructive"
+      });
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleSearchProducts = async () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a search query",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const response = await productSearchService.searchExternalProducts({
+        keyword: searchQuery
+      });
+
+      if (response.success && response.data) {
+        setSearchResults(response.data);
+      } else {
+        throw new Error(response.message || "Failed to search for products");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to search for products",
+        variant: "destructive"
+      });
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleSelectProduct = (product: ExternalProduct) => {
+    // Update form data with selected product data
+    setFormData(prev => ({
+      ...prev,
+      make: product.make,
+      model: product.model,
+      year: product.year,
+      price: product.price,
+      mileage: product.mileage || 0,
+      fuel_type: product.fuel_type,
+      transmission: product.transmission,
+      condition: product.condition,
+      body_type: product.body_type,
+      color: product.color,
+      description: product.description,
+      features: product.features,
+      is_featured: false,
+      is_hot_deal: false,
+      is_verified: false,
+      status: "available"
+    }));
+
+    // Update uploaded media
+    setUploadedImages(product.images);
+    setUploadedVideos(product.videos || []);
+
+    toast({
+      title: "Success",
+      description: `Imported ${product.make} ${product.model} successfully`
+    });
+
+    setShowSearchModal(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast({
         title: "Validation Error",
@@ -252,11 +385,18 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
 
     setLoading(true);
     try {
+      // Ensure the form data has the latest media
+      const finalFormData = {
+        ...formData,
+        images: uploadedImages,
+        videos: uploadedVideos
+      };
+
       let response;
       if (mode === 'create') {
-        response = await adminService.createVehicle(formData);
+        response = await adminService.createVehicle(finalFormData);
       } else {
-        response = await adminService.updateVehicle(vehicleId!, formData);
+        response = await adminService.updateVehicle(vehicleId!, finalFormData);
       }
 
       if (response.success) {
@@ -384,6 +524,55 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
               />
               {errors.color && <p className="text-red-500 text-sm mt-1">{errors.color}</p>}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Import Product */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Import Product Data</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Import product information from external sources
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Input
+                value={importProductId}
+                onChange={(e) => setImportProductId(e.target.value)}
+                placeholder="Enter product ID to import"
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                onClick={handleImportProduct}
+                disabled={importing}
+                variant="secondary"
+              >
+                {importing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Importing...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Import
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setShowSearchModal(true)}
+                variant="outline"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Enter a product ID to import or search for products from external sources
+            </p>
           </CardContent>
         </Card>
 
@@ -723,6 +912,78 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
           </Button>
         </div>
       </form>
+
+      {/* Product Search Modal */}
+      {showSearchModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-lg w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Search External Products</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSearchModal(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-6 flex-1 overflow-auto">
+              <div className="flex gap-2 mb-4">
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search for luxury cars..."
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearchProducts()}
+                  className="flex-1"
+                />
+                <Button onClick={handleSearchProducts} disabled={searching}>
+                  {searching ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    "Search"
+                  )}
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {searchResults.map((product) => (
+                  <Card
+                    key={product.id}
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => handleSelectProduct(product)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="aspect-video bg-muted rounded-md mb-3 overflow-hidden">
+                        {product.images[0] ? (
+                          <img
+                            src={product.images[0]}
+                            alt={`${product.make} ${product.model}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-muted-foreground">No image</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <h4 className="font-bold">{product.make} {product.model}</h4>
+                      <p className="text-sm text-muted-foreground">{product.year} • ₦{product.price.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{product.description.substring(0, 60)}...</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -69,30 +69,38 @@ const CarsPage = () => {
           // Map category to appropriate body_type for API filtering
           switch (categoryFromUrl) {
             case 'suv':
-              params.body_type = 'SUV';
+              params.body_type = 'suv';
               break;
             case 'sedan':
-              params.body_type = 'Sedan';
+              params.body_type = 'sedan';
               break;
             case 'luxury':
-              params.body_type = 'Luxury';
+              // For luxury category, we might want to use a different approach
+              // For now, we'll skip body_type filtering for luxury
+              // You can customize this to filter by high-end brands or luxury features
               break;
             case 'sports':
-              params.body_type = 'Sports';
+              params.body_type = 'sports';
+              break;
+            case 'tokunbo':
+              params.condition = 'Tokunbo';
+              break;
+            case 'brand-new':
+              params.condition = 'Brand New';
               break;
           }
         }
         if (searchQuery) {
           params.search = searchQuery;
         }
-        // Add other filters
-        if (selectedConditions.length > 0) {
+        // Add other filters, but don't override category filters
+        if (selectedConditions.length > 0 && !categoryFromUrl) {
           params.condition = selectedConditions[0];  // Use first (and should be only) selected condition
         }
-        if (selectedTransmission.length > 0) {
+        if (selectedTransmission.length > 0 && !categoryFromUrl) {
           params.transmission = selectedTransmission[0];  // Use first selected transmission
         }
-        if (selectedFuelType.length > 0) {
+        if (selectedFuelType.length > 0 && !categoryFromUrl) {
           params.fuel_type = selectedFuelType[0];  // Use first selected fuel type
         }
 
@@ -147,21 +155,32 @@ const CarsPage = () => {
   useEffect(() => {
     if (brandFromUrl) {
       setSelectedBrands([brandFromUrl]);
+      // Clear category and other filters when brand is selected
+      setSelectedConditions([]);
+      setSelectedTransmission([]);
+      setSelectedFuelType([]);
     } else {
       // If no brand in URL, ensure selectedBrands is empty
       setSelectedBrands([]);
     }
+
     if (categoryFromUrl) {
+      // Clear other filters when category is selected
+      setSelectedBrands([]);
+      setSelectedTransmission([]);
+      setSelectedFuelType([]);
+
       // Map category to appropriate filters
       switch (categoryFromUrl) {
         case 'suv':
-          setSelectedBrands(['BMW', 'Mercedes-Benz', 'Lexus', 'Toyota', 'Honda']);
-          break;
         case 'sedan':
-          setSelectedBrands(['Toyota', 'Honda', 'Mercedes-Benz', 'BMW']);
+        case 'sports':
+          // These categories are handled by body_type in the API call
+          // Don't set brand filters to avoid double filtering
           break;
         case 'luxury':
-          setSelectedBrands(['Mercedes-Benz', 'BMW', 'Lexus', 'Audi']);
+          // Luxury category is handled differently - no specific body_type filter
+          // Don't set brand filters to avoid double filtering
           break;
         case 'tokunbo':
           setSelectedConditions(['Tokunbo']);
@@ -169,10 +188,13 @@ const CarsPage = () => {
         case 'brand-new':
           setSelectedConditions(['Brand New']);
           break;
-        case 'sports':
-          setSelectedBrands(['BMW', 'Mercedes-Benz', 'Audi', 'Porsche']);
+        default:
+          // For any other categories, no additional filter needed
           break;
       }
+    } else if (!brandFromUrl) {
+      // If neither brand nor category is selected, clear conditions
+      setSelectedConditions([]);
     }
   }, [brandFromUrl, categoryFromUrl]);
 
@@ -183,13 +205,16 @@ const CarsPage = () => {
     const matchesSearch =
       searchQuery === "" ||
       `${car.make} ${car.model}`.toLowerCase().includes(searchQuery.toLowerCase());
-    // Only apply brand filter if we're not already filtering by brand via API
-    // If brandFromUrl is set, the API already filtered by brand, so we don't filter again
+
+    // Only apply brand filter if we're not already filtering by brand or category via API
+    // If brandFromUrl or categoryFromUrl is set, the API already filtered appropriately, so we don't filter again
     const matchesBrand =
-      (!brandFromUrl && (selectedBrands.length === 0 || selectedBrands.includes(car.make))) ||
-      (brandFromUrl && car.make === brandFromUrl);
-    const matchesPrice =
-      car.price >= priceRange[0] && car.price <= priceRange[1];
+      (!brandFromUrl && !categoryFromUrl && (selectedBrands.length === 0 || selectedBrands.includes(car.make))) ||
+      (brandFromUrl && car.make === brandFromUrl) ||
+      (categoryFromUrl); // If category is selected, allow all brands to pass through
+
+    // Apply price filter
+    const matchesPrice = car.price >= priceRange[0] && car.price <= priceRange[1];
 
     return matchesSearch && matchesBrand && matchesPrice;
   });
@@ -216,8 +241,11 @@ const CarsPage = () => {
         newSelectedBrands = [...prev, brand];
       }
 
-      // Update URL parameters
+      // When selecting a brand, clear category filter to avoid conflicts
       const newParams = new URLSearchParams(searchParams);
+      if (newSelectedBrands.length > 0) {
+        newParams.delete('category');
+      }
       if (newSelectedBrands.length > 0) {
         newParams.set('brand', newSelectedBrands[0]); // Use first brand for API call
       } else {

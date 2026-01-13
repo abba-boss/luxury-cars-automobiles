@@ -42,6 +42,7 @@ import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminEditCar from "./pages/admin/AdminEditCar";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminBrands from "./pages/admin/AdminBrands";
+import ImportProductsPage from "./pages/admin/ImportProductsPage";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import CheckoutProtection from "./components/auth/CheckoutProtection";
@@ -98,7 +99,7 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="/orders" element={
-                    <ProtectedRoute requireCustomer>
+                    <ProtectedRoute requireCustomerOrAdmin>
                       <OrdersPage />
                     </ProtectedRoute>
                   } />
@@ -149,6 +150,11 @@ const App = () => (
                       <AdminMessages />
                     </ProtectedRoute>
                   } />
+                  <Route path="/admin/orders" element={
+                    <ProtectedRoute requireAdmin>
+                      <OrdersPage />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/admin/users" element={
                     <ProtectedRoute requireAdmin>
                       <AdminUsers />
@@ -187,6 +193,11 @@ const App = () => (
                   <Route path="/admin/brands" element={
                     <ProtectedRoute requireAdmin>
                       <AdminBrands />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/import-products" element={
+                    <ProtectedRoute requireAdmin>
+                      <ImportProductsPage />
                     </ProtectedRoute>
                   } />
 

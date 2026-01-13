@@ -16,11 +16,11 @@ export const authService = {
     const response = await api.post<AuthResponse>('/auth/register', {
       email, password, full_name, phone
     });
-    
+
     if (response.success && response.token) {
       localStorage.setItem('auth_token', response.token);
     }
-    
+
     return response;
   },
 
@@ -28,16 +28,24 @@ export const authService = {
     const response = await api.post<AuthResponse>('/auth/login', {
       email, password
     });
-    
+
     if (response.success && response.token) {
       localStorage.setItem('auth_token', response.token);
     }
-    
+
     return response;
   },
 
   async getProfile(): Promise<ApiResponse<User>> {
-    return api.get<ApiResponse<User>>('/auth/me');
+    try {
+      return await api.get<ApiResponse<User>>('/auth/me');
+    } catch (error) {
+      // If getting profile fails due to auth error, clear the token
+      if (error instanceof Error && error.message.includes('401')) {
+        localStorage.removeItem('auth_token');
+      }
+      throw error;
+    }
   },
 
   async updateProfile(data: Partial<Pick<User, 'full_name' | 'phone'>>): Promise<ApiResponse<User>> {
@@ -47,8 +55,22 @@ export const authService = {
   async logout(): Promise<void> {
     try {
       await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout API fails, clear local storage
     } finally {
       localStorage.removeItem('auth_token');
+    }
+  },
+
+  // Function to refresh the authentication token
+  async refreshToken(): Promise<boolean> {
+    try {
+      const response = await this.getProfile();
+      return response.success;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return false;
     }
   }
 };
@@ -367,6 +389,8 @@ export const cartService = {
     return api.delete<ApiResponse<CartData>>('/carts');
   }
 };
+
+export { productSearchService } from './productSearchService';
 
 export const analyticsService = {
   async getOverview(): Promise<ApiResponse<any>> {

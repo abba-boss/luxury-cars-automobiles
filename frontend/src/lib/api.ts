@@ -21,10 +21,22 @@ class ApiClient {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
   }
 
-  private async handleResponse<T>(response: Response): Promise<T> {
+  private async handleResponse<T>(response: Response, endpoint: string, method: string, data?: any): Promise<T> {
     const contentType = response.headers.get('content-type');
-    
+
     if (!response.ok) {
+      // Check if it's an authentication error
+      if (response.status === 401) {
+        const errorData = await response.json();
+        if (errorData.code === 'TOKEN_INVALID' || errorData.code === 'TOKEN_EXPIRED') {
+          // Attempt to refresh the token by logging the user out
+          console.log('Token invalid/expired, clearing auth token');
+          localStorage.removeItem('auth_token');
+          window.location.href = '/auth'; // Redirect to login
+          return {} as T; // This won't be reached due to redirect
+        }
+      }
+
       let errorData;
       try {
         if (contentType && contentType.includes('application/json')) {
@@ -37,7 +49,7 @@ class ApiClient {
       }
       throw new ApiError(response.status, errorData.message || 'Request failed', errorData);
     }
-    
+
     try {
       if (contentType && contentType.includes('application/json')) {
         return await response.json();
@@ -58,11 +70,11 @@ class ApiClient {
         }
       });
     }
-    
+
     const response = await fetch(url.toString(), {
       headers: this.getAuthHeaders()
     });
-    return this.handleResponse<T>(response);
+    return this.handleResponse<T>(response, endpoint, 'GET');
   }
 
   async post<T>(endpoint: string, data?: any): Promise<T> {
@@ -71,7 +83,7 @@ class ApiClient {
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data)
     });
-    return this.handleResponse<T>(response);
+    return this.handleResponse<T>(response, endpoint, 'POST', data);
   }
 
   async put<T>(endpoint: string, data?: any): Promise<T> {
@@ -80,7 +92,7 @@ class ApiClient {
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data)
     });
-    return this.handleResponse<T>(response);
+    return this.handleResponse<T>(response, endpoint, 'PUT', data);
   }
 
   async delete<T>(endpoint: string): Promise<T> {
@@ -88,7 +100,7 @@ class ApiClient {
       method: 'DELETE',
       headers: this.getAuthHeaders()
     });
-    return this.handleResponse<T>(response);
+    return this.handleResponse<T>(response, endpoint, 'DELETE');
   }
 
   async upload<T>(endpoint: string, formData: FormData): Promise<T> {
@@ -97,7 +109,7 @@ class ApiClient {
       headers: this.getUploadHeaders(),
       body: formData
     });
-    return this.handleResponse<T>(response);
+    return this.handleResponse<T>(response, endpoint, 'UPLOAD');
   }
 }
 

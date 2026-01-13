@@ -40,16 +40,18 @@ export function CategoryGrid() {
 
           switch (category.id) {
             case 'suv':
-              filterParams = { body_type: 'SUV' };
+              filterParams = { body_type: 'suv' };
               break;
             case 'sedan':
-              filterParams = { body_type: 'Sedan' };
+              filterParams = { body_type: 'sedan' };
               break;
             case 'luxury':
-              filterParams = { body_type: 'Luxury' };
+              // For luxury, we might want to use a different approach
+              // For now, we'll skip body_type filtering for luxury
+              filterParams = {};
               break;
             case 'sports':
-              filterParams = { body_type: 'Sports' };
+              filterParams = { body_type: 'sports' };
               break;
             case 'tokunbo':
               filterParams = { condition: 'Tokunbo' };

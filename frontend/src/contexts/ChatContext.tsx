@@ -22,12 +22,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user || !token) return;
 
-    // Initialize Socket.IO connection
+    // Initialize Socket.IO connection with reconnection options
     const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001', {
       auth: {
         token
       },
-      transports: ['websocket', 'polling']
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000
     });
 
     newSocket.on('connect', () => {
@@ -35,8 +39,31 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       setIsConnected(true);
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('Disconnected from chat server');
+    newSocket.on('disconnect', (reason) => {
+      console.log('Disconnected from chat server:', reason);
+      setIsConnected(false);
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+      setIsConnected(false);
+    });
+
+    newSocket.on('reconnect', (attemptNumber) => {
+      console.log('Reconnected to chat server on attempt:', attemptNumber);
+      setIsConnected(true);
+    });
+
+    newSocket.on('reconnect_attempt', (attemptNumber) => {
+      console.log('Reconnection attempt:', attemptNumber);
+    });
+
+    newSocket.on('reconnect_error', (error) => {
+      console.error('Reconnection error:', error);
+    });
+
+    newSocket.on('reconnect_failed', () => {
+      console.error('Reconnection failed');
       setIsConnected(false);
     });
 
@@ -54,6 +81,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       console.log('New order request received:', orderRequest);
       // Update unread count for order requests
       setUnreadCount(prev => prev + 1);
+    });
+
+    // Handle order message updates
+    newSocket.on('order_message_update', (data) => {
+      console.log('Order message update received:', data);
+      // Update unread count if message is not from current user
+      if (data.message?.sender?.id !== user?.id) {
+        setUnreadCount(prev => prev + 1);
+      }
     });
 
     // Handle message delivery
@@ -78,7 +114,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setSocket(newSocket);
 
     return () => {
-      newSocket.close();
+      newSocket.disconnect();
     };
   }, [user, token]);
 

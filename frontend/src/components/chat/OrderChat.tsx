@@ -146,11 +146,17 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
 
         // Mark messages as read
         if (socket && user) {
-          const lastMessage = response.data[response.data.length - 1];
-          if (lastMessage && lastMessage.sender_id !== user.id) {
+          // Mark all unread messages from other participants as read
+          const unreadMessages = response.data.filter(msg =>
+            msg.sender_id !== user.id && msg.status !== 'read'
+          );
+
+          if (unreadMessages.length > 0) {
+            // Mark the most recent message as read to update the conversation
+            const lastUnreadMessage = unreadMessages[unreadMessages.length - 1];
             socket.emit('message_read', {
               conversationId,
-              messageId: lastMessage.id
+              messageId: lastUnreadMessage.id
             });
           }
         }
@@ -199,11 +205,19 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
       });
 
       if (response.success) {
-        setMessages(prev => 
-          prev.map(msg => 
+        setMessages(prev =>
+          prev.map(msg =>
             msg.localId === localId ? response.data : msg
           )
         );
+
+        // Mark messages as read after sending
+        if (socket && user) {
+          socket.emit('message_read', {
+            conversationId,
+            messageId: response.data.id
+          });
+        }
       } else {
         setMessages(prev => prev.filter(msg => msg.localId !== localId));
       }
@@ -410,7 +424,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
                       {isOwnMessage && (
                         <>
                           {msg.status === 'sent' && <Check className="w-3 h-3" />}
-                          {msg.status === 'delivered' && <Check className="w-3 h-3" />}
+                          {msg.status === 'delivered' && <CheckCheck className="w-3 h-3" />}
                           {msg.status === 'read' && <CheckCheck className="w-3 h-3 text-primary" />}
                         </>
                       )}

@@ -192,20 +192,52 @@ const createSale = async (req, res, next) => {
       transaction
     });
 
+    // Ensure there's always at least one admin in the conversation
+    let adminToAdd = adminUser;
+
+    if (!adminToAdd) {
+      // If no active admin found, try to find any admin user
+      console.log('Attempting to find any admin user...');
+      adminToAdd = await User.findOne({
+        where: { role: 'admin' },
+        transaction
+      });
+    }
+
+    if (!adminToAdd) {
+      // If still no admin found, try to find the first user with admin role regardless of other criteria
+      adminToAdd = await User.findOne({
+        where: {
+          role: 'admin'
+        },
+        order: [['id', 'ASC']], // Get the first admin user
+        transaction
+      });
+    }
+
+    if (!adminToAdd) {
+      console.error('CRITICAL: No admin user exists in the system! Order conversation will not have admin participant.');
+      // This is a critical issue - there should always be at least one admin
+      // For now, we'll still create the conversation with just the customer
+    }
+
     const participants = [
       {
         conversation_id: conversation.id,
         user_id: req.user?.id,
-        role: 'sender'
+        role: 'customer'  // Changed from 'sender' to 'customer' for clarity
       }
     ];
 
-    if (adminUser) {
+    if (adminToAdd) {
       participants.push({
         conversation_id: conversation.id,
-        user_id: adminUser.id,
-        role: 'recipient'
+        user_id: adminToAdd.id,
+        role: 'admin'
       });
+      console.log(`Admin user ${adminToAdd.id} added to conversation for order ${sale.id}`);
+    } else {
+      console.warn(`No admin could be added to conversation for order ${sale.id}, customer-only conversation created.`);
     }
 
     await ConversationParticipant.bulkCreate(participants, { transaction });

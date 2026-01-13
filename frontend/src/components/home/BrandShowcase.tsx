@@ -27,7 +27,8 @@ export function BrandShowcase() {
   }, []);
 
   const handleBrandClick = (brand: Brand) => {
-    navigate(`/cars?brand=${brand.name}&brandId=${brand.id}`);
+    window.scrollTo(0, 0);
+navigate(`/cars?brandId=${brand.id}`);
   };
 
   if (loading) {

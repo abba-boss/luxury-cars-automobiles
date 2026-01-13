@@ -142,6 +142,10 @@ app.use('/api/financing', financingRoutes);
 const cartRoutes = require('./routes/carts');
 app.use('/api/carts', cartRoutes);
 
+// Product search routes
+const productSearchRoutes = require('./routes/productSearch');
+app.use('/api/admin/products', productSearchRoutes);
+
 // Analytics routes
 const analyticsRoutes = require('./routes/analytics');
 app.use('/api/admin/analytics', analyticsRoutes);
@@ -302,7 +306,7 @@ io.on('connection', (socket) => {
       });
 
       if (orderConversation) {
-        // Emit order message update to all participants
+        // Emit order message update to all participants in the conversation
         const participants = await ConversationParticipant.findAll({
           where: { conversation_id: conversationId }
         });
@@ -315,9 +319,23 @@ io.on('connection', (socket) => {
             orderDetails: orderConversation.sale
           });
         }
+
+        // Additionally, emit to admin role room so all admins can see updates
+        io.to(`role_admin`).emit('order_message_update', {
+          orderId: orderConversation.sale_id,
+          conversationId,
+          message: fullMessage,
+          orderDetails: orderConversation.sale
+        });
       }
 
-      // Update message status to delivered for all participants except sender
+      // Update message status to delivered for the message in database
+      await Message.update(
+        { status: 'delivered' },
+        { where: { id: message.id } }
+      );
+
+      // Notify all participants except sender about message delivery
       const participants = await ConversationParticipant.findAll({
         where: { conversation_id: conversationId }
       });
@@ -326,7 +344,8 @@ io.on('connection', (socket) => {
         if (participant.user_id !== socket.user.id) {
           io.to(`user_${participant.user_id}`).emit('message_delivered', {
             messageId: message.id,
-            conversationId
+            conversationId,
+            senderId: socket.user.id
           });
         }
       }
@@ -359,7 +378,9 @@ io.on('connection', (socket) => {
       const { conversationId, messageId } = data;
 
       // Update message status to read in database
-      const { Message, MessageReadStatus } = require('./models');
+      const { Message, MessageReadStatus, ConversationParticipant } = require('./models');
+
+      // Update message status to read
       await Message.update(
         { status: 'read' },
         { where: { id: messageId, conversation_id: conversationId } }
@@ -381,7 +402,23 @@ io.on('connection', (socket) => {
           conversationId
         });
       }
+
+      // Also notify other participants about the read status
+      const participants = await ConversationParticipant.findAll({
+        where: { conversation_id: conversationId }
+      });
+
+      for (const participant of participants) {
+        if (participant.user_id !== socket.user.id) {
+          io.to(`user_${participant.user_id}`).emit('message_read', {
+            messageId,
+            userId: socket.user.id,
+            conversationId
+          });
+        }
+      }
     } catch (error) {
+      console.error('Error handling message read:', error);
       socket.emit('error', { message: error.message });
     }
   });

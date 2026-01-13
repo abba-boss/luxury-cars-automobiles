@@ -117,7 +117,8 @@ const getUserConversations = async (req, res, next) => {
     const offset = (page - 1) * limit;
 
     // Get conversations where user is a participant
-    const { count, rows: conversations } = await Conversation.findAndCountAll({
+    // For admins, get all conversations (especially order-related ones)
+    let queryOptions = {
       include: [
         {
           model: ConversationParticipant,
@@ -152,7 +153,20 @@ const getUserConversations = async (req, res, next) => {
       ],
       limit: parseInt(limit),
       offset: parseInt(offset)
-    });
+    };
+
+    // For admins, we might want to include all conversations or at least order-related ones
+    if (req.user.role === 'admin') {
+      // Admins can see all conversations, but we'll still apply status filter
+      // The query remains the same but the admin can access any conversation
+    } else {
+      // For regular users, only get conversations they participate in
+      queryOptions.include[0].where = {
+        user_id: userId
+      };
+    }
+
+    const { count, rows: conversations } = await Conversation.findAndCountAll(queryOptions);
 
     // Add unread count for each conversation
     const conversationsWithUnread = await Promise.all(
@@ -225,6 +239,12 @@ const getConversationMessages = async (req, res, next) => {
     let conversation;
     if (req.user.role === 'admin') {
       conversation = await Conversation.findByPk(conversationId);
+      if (!conversation) {
+        return res.status(404).json({
+          success: false,
+          message: 'Conversation not found'
+        });
+      }
     } else {
       conversation = await Conversation.findOne({
         where: { id: conversationId },
@@ -274,7 +294,7 @@ const getConversationMessages = async (req, res, next) => {
         where: {
           conversation_id: conversationId,
           sender_id: { [Op.ne]: userId },
-          status: { [Op.ne]: 'read' }
+          status: { [Op.in]: ['sent', 'delivered'] }  // Only update sent/delivered messages, not read
         }
       }
     );
@@ -340,21 +360,31 @@ const sendMessage = async (req, res, next) => {
       });
     }
 
-    // Get other participant in the conversation
-    const otherParticipant = conversation.participants.find(p => p.user_id !== userId);
-    if (!otherParticipant) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid conversation participants'
-      });
-    }
-
     // Role-based access control
     if (req.user.role === 'admin') {
-      // Admin can chat with anyone
+      // Admin can chat in any conversation they are part of
+      // Check if admin is a participant in this conversation
+      const isAdminParticipant = conversation.participants.some(p => p.user_id === userId);
+      if (!isAdminParticipant) {
+        return res.status(403).json({
+          success: false,
+          message: 'Admin not authorized to send message in this conversation'
+        });
+      }
     } else if (req.user.role === 'user') {
       // User can chat with admin or buyers
-      if (otherParticipant.user.role === 'user') {
+      const userParticipants = conversation.participants.filter(p => p.user_id === userId);
+      if (userParticipants.length === 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'User not authorized to send message in this conversation'
+        });
+      }
+
+      // Check if conversation is with another user
+      const otherParticipants = conversation.participants.filter(p => p.user_id !== userId);
+      const hasUnauthorizedUser = otherParticipants.some(p => p.user.role === 'user');
+      if (hasUnauthorizedUser) {
         return res.status(403).json({
           success: false,
           message: 'Users cannot chat with other users'
@@ -362,7 +392,18 @@ const sendMessage = async (req, res, next) => {
       }
     } else if (req.user.role === 'buyer') {
       // Buyer can chat with users who contacted them and admin
-      if (otherParticipant.user.role === 'buyer') {
+      const buyerParticipants = conversation.participants.filter(p => p.user_id === userId);
+      if (buyerParticipants.length === 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Buyer not authorized to send message in this conversation'
+        });
+      }
+
+      // Check if conversation is with another buyer
+      const otherParticipants = conversation.participants.filter(p => p.user_id !== userId);
+      const hasOtherBuyer = otherParticipants.some(p => p.user.role === 'buyer');
+      if (hasOtherBuyer) {
         return res.status(403).json({
           success: false,
           message: 'Buyers cannot chat with other buyers'
@@ -426,7 +467,8 @@ const markMessagesAsRead = async (req, res, next) => {
     const unreadMessages = await Message.findAll({
       where: {
         conversation_id: conversationId,
-        sender_id: { [Op.ne]: userId }
+        sender_id: { [Op.ne]: userId },
+        status: { [Op.ne]: 'read' }  // Only update messages that aren't already read
       },
       include: [
         {
@@ -440,6 +482,13 @@ const markMessagesAsRead = async (req, res, next) => {
         }
       ]
     });
+
+    if (unreadMessages.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No unread messages to mark as read'
+      });
+    }
 
     // Update message status to read
     await Message.update(
@@ -467,7 +516,8 @@ const markMessagesAsRead = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Messages marked as read'
+      message: 'Messages marked as read',
+      data: { count: unreadMessages.length }
     });
   } catch (error) {
     next(error);
