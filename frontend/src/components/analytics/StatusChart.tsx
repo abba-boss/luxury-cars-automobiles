@@ -46,9 +46,9 @@ export function StatusChart({ data, loading }: StatusChartProps) {
   }));
 
   return (
-    <Card>
+    <Card className="bg-card/50 border border-border/50">
       <CardHeader>
-        <CardTitle>Vehicle Status Distribution</CardTitle>
+        <CardTitle className="text-lg font-semibold">Vehicle Status Distribution</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
@@ -68,7 +68,14 @@ export function StatusChart({ data, loading }: StatusChartProps) {
                   <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  borderColor: 'hsl(var(--border))',
+                  borderRadius: '0.5rem',
+                  color: 'hsl(var(--foreground))',
+                }}
+              />
               <Legend />
             </PieChart>
           </ResponsiveContainer>

@@ -124,10 +124,11 @@ export const featuredCars: Car[] = [
 ];
 
 export const brands = [
-  "Toyota", "Lexus", "Mercedes-Benz", "BMW", "Audi", "Honda", "Range Rover", 
-  "Porsche", "Ford", "Chevrolet", "Nissan", "Hyundai", "Kia", "Volkswagen", 
-  "Jeep", "Mazda", "Infiniti", "Acura", "Volvo", "Jaguar", "Bentley", 
-  "Ferrari", "Lamborghini", "Tesla"
+  "Toyota", "Lexus", "Mercedes-Benz", "BMW", "Audi", "Honda", "Range Rover",
+  "Porsche", "Ford", "Chevrolet", "Nissan", "Hyundai", "Kia", "Volkswagen",
+  "Jeep", "Mazda", "Infiniti", "Acura", "Volvo", "Jaguar", "Bentley",
+  "Ferrari", "Lamborghini", "Tesla", "Subaru", "Genesis", "Dodge", "Cadillac",
+  "Maserati", "Rolls-Royce", "Land Rover"
 ];
 export const conditions = ["Tokunbo", "Nigerian Used", "Brand New"];
 export const transmissions = ["Automatic", "Manual"];

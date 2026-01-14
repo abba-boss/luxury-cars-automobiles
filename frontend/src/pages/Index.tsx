@@ -4,13 +4,13 @@ import { CategoryGrid } from "@/components/home/CategoryGrid";
 import { FeaturedCars } from "@/components/home/FeaturedCars";
 import { CarHighlights } from "@/components/home/CarHighlights";
 import { TeslaFeatures } from "@/components/home/TeslaFeatures";
-import { BrandShowcase } from "@/components/home/BrandShowcase";
+import { PremiumBrandCarousel } from "@/components/home/PremiumBrandCarousel";
 
 const Index = () => {
   return (
     <PublicLayout>
       <HeroCarousel />
-      <BrandShowcase />
+      <PremiumBrandCarousel />
       <CategoryGrid />
       <CarHighlights />
       <FeaturedCars />

@@ -31,25 +31,35 @@ export function BrandChart({ data, loading, title, dataKey, color = "hsl(var(--p
   }
 
   return (
-    <Card>
+    <Card className="bg-card/50 border border-border/50">
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} layout="horizontal">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" tick={{ fontSize: 12 }} />
-              <YAxis 
-                type="category" 
-                dataKey="brand" 
-                tick={{ fontSize: 12 }}
+              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+              <XAxis
+                type="number"
+                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+              />
+              <YAxis
+                type="category"
+                dataKey="brand"
+                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                 width={80}
               />
-              <Tooltip />
-              <Bar 
-                dataKey={dataKey} 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  borderColor: 'hsl(var(--border))',
+                  borderRadius: '0.5rem',
+                  color: 'hsl(var(--foreground))',
+                }}
+              />
+              <Bar
+                dataKey={dataKey}
                 fill={color}
                 radius={[0, 4, 4, 0]}
               />

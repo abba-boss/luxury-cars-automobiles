@@ -40,6 +40,66 @@ const sampleBrands = [
   {
     name: 'Volkswagen',
     image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/volkswagen.svg'
+  },
+  {
+    name: 'Mazda',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/mazda.svg'
+  },
+  {
+    name: 'Subaru',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/subaru.svg'
+  },
+  {
+    name: 'Chevrolet',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/chevrolet.svg'
+  },
+  {
+    name: 'Dodge',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/dodge.svg'
+  },
+  {
+    name: 'Jeep',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/jeep.svg'
+  },
+  {
+    name: 'Cadillac',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/cadillac.svg'
+  },
+  {
+    name: 'Kia',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/kia.svg'
+  },
+  {
+    name: 'Genesis',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/genesis.svg'
+  },
+  {
+    name: 'Ferrari',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/ferrari.svg'
+  },
+  {
+    name: 'Lamborghini',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/lamborghini.svg'
+  },
+  {
+    name: 'Maserati',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/maserati.svg'
+  },
+  {
+    name: 'Rolls-Royce',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/rollsroyce.svg'
+  },
+  {
+    name: 'Bentley',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/bentley.svg'
+  },
+  {
+    name: 'Land Rover',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/landrover.svg'
+  },
+  {
+    name: 'Jaguar',
+    image: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/jaguar.svg'
   }
 ];
 

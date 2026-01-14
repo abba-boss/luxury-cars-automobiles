@@ -68,22 +68,26 @@ const AdminDashboard: React.FC = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
             <p className="text-muted-foreground">
               Welcome back! Here's what's happening with your dealership.
             </p>
           </div>
-          <Button onClick={fetchAnalytics} variant="outline">
+          <Button
+            onClick={fetchAnalytics}
+            variant="outline"
+            className="bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white border-0"
+          >
             <Activity className="w-4 h-4 mr-2" />
-            Refresh
+            Refresh Data
           </Button>
         </div>
 
         {/* KPI Cards */}
         {overview && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             <KPICard
               title="Total Revenue"
               value={overview.totalRevenue}
@@ -113,7 +117,7 @@ const AdminDashboard: React.FC = () => {
         )}
 
         {/* Charts Grid */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2">
           {/* Sales Revenue Chart */}
           {salesData && (
             <SalesChart
@@ -152,7 +156,7 @@ const AdminDashboard: React.FC = () => {
 
         {/* Inventory by Brand */}
         {inventoryData && (
-          <div className="grid gap-6">
+          <div className="grid gap-5">
             <BrandChart
               data={inventoryData.vehiclesByBrand || []}
               loading={!inventoryData}
@@ -164,8 +168,8 @@ const AdminDashboard: React.FC = () => {
         )}
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
+        <div className="grid gap-5 md:grid-cols-3">
+          <Card className="bg-card/50 border border-border/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
               <Plus className="h-4 w-4 text-muted-foreground" />
@@ -198,7 +202,7 @@ const AdminDashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card/50 border border-border/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
@@ -219,7 +223,7 @@ const AdminDashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card/50 border border-border/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">System Status</CardTitle>
               <div className="h-2 w-2 bg-green-500 rounded-full"></div>

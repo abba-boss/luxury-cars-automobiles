@@ -1,0 +1,363 @@
+/* Luxury Automotive Brand Showcase Carousel */
+.brand-showcase-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%); /* Deep charcoal gradient for depth */
+  position: relative;
+}
+
+.carousel-wrapper {
+  position: relative;
+  overflow: hidden;
+  padding: 0 40px;
+  margin: 0 auto;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  gap: 30px;
+  padding: 20px 0;
+  cursor: grab;
+}
+
+.carousel-track:active {
+  cursor: grabbing;
+}
+
+.brand-card {
+  position: relative;
+  min-width: 320px;
+  height: 300px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.brand-card.active {
+  transform: scale(1.08);
+  z-index: 10;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.brand-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.7s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.brand-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  padding: 20px;
+  text-align: center;
+}
+
+.brand-card:hover .brand-overlay {
+  opacity: 1;
+}
+
+.brand-card:hover .brand-image {
+  transform: scale(1.15);
+}
+
+.brand-card.active:hover .brand-image {
+  transform: scale(1.2);
+}
+
+.brand-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.brand-logo {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 20px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+}
+
+.view-cars {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 10px 20px;
+  border-radius: 30px;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  text-decoration: none;
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.brand-card:hover .view-cars {
+  opacity: 1;
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.brand-card.active:hover .view-cars {
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transform: translateY(-3px);
+}
+
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 20;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.nav-arrow:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.prev {
+  left: 10px;
+}
+
+.next {
+  right: 10px;
+}
+
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: white;
+  transform: scale(1.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .brand-showcase-container {
+    max-width: 90%;
+  }
+
+  .brand-card {
+    min-width: 300px;
+    height: 280px;
+  }
+
+  .brand-name {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .brand-showcase-container {
+    max-width: 95%;
+    padding: 50px 15px;
+  }
+
+  .brand-card {
+    min-width: 280px;
+    height: 260px;
+  }
+
+  .brand-name {
+    font-size: 24px;
+  }
+
+  .brand-logo {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .brand-showcase-container {
+    padding: 40px 10px;
+  }
+
+  .carousel-wrapper {
+    padding: 0 15px;
+  }
+
+  .carousel-track {
+    gap: 20px;
+  }
+
+  .brand-card {
+    min-width: 250px;
+    height: 230px;
+  }
+
+  .brand-name {
+    font-size: 22px;
+  }
+
+  .brand-logo {
+    font-size: 14px;
+  }
+
+  .view-cars {
+    font-size: 15px;
+    padding: 8px 16px;
+  }
+
+  .nav-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .brand-showcase-container {
+    padding: 30px 5px;
+  }
+
+  .carousel-wrapper {
+    padding: 0 10px;
+  }
+
+  .carousel-track {
+    gap: 15px;
+    padding: 15px 0;
+  }
+
+  .brand-card {
+    min-width: 220px;
+    height: 200px;
+  }
+
+  .brand-name {
+    font-size: 20px;
+  }
+
+  .brand-logo {
+    font-size: 13px;
+  }
+
+  .view-cars {
+    font-size: 14px;
+    padding: 7px 14px;
+  }
+
+  .nav-arrow {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+
+  .prev {
+    left: 5px;
+  }
+
+  .next {
+    right: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-showcase-container {
+    padding: 25px 0;
+  }
+
+  .carousel-wrapper {
+    padding: 0 5px;
+  }
+
+  .brand-card {
+    min-width: 200px;
+    height: 180px;
+  }
+
+  .brand-name {
+    font-size: 18px;
+  }
+
+  .brand-logo {
+    font-size: 12px;
+  }
+
+  .view-cars {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  .nav-arrow {
+    display: none; /* Hide arrows on very small screens, rely on swipe */
+  }
+
+  .carousel-indicators {
+    margin-top: 20px;
+  }
+
+  .indicator {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* Mobile touch enhancements */
+@media (hover: none) and (pointer: coarse) {
+  .brand-card {
+    cursor: default;
+  }
+
+  .carousel-track {
+    scroll-snap-type: x mandatory;
+  }
+
+  .brand-card {
+    scroll-snap-align: center;
+  }
+}

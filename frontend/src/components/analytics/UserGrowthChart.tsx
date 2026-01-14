@@ -33,32 +33,39 @@ export function UserGrowthChart({ data, loading }: UserGrowthChartProps) {
   }
 
   return (
-    <Card>
+    <Card className="bg-card/50 border border-border/50">
       <CardHeader>
-        <CardTitle>User Growth</CardTitle>
+        <CardTitle className="text-lg font-semibold">User Growth</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={formattedData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="month" 
-                tick={{ fontSize: 12 }}
+              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+              <XAxis
+                dataKey="month"
+                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                 angle={-45}
                 textAnchor="end"
                 height={60}
               />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip 
+              <YAxis tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  borderColor: 'hsl(var(--border))',
+                  borderRadius: '0.5rem',
+                  color: 'hsl(var(--foreground))',
+                }}
                 formatter={(value: number) => [value, 'New Users']}
               />
-              <Line 
-                type="monotone" 
-                dataKey="new_users" 
-                stroke="#10b981" 
-                strokeWidth={2}
-                dot={{ fill: '#10b981' }}
+              <Line
+                type="monotone"
+                dataKey="new_users"
+                stroke="#10b981"
+                strokeWidth={3}
+                dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>

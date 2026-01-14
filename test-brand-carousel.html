@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Automotive Brand Showcase - Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0a;
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <link rel="stylesheet" href="./styles/brand-showcase.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="brand-showcase-container">
+        <h1 style="text-align: center; color: white; font-size: 36px; margin-bottom: 40px;">Luxury Automotive Brands</h1>
+        <div class="carousel-wrapper">
+            <div class="carousel-track" id="carouselTrack">
+                <!-- Brand Cards -->
+                <div class="brand-card active">
+                    <img src="https://placehold.co/400x300/1a1a1a/ffffff?text=Porsche" alt="Porsche" class="brand-image">
+                    <div class="brand-overlay">
+                        <h3 class="brand-name">Porsche</h3>
+                        <p class="brand-logo">Porsche</p>
+                        <span class="view-cars">View Cars →</span>
+                    </div>
+                </div>
+                
+                <div class="brand-card">
+                    <img src="https://placehold.co/400x300/1a1a1a/ffffff?text=Ferrari" alt="Ferrari" class="brand-image">
+                    <div class="brand-overlay">
+                        <h3 class="brand-name">Ferrari</h3>
+                        <p class="brand-logo">Ferrari</p>
+                        <span class="view-cars">View Cars →</span>
+                    </div>
+                </div>
+                
+                <div class="brand-card">
+                    <img src="https://placehold.co/400x300/1a1a1a/ffffff?text=Lamborghini" alt="Lamborghini" class="brand-image">
+                    <div class="brand-overlay">
+                        <h3 class="brand-name">Lamborghini</h3>
+                        <p class="brand-logo">Lamborghini</p>
+                        <span class="view-cars">View Cars →</span>
+                    </div>
+                </div>
+                
+                <div class="brand-card">
+                    <img src="https://placehold.co/400x300/1a1a1a/ffffff?text=Aston Martin" alt="Aston Martin" class="brand-image">
+                    <div class="brand-overlay">
+                        <h3 class="brand-name">Aston Martin</h3>
+                        <p class="brand-logo">Aston Martin</p>
+                        <span class="view-cars">View Cars →</span>
+                    </div>
+                </div>
+                
+                <div class="brand-card">
+                    <img src="https://placehold.co/400x300/1a1a1a/ffffff?text=Bentley" alt="Bentley" class="brand-image">
+                    <div class="brand-overlay">
+                        <h3 class="brand-name">Bentley</h3>
+                        <p class="brand-logo">Bentley</p>
+                        <span class="view-cars">View Cars →</span>
+                    </div>
+                </div>
+                
+                <div class="brand-card">
+                    <img src="https://placehold.co/400x300/1a1a1a/ffffff?text=Rolls-Royce" alt="Rolls-Royce" class="brand-image">
+                    <div class="brand-overlay">
+                        <h3 class="brand-name">Rolls-Royce</h3>
+                        <p class="brand-logo">Rolls-Royce</p>
+                        <span class="view-cars">View Cars →</span>
+                    </div>
+                </div>
+                
+                <div class="brand-card">
+                    <img src="https://placehold.co/400x300/1a1a1a/ffffff?text=Maserati" alt="Maserati" class="brand-image">
+                    <div class="brand-overlay">
+                        <h3 class="brand-name">Maserati</h3>
+                        <p class="brand-logo">Maserati</p>
+                        <span class="view-cars">View Cars →</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Arrows -->
+            <button class="nav-arrow prev" id="prevBtn">←</button>
+            <button class="nav-arrow next" id="nextBtn">→</button>
+        </div>
+        
+        <!-- Carousel Indicators -->
+        <div class="carousel-indicators" id="indicators">
+            <!-- Indicators will be added dynamically -->
+        </div>
+    </div>
+    
+    <script src="./scripts/brand-showcase.js"></script>
+</body>
+</html>

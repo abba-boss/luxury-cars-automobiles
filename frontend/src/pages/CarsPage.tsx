@@ -377,7 +377,7 @@ const CarsPage = () => {
   return (
     <Layout title="Browse Cars" subtitle={`${sortedCars.length} vehicles available`}>
       {/* Search & Controls */}
-      <div className="flex flex-col lg:flex-row gap-4 mb-8">
+      <div className="flex flex-col lg:flex-row gap-3 mb-8">
         {/* Search */}
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -439,15 +439,15 @@ const CarsPage = () => {
 
       {/* Filters Panel */}
       {showFilters && (
-        <Card variant="premium" className="p-6 mb-8 animate-fade-in shadow-sm">
-          <div className="flex items-center justify-between mb-6">
+        <Card variant="premium" className="p-5 mb-8 animate-fade-in shadow-sm">
+          <div className="flex items-center justify-between mb-5">
             <h3 className="text-lg font-bold text-foreground">Advanced Filters</h3>
             <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground">
               Clear All
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Brands */}
             <div>
               <label className="text-sm font-medium text-foreground mb-3 block flex items-center gap-2">
@@ -693,7 +693,7 @@ const CarsPage = () => {
       )}
 
       {/* Results Summary */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <p className="text-muted-foreground">
           Showing <span className="text-foreground font-medium">{sortedCars.length}</span> results
           {sortedCars.length > 0 && ` for "${searchQuery || 'all vehicles'}"`}
@@ -721,7 +721,7 @@ const CarsPage = () => {
         <>
           <div
             className={cn(
-              "gap-6",
+              "gap-5",
               viewMode === "grid"
                 ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 : "flex flex-col"

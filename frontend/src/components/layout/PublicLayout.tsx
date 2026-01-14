@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Menu, X, User, Search, Settings, LogOut, Phone, MessageCircle, LayoutDashboard, Car, Users, MessageSquare as MessageSquareLucide, Package, Heart } from "lucide-react";
+import { ShoppingCart, Menu, X, User, Search, Settings, LogOut, LayoutDashboard, Car, Users, MessageSquare as MessageSquareLucide, Package, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/hooks/useCart";
@@ -23,7 +23,6 @@ interface PublicLayoutProps {
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Collection", href: "/cars" },
-  { label: "Valuation", href: "/valuation" },
   { label: "Financing", href: "/financing" },
   // { label: "Our Team", href: "/vendors" },
   { label: "About", href: "/about" },
@@ -99,29 +98,6 @@ export function PublicLayout({ children }: PublicLayoutProps) {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
-              {/* Quick Contact Buttons - Desktop Only */}
-              <div className="hidden lg:flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full hover:bg-primary/10 hover:text-primary"
-                  asChild
-                >
-                  <a href="tel:+2347015136111" aria-label="Call us">
-                    <Phone className="h-4 w-4" />
-                  </a>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full hover:bg-primary/10 hover:text-primary"
-                  asChild
-                >
-                  <a href="https://wa.me/2347015136111" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
-                    <MessageCircle className="h-4 w-4" />
-                  </a>
-                </Button>
-              </div>
 
               {/* Search Toggle */}
               <Button
@@ -291,27 +267,6 @@ export function PublicLayout({ children }: PublicLayoutProps) {
               </Link>
             ))}
 
-            {/* Mobile Contact */}
-            <div className="pt-6 border-t border-border space-y-4">
-              <div className="flex gap-3">
-                <a
-                  href="tel:+2347015136111"
-                  className="flex-1 flex items-center justify-center gap-2 py-3 border border-border rounded-lg hover:border-primary hover:bg-primary/10 transition-colors"
-                >
-                  <Phone className="h-5 w-5 text-primary" />
-                  <span>Call</span>
-                </a>
-                <a
-                  href="https://wa.me/2347015136111"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 py-3 border border-border rounded-lg hover:border-emerald-500 hover:bg-emerald-500/10 transition-colors"
-                >
-                  <MessageCircle className="h-5 w-5 text-emerald-500" />
-                  <span>WhatsApp</span>
-                </a>
-              </div>
-            </div>
 
             {/* Account Section */}
             <div className="pt-4 space-y-4">
@@ -383,7 +338,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 </div>
               </Link>
               <p className="text-muted-foreground max-w-md leading-relaxed">
-                Your premier destination for luxury and performance automobiles.
+                Your premier destination for premium automobiles.
                 We curate exceptional vehicles for discerning clients who appreciate
                 quality, elegance, and uncompromising excellence.
               </p>
@@ -407,22 +362,12 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             <div>
               <h4 className="font-semibold text-foreground mb-6 text-sm tracking-wider">CONTACT</h4>
               <ul className="space-y-4 text-muted-foreground">
-                <li>3F3G+74Q, Olusegun Obasanjo Way, beside NNPC Mega Gas Station, Central Business District, Abuja 900103, FCT, Nigeria</li>
-                <li>
-                  <a
-                    href="tel:+2347015136111"
-                    className="hover:text-primary transition-colors cursor-pointer block flex items-center gap-2"
-                  >
-                    <Phone className="h-4 w-4" />
-                    +234 701 513 6111
-                  </a>
-                </li>
                 <li>
                   <a
                     href="mailto:alaminsarkinmota@gmail.com"
                     className="hover:text-primary transition-colors cursor-pointer block flex items-center gap-2"
                   >
-                    <MessageCircle className="h-4 w-4" />
+                    <MessageSquareLucide className="h-4 w-4" />
                     alaminsarkinmota@gmail.com
                   </a>
                 </li>
