@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { brandService } from "@/services";
 import { Brand } from "@/types/api";
 import { cn } from "@/lib/utils";
+import BrandCarouselSkeleton from "./BrandCarouselSkeleton";
 
 const PremiumBrandCarousel = () => {
   const navigate = useNavigate();
@@ -61,26 +62,7 @@ const PremiumBrandCarousel = () => {
   };
 
   if (loading || brands.length === 0) {
-    return (
-      <section className="py-12 bg-gradient-to-b from-gray-900 to-gray-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-red-600 to-red-800 mb-4">
-              <span className="text-white font-bold text-lg">B</span>
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-3 font-sans">
-              Shop By Brand
-            </h2>
-            <p className="text-gray-400 max-w-xl mx-auto text-sm font-sans">
-              Explore our curated collection of premium vehicles from the world's most prestigious manufacturers
-            </p>
-          </div>
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-red-600"></div>
-          </div>
-        </div>
-      </section>
-    );
+    return <BrandCarouselSkeleton />;
   }
 
   return (
@@ -213,4 +195,4 @@ const PremiumBrandCarousel = () => {
   );
 };
 
-export { PremiumBrandCarousel };
+export default PremiumBrandCarousel;

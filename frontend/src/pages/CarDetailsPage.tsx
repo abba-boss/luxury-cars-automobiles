@@ -36,6 +36,7 @@ import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { BookingForm } from "@/components/booking/BookingForm";
 import { useAuth } from "@/hooks/useAuth";
+import CarDetailsSkeleton from "@/components/car/CarDetailsSkeleton";
 
 // Tesla-style Spec Item
 function SpecItem({ label, value }: { label: string; value: string }) {
@@ -137,9 +138,7 @@ const CarDetailsPage = () => {
   if (loading) {
     return (
       <PublicLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <LoadingSpinner size="lg" />
-        </div>
+        <CarDetailsSkeleton />
       </PublicLayout>
     );
   }
@@ -467,10 +466,11 @@ const CarDetailsPage = () => {
       </div>
 
       {/* Video Section */}
-      <CarVideoSection 
-        carName={`${vehicle.make} ${vehicle.model}`} 
-        posterImage={vehicle.images?.[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`} 
+      <CarVideoSection
+        carName={`${vehicle.make} ${vehicle.model}`}
+        posterImage={vehicle.images?.[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`}
         videos={vehicle.videos || []}
+        loading={loading}
       />
 
       {/* Reviews and Booking Section */}

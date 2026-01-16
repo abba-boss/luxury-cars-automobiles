@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Car as CarIcon, Settings, Volume2, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
+import VideoPlayerSkeleton from "./VideoPlayerSkeleton";
 
 interface CarVideoSectionProps {
   carName: string;
   posterImage: string;
   videos?: string[];
+  loading?: boolean;
 }
 
 const videoCategories = [
@@ -16,9 +18,31 @@ const videoCategories = [
   { key: "performance", label: "Performance", icon: Volume2 },
 ];
 
-export function CarVideoSection({ carName, posterImage, videos = [] }: CarVideoSectionProps) {
+export function CarVideoSection({ carName, posterImage, videos = [], loading = false }: CarVideoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState("exterior");
+
+  // If loading, show skeleton
+  if (loading) {
+    return (
+      <section className="relative py-24 bg-background overflow-hidden">
+        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 relative z-10">
+          <div className="text-center mb-16">
+            <span className="inline-block px-5 py-2 border border-primary/40 text-primary text-xs font-semibold tracking-[0.3em] mb-6 rounded-full bg-primary/5">
+              EXPERIENCE
+            </span>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              Feel the Power
+            </h2>
+            <p className="text-muted-foreground text-base max-w-xl mx-auto">
+              Immerse yourself in the driving experience with our cinematic showcase
+            </p>
+          </div>
+          <VideoPlayerSkeleton />
+        </div>
+      </section>
+    );
+  }
 
   // If no videos are available, don't render the component
   if (!videos || videos.length === 0) {

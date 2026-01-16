@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { CarCard } from "@/components/cars/CarCard";
+import { CarCardSkeleton } from "@/components/cars/CarCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -710,12 +711,17 @@ const CarsPage = () => {
 
       {/* Results */}
       {loading ? (
-        <div className="text-center py-20">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted/50 flex items-center justify-center">
-            <Car className="h-10 w-10 text-muted-foreground animate-pulse" />
+        <div className="py-10">
+          <div
+            className={cn(
+              "gap-5",
+              viewMode === "grid"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                : "flex flex-col"
+            )}
+          >
+            <CarCardSkeleton count={8} />
           </div>
-          <h3 className="text-2xl font-bold text-foreground mb-2">Loading vehicles...</h3>
-          <p className="text-muted-foreground">Please wait while we fetch the latest inventory.</p>
         </div>
       ) : (
         <>

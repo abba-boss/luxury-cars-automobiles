@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+import { Button, ButtonProps } from "@/components/ui/button";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
@@ -8,7 +9,7 @@ interface LoadingSpinnerProps {
 export const LoadingSpinner = ({ size = "md", className = "" }: LoadingSpinnerProps) => {
   const sizeClasses = {
     sm: "w-4 h-4",
-    md: "w-6 h-6", 
+    md: "w-6 h-6",
     lg: "w-8 h-8"
   };
 
@@ -26,9 +27,33 @@ export const LoadingPage = () => (
   </div>
 );
 
-export const LoadingButton = ({ children, loading, ...props }: any) => (
-  <button {...props} disabled={loading || props.disabled}>
-    {loading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
-    {children}
-  </button>
-);
+interface LoadingButtonProps extends ButtonProps {
+  loading?: boolean;
+  loadingText?: string;
+}
+
+export const LoadingButton = ({
+  children,
+  loading,
+  loadingText = "Loading...",
+  className,
+  disabled,
+  ...props
+}: LoadingButtonProps) => {
+  return (
+    <Button
+      {...props}
+      className={className}
+      disabled={loading || disabled}
+    >
+      {loading ? (
+        <span className="flex items-center gap-2">
+          <LoadingSpinner size="sm" />
+          <span>{loadingText}</span>
+        </span>
+      ) : (
+        children
+      )}
+    </Button>
+  );
+};

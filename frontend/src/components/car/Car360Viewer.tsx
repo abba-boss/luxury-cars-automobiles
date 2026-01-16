@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { 
-  Maximize2, 
-  Car, 
-  Gauge, 
+import {
+  Maximize2,
+  Car,
+  Gauge,
   Armchair,
   CircleDot,
   X,
@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Sparkles
 } from "lucide-react";
+import Car360ViewerSkeleton from "./Car360ViewerSkeleton";
 
 interface Car360ViewerProps {
   images: string[];
@@ -80,8 +81,13 @@ export function Car360Viewer({ images, carName }: Car360ViewerProps) {
 
   const currentImage = images && images.length > 0 ? (images[currentIndex] || images[0]) : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`;
 
+  // If no images are available, show skeleton
+  if (!images || images.length === 0) {
+    return <Car360ViewerSkeleton />;
+  }
+
   return (
-    <div 
+    <div
       className={cn(
         "relative bg-gradient-to-b from-card via-card/80 to-background overflow-hidden",
         isFullscreen ? "fixed inset-0 z-50" : "rounded-2xl"
