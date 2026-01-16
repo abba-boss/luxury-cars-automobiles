@@ -422,3 +422,65 @@
 .car-video-player .plyr__controls {
   @apply rounded-b-2xl bg-black/70 backdrop-blur;
 }
+
+/* Shimmer animation for low contrast skeleton shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Pulse animation for skeleton elements */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .animate-spin {
+    animation: none;
+  }
+  
+  .animate-pulse {
+    animation: none;
+  }
+  
+  .animate-bounce {
+    animation: none;
+  }
+  
+  .animate-ping {
+    animation: none;
+  }
+  
+  .animate-pulse {
+    animation: none;
+  }
+  
+  /* Specific animation overrides */
+  @keyframes shimmer {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 0% 0%; }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+  }
+}
+
