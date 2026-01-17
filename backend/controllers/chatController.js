@@ -3,7 +3,9 @@ const {
   ConversationParticipant,
   Message,
   MessageReadStatus,
-  User
+  User,
+  OrderConversation,
+  Sale
 } = require('../models');
 const { Op, where, fn, col } = require('sequelize');
 const sequelize = require('../config/database');
@@ -570,11 +572,127 @@ const getUnreadCount = async (req, res, next) => {
   }
 };
 
+// Get order-related conversations for admin
+const getOrderConversations = async (req, res, next) => {
+  try {
+    // Only allow admin access
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins can access order conversations'
+      });
+    }
+
+    const { page = 1, limit = 10, status = 'active' } = req.query;
+    const offset = (page - 1) * limit;
+
+    // Get conversations linked to orders/sales
+    const { count, rows: orderConversations } = await OrderConversation.findAndCountAll({
+      where: { status },
+      include: [
+        {
+          model: Sale,
+          as: 'sale',
+          include: [
+            {
+              model: Vehicle,
+              as: 'vehicle',
+              attributes: ['id', 'make', 'model', 'year', 'price', 'images']
+            },
+            {
+              model: User,
+              as: 'customer',
+              attributes: ['id', 'full_name', 'email', 'phone']
+            }
+          ]
+        },
+        {
+          model: Conversation,
+          as: 'conversation',
+          include: [
+            {
+              model: Message,
+              as: 'messages',
+              limit: 1,
+              order: [['created_at', 'DESC']],
+              include: [
+                {
+                  model: User,
+                  as: 'sender',
+                  attributes: ['id', 'full_name', 'role']
+                }
+              ]
+            },
+            {
+              model: ConversationParticipant,
+              as: 'participants',
+              include: [
+                {
+                  model: User,
+                  as: 'user',
+                  attributes: ['id', 'full_name', 'email', 'role']
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      order: [
+        [{ model: Conversation, as: 'conversation' }, 'updatedAt', 'DESC']
+      ],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+
+    // Format the response to match the expected structure
+    const formattedConversations = orderConversations.map(oc => ({
+      id: oc.conversation.id,
+      name: oc.conversation.name || `Order #${oc.sale_id} - ${oc.sale?.vehicle?.make} ${oc.sale?.vehicle?.model}`,
+      type: 'order',
+      status: oc.status,
+      created_at: oc.conversation.createdAt,
+      updated_at: oc.conversation.updatedAt,
+      participants: oc.conversation.participants.map(p => ({
+        id: p.user.id,
+        full_name: p.user.full_name,
+        email: p.user.email,
+        role: p.user.role
+      })),
+      last_message: oc.conversation.messages[0] ? {
+        content: oc.conversation.messages[0].content,
+        sender: oc.conversation.messages[0].sender.full_name,
+        created_at: oc.conversation.messages[0].created_at
+      } : null,
+      order_info: {
+        id: oc.sale.id,
+        sale_price: oc.sale.sale_price,
+        status: oc.sale.status,
+        vehicle: oc.sale.vehicle,
+        customer: oc.sale.customer
+      }
+    }));
+
+    res.json({
+      success: true,
+      data: formattedConversations,
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(count / limit)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createConversation,
   getUserConversations,
   getConversationMessages,
   sendMessage,
   markMessagesAsRead,
-  getUnreadCount
+  getUnreadCount,
+  getOrderConversations
 };

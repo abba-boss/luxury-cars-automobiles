@@ -66,4 +66,15 @@ router.get('/unread-count',
   chatController.getUnreadCount
 );
 
+// Get order-related conversations (admin only)
+router.get('/order-conversations',
+  [
+    query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+    query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('Limit must be between 1 and 50'),
+    query('status').optional().isIn(['active', 'archived', 'closed']).withMessage('Status must be active, archived, or closed')
+  ],
+  handleValidationErrors,
+  chatController.getOrderConversations
+);
+
 module.exports = router;

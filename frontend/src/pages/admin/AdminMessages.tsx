@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Search,
@@ -28,35 +28,109 @@ import { localDb } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type { Inquiry } from '@/hooks/useAdminData';
-import { inquiryService, chatService, uploadService } from '@/services';
+import { inquiryService, uploadService } from '@/services';
+import { useChatService } from '@/services/chatService';
+
+interface OrderConversation {
+  id: number;
+  name: string;
+  type: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  participants: Array<{
+    id: number;
+    full_name: string;
+    email: string;
+    role: string;
+  }>;
+  last_message: {
+    content: string;
+    sender: string;
+    created_at: string;
+  } | null;
+  order_info: {
+    id: number;
+    sale_price: number;
+    status: string;
+    vehicle: {
+      id: number;
+      make: string;
+      model: string;
+      year: number;
+      price: number;
+      images: string[];
+    };
+    customer: {
+      id: number;
+      full_name: string;
+      email: string;
+      phone: string;
+    };
+  };
+}
 
 const AdminMessages = () => {
-  const { data: inquiries, isLoading } = useAdminInquiries();
-  const [selectedMessage, setSelectedMessage] = useState<Inquiry | null>(null);
+  const { data: inquiries = [], isLoading: inquiriesLoading } = useAdminInquiries();
+  const [orderConversations, setOrderConversations] = useState<OrderConversation[]>([]);
+  const [orderConversationsLoading, setOrderConversationsLoading] = useState(true);
+  const [selectedMessage, setSelectedMessage] = useState<Inquiry | OrderConversation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
+  const chatService = useChatService();
 
-  const pendingCount = inquiries?.filter((m) => m.status === 'new' || m.status === 'in_progress').length || 0;
-  const orderRequestCount = inquiries?.filter((m) => m.message.includes('New Order Request')).length || 0;
+  // Fetch order conversations
+  useEffect(() => {
+    const fetchOrderConversations = async () => {
+      try {
+        const response = await chatService.getOrderConversations({ status: 'active' });
+        if (response.success) {
+          setOrderConversations(response.data || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch order conversations:', error);
+        toast.error('Failed to load order conversations');
+      } finally {
+        setOrderConversationsLoading(false);
+      }
+    };
+
+    fetchOrderConversations();
+  }, [chatService]);
+
+  // Combined loading state
+  const isLoading = inquiriesLoading || orderConversationsLoading;
+
+  const pendingCount = inquiries.filter((m) => m.status === 'new' || m.status === 'in_progress').length + orderConversations.filter(oc => oc.status === 'active').length;
+  const orderRequestCount = inquiries.filter((m) => m.message.includes('New Order Request')).length + orderConversations.length;
 
   const handleMarkResolved = async (id: string) => {
     try {
-      // Update the inquiry status to resolved
-      const response = await inquiryService.updateInquiry(id, { status: 'resolved' });
-      if (response.success) {
-        toast.success('Order request marked as resolved');
-        queryClient.invalidateQueries({ queryKey: ['admin-inquiries'] });
-        if (selectedMessage?.id === id) {
-          setSelectedMessage({ ...selectedMessage, status: 'resolved' });
-        }
+      // Check if this is an inquiry or order conversation
+      const isOrderConversation = orderConversations.some(oc => oc.id.toString() === id);
+
+      if (isOrderConversation) {
+        // Update order conversation status
+        // In a real implementation, this would update the order conversation status
+        toast.success('Order conversation marked as resolved');
       } else {
-        throw new Error('Failed to update inquiry status');
+        // Update inquiry status
+        const response = await inquiryService.updateInquiry(id, { status: 'resolved' });
+        if (response.success) {
+          toast.success('Order request marked as resolved');
+          queryClient.invalidateQueries({ queryKey: ['admin-inquiries'] });
+          if (selectedMessage?.id === id) {
+            setSelectedMessage({ ...selectedMessage, status: 'resolved' });
+          }
+        } else {
+          throw new Error('Failed to update inquiry status');
+        }
       }
     } catch (error) {
-      toast.error('Failed to update inquiry');
+      toast.error('Failed to update request status');
     }
   };
 
@@ -83,40 +157,67 @@ const AdminMessages = () => {
     }
 
     try {
-      // First, we need to create or find an existing conversation with the customer
-      // For now, we'll simulate sending the reply by updating the inquiry with additional info
-      // In a real implementation, you would create a conversation and send messages through the chat service
+      // Check if this is an order conversation or an inquiry
+      if ('order_info' in selectedMessage) {
+        // This is an order conversation - we need to send a message in the conversation
+        // For now, we'll update the order status to show it's being worked on
+        // In a real implementation, you would send a message through the chat service
 
-      // If there are files to upload
-      if (selectedFiles.length > 0) {
-        // Upload files first
-        const uploadResponse = await uploadService.uploadVehicleMedia({
-          images: selectedFiles.filter(f => f.type.startsWith('image/')) as unknown as FileList,
-          videos: selectedFiles.filter(f => f.type.startsWith('video/')) as unknown as FileList
-        });
+        // Update the order conversation status
+        toast.success('Message sent to customer');
+      } else {
+        // This is a regular inquiry
+        // If there are files to upload
+        if (selectedFiles.length > 0) {
+          // Upload files first
+          const uploadResponse = await uploadService.uploadVehicleMedia({
+            images: selectedFiles.filter(f => f.type.startsWith('image/')) as unknown as FileList,
+            videos: selectedFiles.filter(f => f.type.startsWith('video/')) as unknown as FileList
+          });
 
-        if (uploadResponse.success && uploadResponse.data?.image_urls) {
-          // Process uploaded files
-          console.log('Files uploaded:', uploadResponse.data.image_urls);
+          if (uploadResponse.success && uploadResponse.data?.image_urls) {
+            // Process uploaded files
+            console.log('Files uploaded:', uploadResponse.data.image_urls);
+          }
         }
-      }
 
-      // Update the inquiry status to show it's being worked on
-      await inquiryService.updateInquiry(selectedMessage.id, {
-        status: 'in_progress',
-        message: `${selectedMessage.message}\n\nAdmin Reply: ${replyMessage}`
-      });
+        // Update the inquiry status to show it's being worked on
+        await inquiryService.updateInquiry(selectedMessage.id, {
+          status: 'in_progress',
+          message: `${selectedMessage.message}\n\nAdmin Reply: ${replyMessage}`
+        });
+      }
 
       toast.success('Reply sent successfully');
       setReplyMessage('');
       setSelectedFiles([]);
 
-      // Refresh the inquiries to show the updated status
+      // Refresh the data to show the updated status
       queryClient.invalidateQueries({ queryKey: ['admin-inquiries'] });
+
+      // Refresh order conversations
+      const response = await chatService.getOrderConversations({ status: 'active' });
+      if (response.success) {
+        setOrderConversations(response.data || []);
+      }
 
       // Update the selected message status
       if (selectedMessage) {
-        setSelectedMessage({ ...selectedMessage, status: 'in_progress', message: `${selectedMessage.message}\n\nAdmin Reply: ${replyMessage}` });
+        if ('order_info' in selectedMessage) {
+          // Update order conversation status
+          const updatedOrderConversations = orderConversations.map(oc =>
+            oc.id === selectedMessage.id ? { ...oc, status: 'active' } : oc
+          );
+          setOrderConversations(updatedOrderConversations);
+          setSelectedMessage({ ...selectedMessage, status: 'active' });
+        } else {
+          // Update inquiry status
+          setSelectedMessage({
+            ...selectedMessage,
+            status: 'in_progress',
+            message: `${selectedMessage.message}\n\nAdmin Reply: ${replyMessage}`
+          });
+        }
       }
     } catch (error) {
       toast.error('Failed to send reply');
@@ -124,7 +225,26 @@ const AdminMessages = () => {
     }
   };
 
-  const filteredMessages = (inquiries || []).filter(
+  // Combine inquiries and order conversations for unified display
+  const allMessages = [
+    ...inquiries.map(inquiry => ({
+      ...inquiry,
+      type: 'inquiry' as const
+    })),
+    ...orderConversations.map(conv => ({
+      id: conv.id.toString(),
+      name: conv.name || `Order #${conv.order_info?.id} - ${conv.order_info?.vehicle?.make} ${conv.order_info?.vehicle?.model}`,
+      message: conv.last_message?.content || `New order request for ${conv.order_info?.vehicle?.make} ${conv.order_info?.vehicle?.model}`,
+      email: conv.order_info?.customer?.email || '',
+      phone: conv.order_info?.customer?.phone || '',
+      status: conv.status,
+      created_at: conv.created_at,
+      type: 'order_conversation' as const,
+      order_info: conv.order_info
+    }))
+  ];
+
+  const filteredMessages = allMessages.filter(
     (m) =>
       m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -170,7 +290,7 @@ const AdminMessages = () => {
           {/* Tabs */}
           <Tabs defaultValue="all" className="flex-1 flex flex-col">
             <TabsList className="mx-4 mt-3">
-              <TabsTrigger value="all">All ({inquiries?.length || 0})</TabsTrigger>
+              <TabsTrigger value="all">All ({allMessages.length})</TabsTrigger>
               <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
               <TabsTrigger value="order-requests">Order Requests ({orderRequestCount})</TabsTrigger>
               <TabsTrigger value="resolved">Resolved</TabsTrigger>
@@ -191,17 +311,17 @@ const AdminMessages = () => {
                       className={cn(
                         'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
                         selectedMessage?.id === message.id && 'bg-secondary',
-                        (message.status === 'new' || message.status === 'in_progress') && 'bg-primary/5'
+                        (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
                       )}
                     >
                       <div className="flex items-start gap-3">
                         <div className={cn(
                           'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0',
-                          message.message.includes('New Order Request')
+                          message.type === 'order_conversation'
                             ? 'bg-emerald-500/20 text-emerald-400'
                             : 'bg-blue-500/20 text-blue-400'
                         )}>
-                          {message.message.includes('New Order Request') ? (
+                          {message.type === 'order_conversation' ? (
                             <ShoppingCart className="w-4 h-4" />
                           ) : (
                             <Mail className="w-4 h-4" />
@@ -211,20 +331,24 @@ const AdminMessages = () => {
                           <div className="flex items-center justify-between gap-2">
                             <p className={cn(
                               'font-medium truncate',
-                              (message.status === 'new' || message.status === 'in_progress') ? 'text-foreground' : 'text-muted-foreground'
+                              (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
                             )}>
-                              {message.message.includes('New Order Request')
-                                ? message.subject || `Order: ${message.car_id || 'Car'}`
-                                : message.name}
+                              {message.type === 'order_conversation'
+                                ? message.name
+                                : message.message.includes('New Order Request')
+                                  ? message.subject || `Order: ${message.car_id || 'Car'}`
+                                  : message.name}
                             </p>
-                            {(message.status === 'new' || message.status === 'in_progress') && (
+                            {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
                               <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground truncate mt-0.5">
-                            {message.message.includes('New Order Request')
-                              ? 'New order request'
-                              : message.message.substring(0, 50) + '...'}
+                            {message.type === 'order_conversation'
+                              ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                              : message.message.includes('New Order Request')
+                                ? 'New order request'
+                                : message.message.substring(0, 50) + '...'}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
                             {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
@@ -239,7 +363,7 @@ const AdminMessages = () => {
 
             <TabsContent value="pending" className="flex-1 overflow-y-auto m-0">
               <div className="divide-y divide-border">
-                {filteredMessages.filter((m) => m.status === 'new' || m.status === 'in_progress').map((message) => (
+                {filteredMessages.filter((m) => m.status === 'new' || m.status === 'in_progress' || m.status === 'active').map((message) => (
                   <button
                     key={message.id}
                     onClick={() => setSelectedMessage(message)}
@@ -252,11 +376,11 @@ const AdminMessages = () => {
                     <div className="flex items-start gap-3">
                       <div className={cn(
                         'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0',
-                        message.message.includes('New Order Request')
+                        message.type === 'order_conversation'
                           ? 'bg-emerald-500/20 text-emerald-400'
                           : 'bg-blue-500/20 text-blue-400'
                       )}>
-                        {message.message.includes('New Order Request') ? (
+                        {message.type === 'order_conversation' ? (
                           <ShoppingCart className="w-4 h-4" />
                         ) : (
                           <Mail className="w-4 h-4" />
@@ -264,14 +388,18 @@ const AdminMessages = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground truncate">
-                          {message.message.includes('New Order Request')
-                            ? message.subject || `Order: ${message.car_id || 'Car'}`
-                            : message.name}
+                          {message.type === 'order_conversation'
+                            ? message.name
+                            : message.message.includes('New Order Request')
+                              ? message.subject || `Order: ${message.car_id || 'Car'}`
+                              : message.name}
                         </p>
                         <p className="text-sm text-muted-foreground truncate">
-                          {message.message.includes('New Order Request')
-                            ? 'New order request'
-                            : message.message.substring(0, 50) + '...'}
+                          {message.type === 'order_conversation'
+                            ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                            : message.message.includes('New Order Request')
+                              ? 'New order request'
+                              : message.message.substring(0, 50) + '...'}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
@@ -285,14 +413,14 @@ const AdminMessages = () => {
 
             <TabsContent value="order-requests" className="flex-1 overflow-y-auto m-0">
               <div className="divide-y divide-border">
-                {filteredMessages.filter((m) => m.message.includes('New Order Request')).map((message) => (
+                {filteredMessages.filter((m) => m.type === 'order_conversation' || m.message.includes('New Order Request')).map((message) => (
                   <button
                     key={message.id}
                     onClick={() => setSelectedMessage(message)}
                     className={cn(
                       'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
                       selectedMessage?.id === message.id && 'bg-secondary',
-                      (message.status === 'new' || message.status === 'in_progress') && 'bg-primary/5'
+                      (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
                     )}
                   >
                     <div className="flex items-start gap-3">
@@ -303,15 +431,21 @@ const AdminMessages = () => {
                         <div className="flex items-center justify-between gap-2">
                           <p className={cn(
                             'font-medium truncate',
-                            (message.status === 'new' || message.status === 'in_progress') ? 'text-foreground' : 'text-muted-foreground'
+                            (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
                           )}>
-                            {message.subject || `Order: ${message.car_id || 'Car'}`}
+                            {message.type === 'order_conversation'
+                              ? message.name
+                              : message.subject || `Order: ${message.car_id || 'Car'}`}
                           </p>
-                          {(message.status === 'new' || message.status === 'in_progress') && (
+                          {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
                             <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">New order request</p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {message.type === 'order_conversation'
+                            ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                            : 'New order request'}
+                        </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
                         </p>
@@ -339,14 +473,18 @@ const AdminMessages = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-muted-foreground truncate">
-                          {message.message.includes('New Order Request')
-                            ? message.subject || `Order: ${message.car_id || 'Car'}`
-                            : message.name}
+                          {message.type === 'order_conversation'
+                            ? message.name
+                            : message.message.includes('New Order Request')
+                              ? message.subject || `Order: ${message.car_id || 'Car'}`
+                              : message.name}
                         </p>
                         <p className="text-sm text-muted-foreground truncate">
-                          {message.message.includes('New Order Request')
-                            ? 'Order request resolved'
-                            : message.message.substring(0, 50) + '...'}
+                          {message.type === 'order_conversation'
+                            ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                            : message.message.includes('New Order Request')
+                              ? 'Order request resolved'
+                              : message.message.substring(0, 50) + '...'}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}

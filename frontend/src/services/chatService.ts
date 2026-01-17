@@ -131,6 +131,22 @@ class ChatService {
 
     return await response.json();
   }
+
+  async getOrderConversations(params?: { page?: number; limit?: number; status?: string }): Promise<{ success: boolean; data: any[]; pagination: any }> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.status) queryParams.append('status', params.status);
+
+    const queryString = queryParams.toString();
+    const url = `${this.baseUrl}/chat/order-conversations${queryString ? `?${queryString}` : ''}`;
+
+    const response = await fetch(url, {
+      headers: this.getHeaders()
+    });
+
+    return await response.json();
+  }
 }
 
 export const useChatService = () => {
