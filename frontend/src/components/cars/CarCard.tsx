@@ -28,7 +28,7 @@ export function CarCard({ car, className }: CarCardProps) {
   useEffect(() => {
     const checkFavoriteStatus = async () => {
       if (!user || !car.id) return;
-      
+
       try {
         const response = await favoriteService.checkFavorite(car.id);
         if (response.success) {

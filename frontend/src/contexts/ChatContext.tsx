@@ -92,6 +92,22 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
+    // Handle order status updates
+    newSocket.on('order_status_update', (data) => {
+      console.log('Order status update received:', data);
+      // Update unread count for order status updates
+      if (data.updatedBy !== user?.id) {
+        setUnreadCount(prev => prev + 1);
+      }
+    });
+
+    // Handle order assignment updates
+    newSocket.on('order_assigned', (data) => {
+      console.log('Order assigned received:', data);
+      // Update unread count for order assignments
+      setUnreadCount(prev => prev + 1);
+    });
+
     // Handle message delivery
     newSocket.on('message_delivered', (data) => {
       console.log('Message delivered:', data);

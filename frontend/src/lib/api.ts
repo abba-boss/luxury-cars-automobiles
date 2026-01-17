@@ -104,9 +104,12 @@ class ApiClient {
   }
 
   async upload<T>(endpoint: string, formData: FormData): Promise<T> {
+    const token = localStorage.getItem('auth_token');
+    const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
+
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'POST',
-      headers: this.getUploadHeaders(),
+      headers: headers, // Don't set Content-Type for FormData - let browser set it with proper boundary
       body: formData
     });
     return this.handleResponse<T>(response, endpoint, 'UPLOAD');
