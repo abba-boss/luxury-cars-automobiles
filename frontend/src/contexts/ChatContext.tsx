@@ -23,7 +23,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     if (!user || !token) return;
 
     // Initialize Socket.IO connection with reconnection options
-    const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001', {
+    // Extract base URL from API URL (remove '/api' suffix if present)
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    const socketUrl = apiUrl.replace(/\/api$/, '');
+
+    const newSocket = io(socketUrl, {
       auth: {
         token
       },

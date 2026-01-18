@@ -88,6 +88,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
+        <PageTransitionLoader />
             <AuthProvider>
               <CartProvider>
                 <ChatProvider>

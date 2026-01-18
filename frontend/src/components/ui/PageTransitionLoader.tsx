@@ -14,8 +14,9 @@ const PageTransitionLoader = () => {
         transition={{ 
           duration: 0.4, 
           ease: "easeOut" 
-        }}
-        className=""
+        }}                                          
+        className="" 
+        // absolute inset-0 z-0
       />
     </AnimatePresence>
   );

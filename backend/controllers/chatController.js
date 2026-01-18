@@ -5,7 +5,9 @@ const {
   MessageReadStatus,
   User,
   OrderConversation,
-  Sale
+  Sale,
+  Vehicle,
+  Customer
 } = require('../models');
 const { Op, where, fn, col } = require('sequelize');
 const sequelize = require('../config/database');
@@ -271,6 +273,9 @@ const getConversationMessages = async (req, res, next) => {
       where: {
         conversation_id: conversationId
       },
+      attributes: {
+        include: ['created_at', 'updated_at']  // Explicitly include timestamp fields
+      },
       include: [
         {
           model: User,
@@ -365,14 +370,8 @@ const sendMessage = async (req, res, next) => {
     // Role-based access control
     if (req.user.role === 'admin') {
       // Admin can chat in any conversation they are part of
-      // Check if admin is a participant in this conversation
-      const isAdminParticipant = conversation.participants.some(p => p.user_id === userId);
-      if (!isAdminParticipant) {
-        return res.status(403).json({
-          success: false,
-          message: 'Admin not authorized to send message in this conversation'
-        });
-      }
+      // Since we already verified the admin is a participant (line 329-341),
+      // we don't need additional checks for admins
     } else if (req.user.role === 'user') {
       // User can chat with admin or buyers
       const userParticipants = conversation.participants.filter(p => p.user_id === userId);
@@ -425,6 +424,9 @@ const sendMessage = async (req, res, next) => {
 
     // Get full message with sender info
     const fullMessage = await Message.findByPk(message.id, {
+      attributes: {
+        include: ['created_at', 'updated_at']  // Explicitly include timestamp fields
+      },
       include: [
         {
           model: User,
@@ -600,9 +602,9 @@ const getOrderConversations = async (req, res, next) => {
               attributes: ['id', 'make', 'model', 'year', 'price', 'images']
             },
             {
-              model: User,
+              model: Customer,
               as: 'customer',
-              attributes: ['id', 'full_name', 'email', 'phone']
+              attributes: ['id', 'name', 'email', 'phone']
             }
           ]
         },
@@ -613,6 +615,9 @@ const getOrderConversations = async (req, res, next) => {
             {
               model: Message,
               as: 'messages',
+              attributes: {
+                include: ['created_at', 'updated_at']  // Explicitly include timestamp fields
+              },
               limit: 1,
               order: [['created_at', 'DESC']],
               include: [
@@ -646,29 +651,29 @@ const getOrderConversations = async (req, res, next) => {
 
     // Format the response to match the expected structure
     const formattedConversations = orderConversations.map(oc => ({
-      id: oc.conversation.id,
-      name: oc.conversation.name || `Order #${oc.sale_id} - ${oc.sale?.vehicle?.make} ${oc.sale?.vehicle?.model}`,
+      id: oc.conversation?.id,
+      name: oc.conversation?.name || `Order #${oc.sale_id} - ${oc.sale?.vehicle?.make} ${oc.sale?.vehicle?.model}`,
       type: 'order',
       status: oc.status,
-      created_at: oc.conversation.createdAt,
-      updated_at: oc.conversation.updatedAt,
-      participants: oc.conversation.participants.map(p => ({
-        id: p.user.id,
-        full_name: p.user.full_name,
-        email: p.user.email,
-        role: p.user.role
-      })),
-      last_message: oc.conversation.messages[0] ? {
+      created_at: oc.conversation?.createdAt,
+      updated_at: oc.conversation?.updatedAt,
+      participants: oc.conversation?.participants?.map(p => ({
+        id: p.user?.id,
+        full_name: p.user?.full_name,
+        email: p.user?.email,
+        role: p.user?.role
+      })) || [],
+      last_message: oc.conversation?.messages?.[0] ? {
         content: oc.conversation.messages[0].content,
-        sender: oc.conversation.messages[0].sender.full_name,
+        sender: oc.conversation.messages[0].sender?.full_name,
         created_at: oc.conversation.messages[0].created_at
       } : null,
       order_info: {
-        id: oc.sale.id,
-        sale_price: oc.sale.sale_price,
-        status: oc.sale.status,
-        vehicle: oc.sale.vehicle,
-        customer: oc.sale.customer
+        id: oc.sale?.id,
+        sale_price: oc.sale?.sale_price,
+        status: oc.sale?.status,
+        vehicle: oc.sale?.vehicle,
+        customer: oc.sale?.customer
       }
     }));
 

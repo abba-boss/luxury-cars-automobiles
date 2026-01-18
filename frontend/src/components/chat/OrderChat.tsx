@@ -1,24 +1,27 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useAuth } from '@/hooks/useAuth';
-import { useChatService } from '@/services/chatService';
+import { chatService } from '@/services';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { 
-  Send, 
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import {
+  Send,
   Package,
-  Clock, 
-  Check, 
+  Clock,
+  Check,
   CheckCheck,
   AlertCircle,
   CheckCircle2,
-  User as UserIcon
+  User as UserIcon,
+  User as UserAvatarIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LoadingSpinner } from '@/components/ui/loading';
+import { formatDate, formatTime, formatDateTime } from '@/utils/dateUtils';
 
 interface Message {
   id: number;
@@ -27,7 +30,7 @@ interface Message {
   content: string;
   message_type: string;
   status: string;
-  created_at: string;
+  created_at?: string;
   sender: {
     id: number;
     full_name: string;
@@ -45,7 +48,6 @@ interface OrderChatProps {
 const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
   const { socket, joinConversation, leaveConversation } = useChat();
   const { user } = useAuth();
-  const chatService = useChatService();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,14 +76,14 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
     const handleNewMessage = (newMessage: Message) => {
       if (newMessage.conversation_id.toString() === conversationId) {
         setMessages(prev => {
-          const exists = prev.some(msg => 
-            msg.id === newMessage.id || msg.localId === newMessage.localId
+          const exists = prev.some(msg =>
+            msg.id === newMessage.id || (msg.localId && msg.localId === newMessage.localId)
           );
-          
+
           if (!exists) {
             return [...prev, newMessage];
           }
-          return prev.map(msg => 
+          return prev.map(msg =>
             msg.localId === newMessage.localId ? newMessage : msg
           );
         });
@@ -102,8 +104,8 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
 
     const handleMessageDelivered = (data: { messageId: number; conversationId: string }) => {
       if (data.conversationId === conversationId) {
-        setMessages(prev => 
-          prev.map(msg => 
+        setMessages(prev =>
+          prev.map(msg =>
             msg.id === data.messageId ? { ...msg, status: 'delivered' } : msg
           )
         );
@@ -112,8 +114,8 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
 
     const handleMessageRead = (data: { messageId: number; userId: number; conversationId: string }) => {
       if (data.conversationId === conversationId) {
-        setMessages(prev => 
-          prev.map(msg => 
+        setMessages(prev =>
+          prev.map(msg =>
             msg.id === data.messageId ? { ...msg, status: 'read' } : msg
           )
         );
@@ -142,12 +144,12 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
     try {
       const response = await chatService.getConversationMessages(conversationId);
       if (response.success) {
-        setMessages(response.data);
+        setMessages(response.data || []);
 
         // Mark messages as read
         if (socket && user) {
           // Mark all unread messages from other participants as read
-          const unreadMessages = response.data.filter(msg =>
+          const unreadMessages = (response.data || []).filter(msg =>
             msg.sender_id !== user.id && msg.status !== 'read'
           );
 
@@ -160,6 +162,8 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
             });
           }
         }
+      } else {
+        console.error('Failed to load messages:', response.message);
       }
     } catch (error) {
       console.error('Failed to load messages:', error);
@@ -191,7 +195,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
       created_at: new Date().toISOString(),
       sender: {
         id: user.id,
-        full_name: user.full_name,
+        full_name: user.full_name || user.email,
         role: user.role
       }
     };
@@ -211,15 +215,9 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
           )
         );
 
-        // Mark messages as read after sending
-        if (socket && user) {
-          socket.emit('message_read', {
-            conversationId,
-            messageId: response.data.id
-          });
-        }
       } else {
         setMessages(prev => prev.filter(msg => msg.localId !== localId));
+        console.error('Failed to send message:', response.message);
       }
     } catch (error) {
       setMessages(prev => prev.filter(msg => msg.localId !== localId));
@@ -227,7 +225,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
     }
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -236,13 +234,13 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
 
   const handleTypingStart = () => {
     if (!conversationId || !socket) return;
-    
+
     socket.emit('typing_start', { conversationId });
-    
+
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
-    
+
     typingTimeoutRef.current = setTimeout(() => {
       socket.emit('typing_stop', { conversationId });
     }, 2000);
@@ -250,7 +248,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
 
   const handleTypingStop = () => {
     if (!conversationId || !socket) return;
-    
+
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
       socket.emit('typing_stop', { conversationId });
@@ -288,7 +286,12 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
           </Badge>
         );
       default:
-        return null;
+        return (
+          <Badge variant="outline" className="gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {status}
+          </Badge>
+        );
     }
   };
 
@@ -324,7 +327,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
               <div>
                 <span className="text-muted-foreground">Date:</span>
                 <span className="ml-1">
-                  {new Date(order.created_at).toLocaleDateString()}
+                  {formatDate(order.created_at)}
                 </span>
               </div>
             </div>
@@ -358,7 +361,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
                       </div>
                       <p className="text-sm whitespace-pre-line">{msg.content}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(msg.created_at).toLocaleString()}
+                        {formatDateTime(msg.created_at)}
                       </p>
                     </div>
                   </div>
@@ -416,10 +419,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
                       )}
                     >
                       <span>
-                        {new Date(msg.created_at).toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
+                        {formatTime(msg.created_at)}
                       </span>
                       {isOwnMessage && (
                         <>

@@ -454,3 +454,5 @@ export const brandService = {
     return api.get<ApiResponse<Brand[]>>('/brands/search', { q: query, limit });
   }
 };
+
+export { useChatService, chatService } from './chatService';

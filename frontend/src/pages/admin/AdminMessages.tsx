@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Search,
@@ -16,7 +16,8 @@ import {
   ShoppingCart,
   Paperclip,
   Send,
-  X
+  X,
+  ArrowLeft
 } from 'lucide-react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -28,8 +29,10 @@ import { localDb } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type { Inquiry } from '@/hooks/useAdminData';
-import { inquiryService, uploadService } from '@/services';
+import { inquiryService, uploadService, chatService } from '@/services';
 import { useChatService } from '@/services/chatService';
+import { useChat } from '@/contexts/ChatContext';
+import OrderChat from '@/components/chat/OrderChat';
 
 interface OrderConversation {
   id: number;
@@ -78,17 +81,40 @@ const AdminMessages = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
-  const chatService = useChatService();
+  const chatService = useMemo(() => useChatService(), []);
+  const { socket } = useChat(); // Get socket for real-time updates
 
-  // Fetch order conversations
+  // Fetch order conversations with optimized API calls
   useEffect(() => {
     const fetchOrderConversations = async () => {
+      // Check if we have a valid token before making the request
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.error('No authentication token found');
+        setOrderConversationsLoading(false);
+        return;
+      }
+
       try {
-        const response = await chatService.getOrderConversations({ status: 'active' });
+        const response = await chatService.getOrderConversations({
+          status: 'active',
+          page: 1, // Always fetch first page to show newest items first
+          limit: 50 // Increase limit to show more items
+        });
         if (response.success) {
           setOrderConversations(response.data || []);
+          if (response.pagination) {
+            setTotalPages(response.pagination.pages || 1);
+            setTotalItems(response.pagination.total || 0);
+          }
+        } else {
+          console.error('Failed to fetch order conversations:', response.message);
+          toast.error(response.message || 'Failed to load order conversations');
         }
       } catch (error) {
         console.error('Failed to fetch order conversations:', error);
@@ -99,7 +125,60 @@ const AdminMessages = () => {
     };
 
     fetchOrderConversations();
-  }, [chatService]);
+  }, [chatService]); // Remove currentPage from dependency to prevent refetching on page change
+
+  // Listen for real-time order message updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleOrderMessageUpdate = (data: any) => {
+      console.log('Real-time order message update:', data);
+      
+      // Update the specific order conversation in the list
+      setOrderConversations(prev => {
+        return prev.map(conv => {
+          if (conv.id === data.conversationId) {
+            return {
+              ...conv,
+              last_message: {
+                content: data.message.content,
+                sender: data.message.sender.full_name,
+                created_at: data.message.created_at
+              },
+              updated_at: data.message.created_at // Update the conversation's updated time
+            };
+          }
+          return conv;
+        });
+      });
+
+      // If this conversation is currently selected, update the selected message too
+      if (selectedMessage && selectedMessage.id === data.conversationId) {
+        setSelectedMessage(prev => {
+          if (!prev || !('order_info' in prev)) return prev;
+          
+          return {
+            ...prev,
+            last_message: {
+              content: data.message.content,
+              sender: data.message.sender.full_name,
+              created_at: data.message.created_at
+            },
+            updated_at: data.message.created_at
+          } as OrderConversation;
+        });
+      }
+
+      // Show a toast notification
+      toast.success(`New message from customer on Order #${data.orderId}`);
+    };
+
+    socket.on('order_message_update', handleOrderMessageUpdate);
+
+    return () => {
+      socket.off('order_message_update', handleOrderMessageUpdate);
+    };
+  }, [socket, selectedMessage]);
 
   // Combined loading state
   const isLoading = inquiriesLoading || orderConversationsLoading;
@@ -265,17 +344,19 @@ const AdminMessages = () => {
     <AdminLayout>
       <div className="flex h-[calc(100vh-10rem)]">
         {/* Message List */}
-        <div className="w-[400px] border-r border-border flex flex-col">
+        <div className="w-1/3 min-w-[400px] max-w-md border-r border-border flex flex-col h-full">
           {/* Header */}
-          <div className="p-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground mb-3">
-              Order Requests & Inquiries
+          <div className="p-4 border-b border-border bg-muted/5 flex-shrink-0">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-foreground">
+                Order Requests & Inquiries
+              </h2>
               {pendingCount > 0 && (
                 <span className="ml-2 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs">
                   {pendingCount} pending
                 </span>
               )}
-            </h2>
+            </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -288,30 +369,144 @@ const AdminMessages = () => {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="all" className="flex-1 flex flex-col">
-            <TabsList className="mx-4 mt-3">
+          <Tabs defaultValue="all" className="flex-1 flex flex-col h-full">
+            <TabsList className="mx-4 mt-3 flex-shrink-0">
               <TabsTrigger value="all">All ({allMessages.length})</TabsTrigger>
               <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
               <TabsTrigger value="order-requests">Order Requests ({orderRequestCount})</TabsTrigger>
               <TabsTrigger value="resolved">Resolved</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all" className="flex-1 overflow-y-auto m-0">
-              <div className="divide-y divide-border">
-                {filteredMessages.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                    <p className="text-muted-foreground">No requests yet</p>
+            <TabsContent value="all" className="flex-1 overflow-y-auto m-0 flex flex-col">
+              <div className="flex-1 overflow-y-auto">
+                <div className="divide-y divide-border">
+                  {filteredMessages.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                      <p className="text-muted-foreground">No requests yet</p>
+                    </div>
+                  ) : (
+                    filteredMessages.map((message) => (
+                      <button
+                        key={message.id}
+                        onClick={() => setSelectedMessage(message)}
+                        className={cn(
+                          'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
+                          selectedMessage?.id === message.id && 'bg-secondary',
+                          (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
+                        )}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={cn(
+                            'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0',
+                            message.type === 'order_conversation'
+                              ? 'bg-emerald-500/20 text-emerald-400'
+                              : 'bg-blue-500/20 text-blue-400'
+                          )}>
+                            {message.type === 'order_conversation' ? (
+                              <ShoppingCart className="w-4 h-4" />
+                            ) : (
+                              <Mail className="w-4 h-4" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className={cn(
+                                'font-medium truncate',
+                                (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
+                              )}>
+                                {message.type === 'order_conversation'
+                                  ? message.name
+                                  : message.message.includes('New Order Request')
+                                    ? message.subject || `Order: ${message.car_id || 'Car'}`
+                                    : message.name}
+                              </p>
+                              {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
+                                <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground truncate mt-0.5">
+                              {message.type === 'order_conversation'
+                                ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                                : message.message.includes('New Order Request')
+                                  ? 'New order request'
+                                  : message.message.substring(0, 50) + '...'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="p-4 border-t border-border bg-muted/5 flex-shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">
+                      Page {currentPage} of {totalPages} • {totalItems} total items
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1.5 rounded-md border border-border bg-background hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
+                      <div className="flex gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          const pageNum = currentPage <= 3
+                            ? i + 1
+                            : currentPage >= totalPages - 2
+                              ? totalPages - 4 + i
+                              : currentPage - 2 + i;
+
+                          if (pageNum > totalPages || pageNum < 1) return null;
+
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => setCurrentPage(pageNum)}
+                              className={`px-3 py-1.5 rounded-md border ${
+                                currentPage === pageNum
+                                  ? 'border-primary bg-primary text-primary-foreground'
+                                  : 'border-border bg-background hover:bg-secondary'
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1.5 rounded-md border border-border bg-background hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
-                ) : (
-                  filteredMessages.map((message) => (
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="pending" className="flex-1 overflow-y-auto m-0 flex flex-col">
+              <div className="flex-1 overflow-y-auto">
+                <div className="divide-y divide-border">
+                  {filteredMessages.filter((m) => m.status === 'new' || m.status === 'in_progress' || m.status === 'active').map((message) => (
                     <button
                       key={message.id}
                       onClick={() => setSelectedMessage(message)}
                       className={cn(
                         'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
                         selectedMessage?.id === message.id && 'bg-secondary',
-                        (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
+                        'bg-primary/5'
                       )}
                     >
                       <div className="flex items-start gap-3">
@@ -328,22 +523,14 @@ const AdminMessages = () => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className={cn(
-                              'font-medium truncate',
-                              (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
-                            )}>
-                              {message.type === 'order_conversation'
-                                ? message.name
-                                : message.message.includes('New Order Request')
-                                  ? message.subject || `Order: ${message.car_id || 'Car'}`
-                                  : message.name}
-                            </p>
-                            {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
-                              <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground truncate mt-0.5">
+                          <p className="font-medium text-foreground truncate">
+                            {message.type === 'order_conversation'
+                              ? message.name
+                              : message.message.includes('New Order Request')
+                                ? message.subject || `Order: ${message.car_id || 'Car'}`
+                                : message.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">
                             {message.type === 'order_conversation'
                               ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
                               : message.message.includes('New Order Request')
@@ -356,303 +543,308 @@ const AdminMessages = () => {
                         </div>
                       </div>
                     </button>
-                  ))
-                )}
+                  ))}
+                </div>
               </div>
             </TabsContent>
 
-            <TabsContent value="pending" className="flex-1 overflow-y-auto m-0">
-              <div className="divide-y divide-border">
-                {filteredMessages.filter((m) => m.status === 'new' || m.status === 'in_progress' || m.status === 'active').map((message) => (
-                  <button
-                    key={message.id}
-                    onClick={() => setSelectedMessage(message)}
-                    className={cn(
-                      'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
-                      selectedMessage?.id === message.id && 'bg-secondary',
-                      'bg-primary/5'
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0',
-                        message.type === 'order_conversation'
-                          ? 'bg-emerald-500/20 text-emerald-400'
-                          : 'bg-blue-500/20 text-blue-400'
-                      )}>
-                        {message.type === 'order_conversation' ? (
+            <TabsContent value="order-requests" className="flex-1 overflow-y-auto m-0 flex flex-col">
+              <div className="flex-1 overflow-y-auto">
+                <div className="divide-y divide-border">
+                  {filteredMessages.filter((m) => m.type === 'order_conversation' || m.message.includes('New Order Request')).map((message) => (
+                    <button
+                      key={message.id}
+                      onClick={() => setSelectedMessage(message)}
+                      className={cn(
+                        'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
+                        selectedMessage?.id === message.id && 'bg-secondary',
+                        (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400">
                           <ShoppingCart className="w-4 h-4" />
-                        ) : (
-                          <Mail className="w-4 h-4" />
-                        )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className={cn(
+                              'font-medium truncate',
+                              (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
+                            )}>
+                              {message.type === 'order_conversation'
+                                ? message.name
+                                : message.subject || `Order: ${message.car_id || 'Car'}`}
+                            </p>
+                            {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
+                              <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {message.type === 'order_conversation'
+                              ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                              : 'New order request'}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">
-                          {message.type === 'order_conversation'
-                            ? message.name
-                            : message.message.includes('New Order Request')
-                              ? message.subject || `Order: ${message.car_id || 'Car'}`
-                              : message.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {message.type === 'order_conversation'
-                            ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
-                            : message.message.includes('New Order Request')
-                              ? 'New order request'
-                              : message.message.substring(0, 50) + '...'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
+                </div>
               </div>
             </TabsContent>
 
-            <TabsContent value="order-requests" className="flex-1 overflow-y-auto m-0">
-              <div className="divide-y divide-border">
-                {filteredMessages.filter((m) => m.type === 'order_conversation' || m.message.includes('New Order Request')).map((message) => (
-                  <button
-                    key={message.id}
-                    onClick={() => setSelectedMessage(message)}
-                    className={cn(
-                      'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
-                      selectedMessage?.id === message.id && 'bg-secondary',
-                      (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400">
-                        <ShoppingCart className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className={cn(
-                            'font-medium truncate',
-                            (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
-                          )}>
+            <TabsContent value="resolved" className="flex-1 overflow-y-auto m-0 flex flex-col">
+              <div className="flex-1 overflow-y-auto">
+                <div className="divide-y divide-border">
+                  {filteredMessages.filter((m) => m.status === 'resolved' || m.status === 'closed').map((message) => (
+                    <button
+                      key={message.id}
+                      onClick={() => setSelectedMessage(message)}
+                      className={cn(
+                        'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
+                        selectedMessage?.id === message.id && 'bg-secondary'
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400">
+                          <CheckCircle className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-muted-foreground truncate">
                             {message.type === 'order_conversation'
                               ? message.name
-                              : message.subject || `Order: ${message.car_id || 'Car'}`}
+                              : message.message.includes('New Order Request')
+                                ? message.subject || `Order: ${message.car_id || 'Car'}`
+                                : message.name}
                           </p>
-                          {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
-                            <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                          )}
+                          <p className="text-sm text-muted-foreground truncate">
+                            {message.type === 'order_conversation'
+                              ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                              : message.message.includes('New Order Request')
+                                ? 'Order request resolved'
+                                : message.message.substring(0, 50) + '...'}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
+                          </p>
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {message.type === 'order_conversation'
-                            ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
-                            : 'New order request'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                        </p>
                       </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="resolved" className="flex-1 overflow-y-auto m-0">
-              <div className="divide-y divide-border">
-                {filteredMessages.filter((m) => m.status === 'resolved' || m.status === 'closed').map((message) => (
-                  <button
-                    key={message.id}
-                    onClick={() => setSelectedMessage(message)}
-                    className={cn(
-                      'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
-                      selectedMessage?.id === message.id && 'bg-secondary'
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400">
-                        <CheckCircle className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-muted-foreground truncate">
-                          {message.type === 'order_conversation'
-                            ? message.name
-                            : message.message.includes('New Order Request')
-                              ? message.subject || `Order: ${message.car_id || 'Car'}`
-                              : message.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {message.type === 'order_conversation'
-                            ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
-                            : message.message.includes('New Order Request')
-                              ? 'Order request resolved'
-                              : message.message.substring(0, 50) + '...'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
+                </div>
               </div>
             </TabsContent>
           </Tabs>
         </div>
 
         {/* Message Detail */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 min-w-[600px] flex flex-col h-full">
           {selectedMessage ? (
-            <>
-              {/* Detail Header */}
-              <div className="p-4 border-b border-border flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center',
-                    selectedMessage.message.includes('New Order Request')
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-blue-500/20 text-blue-400'
-                  )}>
-                    {selectedMessage.message.includes('New Order Request') ? (
+            // Check if this is an order conversation and show the chat interface
+            ('order_info' in selectedMessage) ? (
+              // Show OrderChat for order conversations
+              <div className="flex-1 flex flex-col h-full">
+                <div className="p-4 border-b border-border flex items-center justify-between bg-muted/5 flex-shrink-0">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSelectedMessage(null)}
+                      className="h-8 w-8"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-emerald-500/20 text-emerald-400">
                       <ShoppingCart className="w-4 h-4" />
-                    ) : (
-                      <Mail className="w-4 h-4" />
-                    )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        Order #{selectedMessage.order_info.id} - {selectedMessage.order_info.vehicle.make} {selectedMessage.order_info.vehicle.model}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Customer: {selectedMessage.order_info.customer.full_name}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      {selectedMessage.message.includes('New Order Request')
-                        ? selectedMessage.subject || `Order Request: ${selectedMessage.car_id || 'Car'}`
-                        : selectedMessage.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedMessage.message.includes('New Order Request')
-                        ? selectedMessage.name
-                        : selectedMessage.email}
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        'px-3 py-1 rounded-full text-xs font-medium',
+                        (selectedMessage.status === 'new' || selectedMessage.status === 'in_progress' || selectedMessage.status === 'active')
+                          ? 'bg-amber-500/20 text-amber-400'
+                          : 'bg-emerald-500/20 text-emerald-400'
+                      )}
+                    >
+                      {selectedMessage.status || 'pending'}
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      'px-3 py-1 rounded-full text-xs font-medium',
-                      (selectedMessage.status === 'new' || selectedMessage.status === 'in_progress')
-                        ? 'bg-amber-500/20 text-amber-400'
-                        : 'bg-emerald-500/20 text-emerald-400'
-                    )}
-                  >
-                    {selectedMessage.status || 'pending'}
-                  </span>
-                  {(selectedMessage.status === 'new' || selectedMessage.status === 'in_progress') && (
+
+                <div className="flex-1 overflow-hidden">
+                  <OrderChat
+                    order={selectedMessage.order_info}
+                    conversationId={selectedMessage.id.toString()}
+                    className="h-full"
+                  />
+                </div>
+              </div>
+            ) : (
+              // Show regular message view for inquiries
+              <div className="flex-1 flex flex-col h-full">
+                {/* Detail Header */}
+                <div className="p-4 border-b border-border flex items-center justify-between bg-muted/5 flex-shrink-0">
+                  <div className="flex items-center gap-3">
                     <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSelectedMessage(null)}
+                      className="h-8 w-8"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-500/20 text-blue-400">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        {selectedMessage.message.includes('New Order Request')
+                          ? selectedMessage.subject || `Order Request: ${selectedMessage.car_id || 'Car'}`
+                          : selectedMessage.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedMessage.message.includes('New Order Request')
+                          ? selectedMessage.name
+                          : selectedMessage.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        'px-3 py-1 rounded-full text-xs font-medium',
+                        (selectedMessage.status === 'new' || selectedMessage.status === 'in_progress')
+                          ? 'bg-amber-500/20 text-amber-400'
+                          : 'bg-emerald-500/20 text-emerald-400'
+                      )}
+                    >
+                      {selectedMessage.status || 'pending'}
+                    </span>
+                    {(selectedMessage.status === 'new' || selectedMessage.status === 'in_progress') && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleMarkResolved(selectedMessage.id)}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Mark Resolved
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Detail Content */}
+                <div className="flex-1 overflow-y-auto p-6">
+                  <div className="flex items-center gap-4 mb-6 text-sm text-muted-foreground">
+                    <span>
+                      {selectedMessage.created_at ? formatDistanceToNow(new Date(selectedMessage.created_at), { addSuffix: true }) : 'Recently'}
+                    </span>
+                    {selectedMessage.phone && (
+                      <>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          {selectedMessage.phone}
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="prose prose-invert max-w-none">
+                    <p className="text-foreground leading-relaxed whitespace-pre-line">{selectedMessage.message}</p>
+                  </div>
+
+                  {selectedMessage.car_id && (
+                    <div className="mt-6 p-4 rounded-xl bg-secondary/30 border border-border">
+                      <p className="text-sm text-muted-foreground">Car ID:</p>
+                      <p className="text-foreground font-medium">{selectedMessage.car_id}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Reply Box */}
+                <div className="p-4 border-t border-border bg-muted/5 flex-shrink-0">
+                  {/* Selected Files Preview */}
+                  {selectedFiles.length > 0 && (
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {selectedFiles.map((file, index) => (
+                        <div key={index} className="flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 text-sm">
+                          <Paperclip className="w-4 h-4 text-muted-foreground" />
+                          <span className="truncate max-w-[120px]">{file.name}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFile(index)}
+                            className="p-1 h-auto"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <textarea
+                      placeholder="Type your reply to the customer..."
+                      value={replyMessage}
+                      onChange={(e) => setReplyMessage(e.target.value)}
+                      className="flex-1 border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-none"
+                      rows={3}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendReply();
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => handleMarkResolved(selectedMessage.id)}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="gap-2"
                     >
-                      <CheckCircle className="w-4 h-4 mr-1" />
-                      Mark Resolved
+                      <Paperclip className="w-4 h-4" />
                     </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Detail Content */}
-              <div className="flex-1 p-6 overflow-y-auto">
-                <div className="flex items-center gap-4 mb-6 text-sm text-muted-foreground">
-                  <span>
-                    {selectedMessage.created_at ? formatDistanceToNow(new Date(selectedMessage.created_at), { addSuffix: true }) : 'Recently'}
-                  </span>
-                  {selectedMessage.phone && (
-                    <>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Phone className="w-3 h-3" />
-                        {selectedMessage.phone}
-                      </span>
-                    </>
-                  )}
-                </div>
-
-                <div className="prose prose-invert max-w-none">
-                  <p className="text-foreground leading-relaxed whitespace-pre-line">{selectedMessage.message}</p>
-                </div>
-
-                {selectedMessage.car_id && (
-                  <div className="mt-6 p-4 rounded-xl bg-secondary/30 border border-border">
-                    <p className="text-sm text-muted-foreground">Car ID:</p>
-                    <p className="text-foreground font-medium">{selectedMessage.car_id}</p>
+                    <Button
+                      onClick={handleSendReply}
+                      className="gap-2"
+                      disabled={!replyMessage.trim() && selectedFiles.length === 0}
+                    >
+                      <Send className="w-4 h-4" />
+                      Send
+                    </Button>
                   </div>
-                )}
-              </div>
-
-              {/* Reply Box */}
-              <div className="p-4 border-t border-border">
-                {/* Selected Files Preview */}
-                {selectedFiles.length > 0 && (
-                  <div className="mb-3 flex flex-wrap gap-2">
-                    {selectedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 text-sm">
-                        <Paperclip className="w-4 h-4 text-muted-foreground" />
-                        <span className="truncate max-w-[120px]">{file.name}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFile(index)}
-                          className="p-1 h-auto"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex gap-2">
-                  <textarea
-                    placeholder="Type your reply to the customer..."
-                    value={replyMessage}
-                    onChange={(e) => setReplyMessage(e.target.value)}
-                    className="flex-1 border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-none"
-                    rows={3}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendReply();
-                      }
-                    }}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileSelect}
+                    multiple
+                    className="hidden"
+                    accept="image/*,application/pdf,.doc,.docx,.txt"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="gap-2"
-                  >
-                    <Paperclip className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={handleSendReply}
-                    className="gap-2"
-                    disabled={!replyMessage.trim() && selectedFiles.length === 0}
-                  >
-                    <Send className="w-4 h-4" />
-                    Send
-                  </Button>
                 </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileSelect}
-                  multiple
-                  className="hidden"
-                  accept="image/*,application/pdf,.doc,.docx,.txt"
-                />
               </div>
-            </>
+            )
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
                 <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                <p className="text-muted-foreground">Select a request to view</p>
+                <p className="text-lg font-medium text-foreground">Welcome to Messages</p>
+                <p className="text-muted-foreground mt-2">Select a request from the list to view details</p>
               </div>
             </div>
           )}

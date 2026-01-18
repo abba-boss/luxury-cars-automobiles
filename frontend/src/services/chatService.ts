@@ -52,15 +52,17 @@ interface SendMessageRequest {
   fileName?: string;
 }
 
-class ChatService {
-  private baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+export class ChatService {
+  private baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace(/\/$/, '');
 
   constructor(private token: string | null) {}
 
   private getHeaders() {
+    // Get token from localStorage if not provided in constructor
+    const authToken = this.token || localStorage.getItem('auth_token');
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.token}`
+      'Authorization': `Bearer ${authToken}`
     };
   }
 
@@ -149,9 +151,46 @@ class ChatService {
   }
 }
 
+// Export a default instance of ChatService
+const defaultChatService = new ChatService(null);
+
+// Also export the hook for cases where you need a fresh instance with current token
 export const useChatService = () => {
-  const { token } = useAuth();
+  const token = localStorage.getItem('auth_token');
   return new ChatService(token);
+};
+
+// Export the default instance as chatService for direct use
+// This creates a new instance each time to ensure the latest token is used
+export const chatService = {
+  createConversation: (data: CreateConversationRequest) => {
+    const token = localStorage.getItem('auth_token');
+    return new ChatService(token).createConversation(data);
+  },
+  getUserConversations: (params?: { page?: number; limit?: number; status?: string }) => {
+    const token = localStorage.getItem('auth_token');
+    return new ChatService(token).getUserConversations(params);
+  },
+  getConversationMessages: (conversationId: string, params?: { page?: number; limit?: number }) => {
+    const token = localStorage.getItem('auth_token');
+    return new ChatService(token).getConversationMessages(conversationId, params);
+  },
+  sendMessage: (conversationId: string, data: SendMessageRequest) => {
+    const token = localStorage.getItem('auth_token');
+    return new ChatService(token).sendMessage(conversationId, data);
+  },
+  markMessagesAsRead: (conversationId: string) => {
+    const token = localStorage.getItem('auth_token');
+    return new ChatService(token).markMessagesAsRead(conversationId);
+  },
+  getUnreadCount: () => {
+    const token = localStorage.getItem('auth_token');
+    return new ChatService(token).getUnreadCount();
+  },
+  getOrderConversations: (params?: { page?: number; limit?: number; status?: string }) => {
+    const token = localStorage.getItem('auth_token');
+    return new ChatService(token).getOrderConversations(params);
+  },
 };
 
 export type { Message, Conversation, CreateConversationRequest, SendMessageRequest };
