@@ -344,7 +344,7 @@ const AdminMessages = () => {
     <AdminLayout>
       <div className="flex h-[calc(100vh-10rem)]">
         {/* Message List */}
-        <div className="w-1/3 min-w-[400px] max-w-md border-r border-border flex flex-col h-full">
+        <div className="w-96 border-r border-border flex flex-col h-full">
           {/* Header */}
           <div className="p-4 border-b border-border bg-muted/5 flex-shrink-0">
             <div className="flex items-center justify-between mb-3">
@@ -377,70 +377,68 @@ const AdminMessages = () => {
               <TabsTrigger value="resolved">Resolved</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all" className="flex-1 overflow-y-auto m-0 flex flex-col">
-              <div className="flex-1 overflow-y-auto">
-                <div className="divide-y divide-border">
-                  {filteredMessages.length === 0 ? (
-                    <div className="p-8 text-center">
-                      <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                      <p className="text-muted-foreground">No requests yet</p>
-                    </div>
-                  ) : (
-                    filteredMessages.map((message) => (
-                      <button
-                        key={message.id}
-                        onClick={() => setSelectedMessage(message)}
-                        className={cn(
-                          'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
-                          selectedMessage?.id === message.id && 'bg-secondary',
-                          (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
-                        )}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={cn(
-                            'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0',
-                            message.type === 'order_conversation'
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : 'bg-blue-500/20 text-blue-400'
-                          )}>
-                            {message.type === 'order_conversation' ? (
-                              <ShoppingCart className="w-4 h-4" />
-                            ) : (
-                              <Mail className="w-4 h-4" />
+            <TabsContent value="all" className="flex-1 overflow-y-auto m-0">
+              <div className="divide-y divide-border">
+                {filteredMessages.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-muted-foreground">No requests yet</p>
+                  </div>
+                ) : (
+                  filteredMessages.map((message) => (
+                    <button
+                      key={message.id}
+                      onClick={() => setSelectedMessage(message)}
+                      className={cn(
+                        'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
+                        selectedMessage?.id === message.id && 'bg-secondary',
+                        (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={cn(
+                          'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0',
+                          message.type === 'order_conversation'
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-blue-500/20 text-blue-400'
+                        )}>
+                          {message.type === 'order_conversation' ? (
+                            <ShoppingCart className="w-4 h-4" />
+                          ) : (
+                            <Mail className="w-4 h-4" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className={cn(
+                              'font-medium truncate',
+                              (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
+                            )}>
+                              {message.type === 'order_conversation'
+                                ? message.name
+                                : message.message.includes('New Order Request')
+                                  ? message.subject || `Order: ${message.car_id || 'Car'}`
+                                  : message.name}
+                            </p>
+                            {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
+                              <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className={cn(
-                                'font-medium truncate',
-                                (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
-                              )}>
-                                {message.type === 'order_conversation'
-                                  ? message.name
-                                  : message.message.includes('New Order Request')
-                                    ? message.subject || `Order: ${message.car_id || 'Car'}`
-                                    : message.name}
-                              </p>
-                              {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
-                                <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground truncate mt-0.5">
-                              {message.type === 'order_conversation'
-                                ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
-                                : message.message.includes('New Order Request')
-                                  ? 'New order request'
-                                  : message.message.substring(0, 50) + '...'}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                            </p>
-                          </div>
+                          <p className="text-sm text-muted-foreground truncate mt-0.5">
+                            {message.type === 'order_conversation'
+                              ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                              : message.message.includes('New Order Request')
+                                ? 'New order request'
+                                : message.message.substring(0, 50) + '...'}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
+                          </p>
                         </div>
-                      </button>
-                    ))
-                  )}
-                </div>
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
 
               {/* Pagination Controls */}
@@ -496,151 +494,145 @@ const AdminMessages = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="pending" className="flex-1 overflow-y-auto m-0 flex flex-col">
-              <div className="flex-1 overflow-y-auto">
-                <div className="divide-y divide-border">
-                  {filteredMessages.filter((m) => m.status === 'new' || m.status === 'in_progress' || m.status === 'active').map((message) => (
-                    <button
-                      key={message.id}
-                      onClick={() => setSelectedMessage(message)}
-                      className={cn(
-                        'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
-                        selectedMessage?.id === message.id && 'bg-secondary',
-                        'bg-primary/5'
-                      )}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={cn(
-                          'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0',
-                          message.type === 'order_conversation'
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-blue-500/20 text-blue-400'
-                        )}>
-                          {message.type === 'order_conversation' ? (
-                            <ShoppingCart className="w-4 h-4" />
-                          ) : (
-                            <Mail className="w-4 h-4" />
+            <TabsContent value="pending" className="flex-1 overflow-y-auto m-0">
+              <div className="divide-y divide-border">
+                {filteredMessages.filter((m) => m.status === 'new' || m.status === 'in_progress' || m.status === 'active').map((message) => (
+                  <button
+                    key={message.id}
+                    onClick={() => setSelectedMessage(message)}
+                    className={cn(
+                      'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
+                      selectedMessage?.id === message.id && 'bg-secondary',
+                      'bg-primary/5'
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0',
+                        message.type === 'order_conversation'
+                          ? 'bg-emerald-500/20 text-emerald-400'
+                          : 'bg-blue-500/20 text-blue-400'
+                      )}>
+                        {message.type === 'order_conversation' ? (
+                          <ShoppingCart className="w-4 h-4" />
+                        ) : (
+                          <Mail className="w-4 h-4" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">
+                          {message.type === 'order_conversation'
+                            ? message.name
+                            : message.message.includes('New Order Request')
+                              ? message.subject || `Order: ${message.car_id || 'Car'}`
+                              : message.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {message.type === 'order_conversation'
+                            ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                            : message.message.includes('New Order Request')
+                              ? 'New order request'
+                              : message.message.substring(0, 50) + '...'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="order-requests" className="flex-1 overflow-y-auto m-0">
+              <div className="divide-y divide-border">
+                {filteredMessages.filter((m) => m.type === 'order_conversation' || m.message.includes('New Order Request')).map((message) => (
+                  <button
+                    key={message.id}
+                    onClick={() => setSelectedMessage(message)}
+                    className={cn(
+                      'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
+                      selectedMessage?.id === message.id && 'bg-secondary',
+                      (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400">
+                        <ShoppingCart className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className={cn(
+                            'font-medium truncate',
+                            (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
+                          )}>
+                            {message.type === 'order_conversation'
+                              ? message.name
+                              : message.subject || `Order: ${message.car_id || 'Car'}`}
+                          </p>
+                          {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
+                            <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground truncate">
-                            {message.type === 'order_conversation'
-                              ? message.name
-                              : message.message.includes('New Order Request')
-                                ? message.subject || `Order: ${message.car_id || 'Car'}`
-                                : message.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {message.type === 'order_conversation'
-                              ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
-                              : message.message.includes('New Order Request')
-                                ? 'New order request'
-                                : message.message.substring(0, 50) + '...'}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                          </p>
-                        </div>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {message.type === 'order_conversation'
+                            ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                            : 'New order request'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
+                        </p>
                       </div>
-                    </button>
-                  ))}
-                </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </TabsContent>
 
-            <TabsContent value="order-requests" className="flex-1 overflow-y-auto m-0 flex flex-col">
-              <div className="flex-1 overflow-y-auto">
-                <div className="divide-y divide-border">
-                  {filteredMessages.filter((m) => m.type === 'order_conversation' || m.message.includes('New Order Request')).map((message) => (
-                    <button
-                      key={message.id}
-                      onClick={() => setSelectedMessage(message)}
-                      className={cn(
-                        'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
-                        selectedMessage?.id === message.id && 'bg-secondary',
-                        (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
-                      )}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400">
-                          <ShoppingCart className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className={cn(
-                              'font-medium truncate',
-                              (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
-                            )}>
-                              {message.type === 'order_conversation'
-                                ? message.name
-                                : message.subject || `Order: ${message.car_id || 'Car'}`}
-                            </p>
-                            {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
-                              <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {message.type === 'order_conversation'
-                              ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
-                              : 'New order request'}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                          </p>
-                        </div>
+            <TabsContent value="resolved" className="flex-1 overflow-y-auto m-0">
+              <div className="divide-y divide-border">
+                {filteredMessages.filter((m) => m.status === 'resolved' || m.status === 'closed').map((message) => (
+                  <button
+                    key={message.id}
+                    onClick={() => setSelectedMessage(message)}
+                    className={cn(
+                      'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
+                      selectedMessage?.id === message.id && 'bg-secondary'
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400">
+                        <CheckCircle className="w-4 h-4" />
                       </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="resolved" className="flex-1 overflow-y-auto m-0 flex flex-col">
-              <div className="flex-1 overflow-y-auto">
-                <div className="divide-y divide-border">
-                  {filteredMessages.filter((m) => m.status === 'resolved' || m.status === 'closed').map((message) => (
-                    <button
-                      key={message.id}
-                      onClick={() => setSelectedMessage(message)}
-                      className={cn(
-                        'w-full p-4 text-left hover:bg-secondary/50 transition-colors',
-                        selectedMessage?.id === message.id && 'bg-secondary'
-                      )}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400">
-                          <CheckCircle className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-muted-foreground truncate">
-                            {message.type === 'order_conversation'
-                              ? message.name
-                              : message.message.includes('New Order Request')
-                                ? message.subject || `Order: ${message.car_id || 'Car'}`
-                                : message.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {message.type === 'order_conversation'
-                              ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
-                              : message.message.includes('New Order Request')
-                                ? 'Order request resolved'
-                                : message.message.substring(0, 50) + '...'}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                          </p>
-                        </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-muted-foreground truncate">
+                          {message.type === 'order_conversation'
+                            ? message.name
+                            : message.message.includes('New Order Request')
+                              ? message.subject || `Order: ${message.car_id || 'Car'}`
+                              : message.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {message.type === 'order_conversation'
+                            ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
+                            : message.message.includes('New Order Request')
+                              ? 'Order request resolved'
+                              : message.message.substring(0, 50) + '...'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
+                        </p>
                       </div>
-                    </button>
-                  ))}
-                </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </TabsContent>
           </Tabs>
         </div>
 
         {/* Message Detail */}
-        <div className="flex-1 min-w-[600px] flex flex-col h-full">
+        <div className="flex-1 flex flex-col h-full">
           {selectedMessage ? (
             // Check if this is an order conversation and show the chat interface
             ('order_info' in selectedMessage) ? (
