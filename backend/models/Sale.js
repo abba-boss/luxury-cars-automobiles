@@ -44,12 +44,12 @@ const Sale = sequelize.define('Sale', {
     defaultValue: 'cash'
   },
   payment_status: {
-    type: DataTypes.ENUM('pending', 'partial', 'completed', 'failed'),
+    type: DataTypes.ENUM('pending', 'partial', 'completed', 'failed', 'refunded'),
     allowNull: false,
     defaultValue: 'pending'
   },
   status: {
-    type: DataTypes.ENUM('pending', 'confirmed', 'completed', 'cancelled'),
+    type: DataTypes.ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refunded'),
     allowNull: false,
     defaultValue: 'pending'
   },

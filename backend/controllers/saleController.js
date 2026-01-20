@@ -337,7 +337,7 @@ const updateSale = async (req, res, next) => {
     // Update vehicle status based on sale status
     if (status === 'completed') {
       await sale.vehicle.update({ status: 'sold' }, { transaction });
-    } else if (status === 'cancelled') {
+    } else if (status === 'cancelled' || status === 'refunded') {
       await sale.vehicle.update({ status: 'available' }, { transaction });
     }
 

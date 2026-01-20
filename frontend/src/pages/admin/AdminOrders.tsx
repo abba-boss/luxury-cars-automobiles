@@ -25,9 +25,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/utils/dateUtils";
+import { toast } from "sonner";
 
 const AdminAllOrders = () => {
   const [orders, setOrders] = useState<any[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: '',
@@ -220,7 +222,8 @@ const AdminAllOrders = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 h-[calc(100vh-20rem)] flex flex-col overflow-hidden">
+      <div className="space-y-6 h-full flex flex-col overflow-hidden">
+
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card variant="premium">
@@ -355,8 +358,8 @@ const AdminAllOrders = () => {
             </div>
           </Card>
         ) : (
-          <div className="flex-1 overflow-hidden">
-            <div className="overflow-y-auto h-full">
+          <Card variant="premium" className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto min-h-0">
               <table className="w-full">
                 <thead className="bg-muted/50 sticky top-0 z-10">
                   <tr>
@@ -443,7 +446,7 @@ const AdminAllOrders = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
         )}
       </div>
     </AdminLayout>

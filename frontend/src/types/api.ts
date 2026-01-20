@@ -102,12 +102,18 @@ export interface Sale {
   id: number;
   vehicle_id: number;
   customer_id: number;
+  user_id?: number;
   sale_price: number;
   sale_date: string;
-  payment_method?: string;
-  payment_status?: string;
-  status?: string;
+  payment_method?: 'cash' | 'bank_transfer' | 'card' | 'financing';
+  payment_status?: 'pending' | 'partial' | 'completed' | 'failed' | 'refunded';
+  status?: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'completed' | 'cancelled' | 'refunded';
   notes?: string;
+  created_at: string;
+  updated_at: string;
+  vehicle?: Vehicle;
+  customer?: Customer;
+  orderConversation?: any; // Add order conversation reference if needed
 }
 
 export interface Inquiry {

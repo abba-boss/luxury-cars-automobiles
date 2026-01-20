@@ -164,6 +164,27 @@ const OrdersPage = () => {
             Confirmed
           </Badge>
         );
+      case "processing":
+        return (
+          <Badge variant="muted" className="gap-1">
+            <Clock className="h-3 w-3" />
+            Processing
+          </Badge>
+        );
+      case "shipped":
+        return (
+          <Badge variant="outline" className="gap-1">
+            <Package className="h-3 w-3" />
+            Shipped
+          </Badge>
+        );
+      case "delivered":
+        return (
+          <Badge variant="outline" className="gap-1">
+            <CheckCircle className="h-3 w-3" />
+            Delivered
+          </Badge>
+        );
       case "completed":
         return (
           <Badge className="gap-1 bg-emerald-500">
@@ -176,6 +197,13 @@ const OrdersPage = () => {
           <Badge variant="destructive" className="gap-1">
             <XCircle className="h-3 w-3" />
             Cancelled
+          </Badge>
+        );
+      case "refunded":
+        return (
+          <Badge variant="outline" className="gap-1">
+            <XCircle className="h-3 w-3" />
+            Refunded
           </Badge>
         );
       default:
