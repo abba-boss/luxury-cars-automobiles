@@ -296,9 +296,10 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
   };
 
   return (
-    <Card variant="premium" className={cn('flex flex-col h-full', className)}>
-      {/* Order Header */}
-      <CardHeader className="pb-3 border-b">
+    <div className={cn('flex flex-col h-full', className)}>
+      <Card variant="premium" className="flex flex-col flex-1 min-h-0">
+        {/* Order Header */}
+        <CardHeader className="pb-3 border-b flex-shrink-0">
         <div className="flex items-start gap-4">
           <div className="w-20 h-16 rounded-lg overflow-hidden flex-shrink-0">
             <img
@@ -337,7 +338,8 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
 
       {/* Messages Area */}
       <CardContent className="flex-1 p-0 flex flex-col min-h-0">
-        <ScrollArea className="flex-1 p-4">
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full p-4">
           <div className="space-y-4">
             {isLoading && (
               <div className="text-center py-4">
@@ -456,6 +458,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
+        </div>
 
         {/* Input Area */}
         <div className="p-4 border-t">
@@ -486,6 +489,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 };
 

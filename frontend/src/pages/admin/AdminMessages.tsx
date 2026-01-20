@@ -342,9 +342,9 @@ const AdminMessages = () => {
 
   return (
     <AdminLayout>
-      <div className="flex h-[calc(100vh-10rem)]">
+      <div className="flex h-[calc(100vh-10rem)] overflow-hidden">
         {/* Message List */}
-        <div className="w-96 border-r border-border flex flex-col h-full">
+        <div className="w-96 border-r border-border flex flex-col min-h-0">
           {/* Header */}
           <div className="p-4 border-b border-border bg-muted/5 flex-shrink-0">
             <div className="flex items-center justify-between mb-3">
@@ -369,7 +369,7 @@ const AdminMessages = () => {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="all" className="flex-1 flex flex-col h-full">
+          <Tabs defaultValue="all" className="flex-1 flex flex-col min-h-0">
             <TabsList className="mx-4 mt-3 flex-shrink-0">
               <TabsTrigger value="all">All ({allMessages.length})</TabsTrigger>
               <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
@@ -632,12 +632,12 @@ const AdminMessages = () => {
         </div>
 
         {/* Message Detail */}
-        <div className="flex-1 flex flex-col h-full">
+        <div className="flex-1 flex flex-col min-h-0">
           {selectedMessage ? (
             // Check if this is an order conversation and show the chat interface
             ('order_info' in selectedMessage) ? (
               // Show OrderChat for order conversations
-              <div className="flex-1 flex flex-col h-full">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="p-4 border-b border-border flex items-center justify-between bg-muted/5 flex-shrink-0">
                   <div className="flex items-center gap-3">
                     <Button
@@ -684,7 +684,7 @@ const AdminMessages = () => {
               </div>
             ) : (
               // Show regular message view for inquiries
-              <div className="flex-1 flex flex-col h-full">
+              <div className="flex-1 flex flex-col min-h-0">
                 {/* Detail Header */}
                 <div className="p-4 border-b border-border flex items-center justify-between bg-muted/5 flex-shrink-0">
                   <div className="flex items-center gap-3">
