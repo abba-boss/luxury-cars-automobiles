@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useAuth } from '@/hooks/useAuth';
-import { chatService } from '@/services';
+import { chatService, saleService } from '@/services';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import { toast } from 'sonner';
 import {
   Send,
   Package,
@@ -295,6 +296,22 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
     }
   };
 
+  const updateOrderStatus = async (newStatus: string) => {
+    try {
+      const response = await saleService.updateSale(order.id, { status: newStatus });
+      if (response.success) {
+        // Update the order status in the component state
+        setOrder(prevOrder => ({ ...prevOrder, status: newStatus }));
+        toast.success(`Order status updated to ${newStatus}`);
+      } else {
+        throw new Error(response.message || 'Failed to update order status');
+      }
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      toast.error('Failed to update order status');
+    }
+  };
+
   return (
     <div className={cn('flex flex-col h-full', className)}>
       <Card variant="premium" className="flex flex-col flex-1 min-h-0">
@@ -316,7 +333,25 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
                 </h3>
                 <p className="text-sm text-muted-foreground">Order #{order.id}</p>
               </div>
-              {getStatusBadge(order.status)}
+              <div className="flex items-center gap-2">
+                {getStatusBadge(order.status)}
+                {user?.role === 'admin' && (
+                  <select
+                    value={order.status}
+                    onChange={(e) => updateOrderStatus(e.target.value)}
+                    className="text-xs border border-input rounded px-2 py-1 bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="refunded">Refunded</option>
+                  </select>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-4 text-sm">
               <div>

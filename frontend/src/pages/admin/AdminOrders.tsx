@@ -1,803 +1,453 @@
-import { useState, useEffect, useMemo } from "react";
-import { formatDistanceToNow } from 'date-fns';
+import { useState, useEffect } from "react";
+import AdminLayout from "@/components/layout/AdminLayout";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/loading";
+import { saleService } from "@/services";
+import { useAuth } from "@/hooks/useAuth";
 import {
-  Search,
-  Mail,
-  MessageSquare,
-  Phone,
-  Star,
-  Archive,
-  Trash2,
-  Reply,
-  MoreVertical,
-  Loader2,
-  CheckCircle,
   Package,
-  ShoppingCart,
-  Paperclip,
-  Send,
-  X,
-  ArrowLeft,
-  Download,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Eye,
   Edit,
-  AlertCircle,
-  CheckCheck,
-  Clock
-} from 'lucide-react';
-import AdminLayout from '@/components/layout/AdminLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { useAdminInquiries } from '@/hooks/useAdminData';
-import { localDb } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import type { Inquiry } from '@/hooks/useAdminData';
-import { inquiryService, uploadService, chatService } from '@/services';
-import { useChatService } from '@/services/chatService';
-import { useChat } from '@/contexts/ChatContext';
-import OrderChat from '@/components/chat/OrderChat';
+  Download,
+  Filter,
+  Search,
+  CreditCard,
+  DollarSign,
+  User as UserIcon,
+  MessageSquare,
+  Check,
+  X
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatDate } from "@/utils/dateUtils";
 
-interface OrderConversation {
-  id: number;
-  name: string;
-  type: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  participants: Array<{
-    id: number;
-    full_name: string;
-    email: string;
-    role: string;
-  }>;
-  last_message: {
-    content: string;
-    sender: string;
-    created_at: string;
-  } | null;
-  order_info: {
-    id: number;
-    sale_price: number;
-    status: string;
-    vehicle: {
-      id: number;
-      make: string;
-      model: string;
-      year: number;
-      price: number;
-      images: string[];
-    };
-    customer: {
-      id: number;
-      full_name: string;
-      email: string;
-      phone: string;
-    };
-  };
-}
+const AdminAllOrders = () => {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    status: '',
+    search: '',
+    dateFrom: '',
+    dateTo: '',
+    paymentStatus: ''
+  });
+  const { user } = useAuth();
 
-const AdminMessages = () => {
-  const { data: inquiries = [], isLoading: inquiriesLoading } = useAdminInquiries();
-  const [orderConversations, setOrderConversations] = useState<OrderConversation[]>([]);
-  const [orderConversationsLoading, setOrderConversationsLoading] = useState(true);
-  const [selectedMessage, setSelectedMessage] = useState<Inquiry | OrderConversation | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [replyMessage, setReplyMessage] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const queryClient = useQueryClient();
-  const chatService = useMemo(() => useChatService(), []);
-  const { socket } = useChat(); // Get socket for real-time updates
-
-  // Fetch order conversations with optimized API calls
   useEffect(() => {
-    const fetchOrderConversations = async () => {
-      // Check if we have a valid token before making the request
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        console.error('No authentication token found');
-        setOrderConversationsLoading(false);
-        return;
-      }
-
+    const fetchOrders = async () => {
       try {
-        const response = await chatService.getOrderConversations({
-          status: 'active',
-          page: currentPage,
-          limit: 10 // Reduce to 10 per page for better performance
+        const response = await saleService.getSales({
+          status: filters.status || undefined,
+          search: filters.search || undefined,
+          date_from: filters.dateFrom || undefined,
+          date_to: filters.dateTo || undefined,
+          payment_status: filters.paymentStatus || undefined
         });
+
         if (response.success) {
-          setOrderConversations(response.data || []);
-          if (response.pagination) {
-            setTotalPages(response.pagination.pages || 1);
-            setTotalItems(response.pagination.total || 0);
-          }
-        } else {
-          console.error('Failed to fetch order conversations:', response.message);
-          toast.error(response.message || 'Failed to load order conversations');
+          setOrders(response.data || []);
         }
       } catch (error) {
-        console.error('Failed to fetch order conversations:', error);
-        toast.error('Failed to load order conversations');
+        console.error('Failed to fetch orders:', error);
       } finally {
-        setOrderConversationsLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchOrderConversations();
-  }, [chatService, currentPage]); // Only re-run when chatService or currentPage changes
+    fetchOrders();
+  }, [filters]);
 
-  // Listen for real-time order message updates
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleOrderMessageUpdate = (data: any) => {
-      console.log('Real-time order message update:', data);
-      
-      // Update the specific order conversation in the list
-      setOrderConversations(prev => {
-        return prev.map(conv => {
-          if (conv.id === data.conversationId) {
-            return {
-              ...conv,
-              last_message: {
-                content: data.message.content,
-                sender: data.message.sender.full_name,
-                created_at: data.message.created_at
-              },
-              updated_at: data.message.created_at // Update the conversation's updated time
-            };
-          }
-          return conv;
-        });
-      });
-
-      // If this conversation is currently selected, update the selected message too
-      if (selectedMessage && selectedMessage.id === data.conversationId) {
-        setSelectedMessage(prev => {
-          if (!prev || !('order_info' in prev)) return prev;
-          
-          return {
-            ...prev,
-            last_message: {
-              content: data.message.content,
-              sender: data.message.sender.full_name,
-              created_at: data.message.created_at
-            },
-            updated_at: data.message.created_at
-          } as OrderConversation;
-        });
-      }
-
-      // Show a toast notification
-      toast.success(`New message from customer on Order #${data.orderId}`);
-    };
-
-    socket.on('order_message_update', handleOrderMessageUpdate);
-
-    return () => {
-      socket.off('order_message_update', handleOrderMessageUpdate);
-    };
-  }, [socket, selectedMessage]);
-
-  // Combined loading state
-  const isLoading = inquiriesLoading || orderConversationsLoading;
-
-  const pendingCount = inquiries.filter((m) => m.status === 'new' || m.status === 'in_progress').length + orderConversations.filter(oc => oc.status === 'active').length;
-  const orderRequestCount = inquiries.filter((m) => m.message.includes('New Order Request')).length + orderConversations.length;
-
-  const handleMarkResolved = async (id: string) => {
-    try {
-      // Check if this is an inquiry or order conversation
-      const isOrderConversation = orderConversations.some(oc => oc.id.toString() === id);
-
-      if (isOrderConversation) {
-        // Update order conversation status
-        // In a real implementation, this would update the order conversation status
-        toast.success('Order conversation marked as resolved');
-      } else {
-        // Update inquiry status
-        const response = await inquiryService.updateInquiry(id, { status: 'resolved' });
-        if (response.success) {
-          toast.success('Order request marked as resolved');
-          queryClient.invalidateQueries({ queryKey: ['admin-inquiries'] });
-          if (selectedMessage?.id === id) {
-            setSelectedMessage({ ...selectedMessage, status: 'resolved' });
-          }
-        } else {
-          throw new Error('Failed to update inquiry status');
-        }
-      }
-    } catch (error) {
-      toast.error('Failed to update request status');
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return (
+          <Badge variant="muted" className="gap-1">
+            <Clock className="h-3 w-3" />
+            Pending
+          </Badge>
+        );
+      case "confirmed":
+        return (
+          <Badge variant="verified" className="gap-1">
+            <CheckCircle className="h-3 w-3" />
+            Confirmed
+          </Badge>
+        );
+      case "processing":
+        return (
+          <Badge variant="muted" className="gap-1">
+            <Clock className="h-3 w-3" />
+            Processing
+          </Badge>
+        );
+      case "shipped":
+        return (
+          <Badge variant="outline" className="gap-1">
+            <Package className="h-3 w-3" />
+            Shipped
+          </Badge>
+        );
+      case "delivered":
+        return (
+          <Badge variant="outline" className="gap-1">
+            <CheckCircle className="h-3 w-3" />
+            Delivered
+          </Badge>
+        );
+      case "completed":
+        return (
+          <Badge className="gap-1 bg-emerald-500">
+            <CheckCircle className="h-3 w-3" />
+            Completed
+          </Badge>
+        );
+      case "cancelled":
+        return (
+          <Badge variant="destructive" className="gap-1">
+            <XCircle className="h-3 w-3" />
+            Cancelled
+          </Badge>
+        );
+      case "refunded":
+        return (
+          <Badge variant="outline" className="gap-1">
+            <XCircle className="h-3 w-3" />
+            Refunded
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline">
+            {status}
+          </Badge>
+        );
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      setSelectedFiles(prev => [...prev, ...files]);
+  const getPaymentStatusBadge = (status: string) => {
+    switch (status) {
+      case "paid":
+        return (
+          <Badge className="gap-1 bg-green-500">
+            <CreditCard className="h-3 w-3" />
+            Paid
+          </Badge>
+        );
+      case "pending":
+        return (
+          <Badge variant="muted" className="gap-1">
+            <DollarSign className="h-3 w-3" />
+            Pending
+          </Badge>
+        );
+      case "failed":
+        return (
+          <Badge variant="destructive" className="gap-1">
+            <XCircle className="h-3 w-3" />
+            Failed
+          </Badge>
+        );
+      case "refunded":
+        return (
+          <Badge variant="outline" className="gap-1">
+            <DollarSign className="h-3 w-3" />
+            Refunded
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline">
+            {status}
+          </Badge>
+        );
     }
   };
 
-  const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSendReply = async () => {
-    if (!replyMessage.trim() && selectedFiles.length === 0) {
-      toast.error('Please enter a message or attach files');
-      return;
-    }
-
-    if (!selectedMessage) {
-      toast.error('No message selected');
-      return;
-    }
-
-    try {
-      // Check if this is an order conversation or an inquiry
-      if ('order_info' in selectedMessage) {
-        // This is an order conversation - we need to send a message in the conversation
-        // For now, we'll update the order status to show it's being worked on
-        // In a real implementation, you would send a message through the chat service
-
-        // Update the order conversation status
-        toast.success('Message sent to customer');
-      } else {
-        // This is a regular inquiry
-        // If there are files to upload
-        if (selectedFiles.length > 0) {
-          // Upload files first
-          const uploadResponse = await uploadService.uploadVehicleMedia({
-            images: selectedFiles.filter(f => f.type.startsWith('image/')) as unknown as FileList,
-            videos: selectedFiles.filter(f => f.type.startsWith('video/')) as unknown as FileList
-          });
-
-          if (uploadResponse.success && uploadResponse.data?.image_urls) {
-            // Process uploaded files
-            console.log('Files uploaded:', uploadResponse.data.image_urls);
-          }
-        }
-
-        // Update the inquiry status to show it's being worked on
-        await inquiryService.updateInquiry(selectedMessage.id, {
-          status: 'in_progress',
-          message: `${selectedMessage.message}\n\nAdmin Reply: ${replyMessage}`
-        });
-      }
-
-      toast.success('Reply sent successfully');
-      setReplyMessage('');
-      setSelectedFiles([]);
-
-      // Refresh the data to show the updated status
-      queryClient.invalidateQueries({ queryKey: ['admin-inquiries'] });
-
-      // Refresh order conversations
-      const response = await chatService.getOrderConversations({ status: 'active' });
-      if (response.success) {
-        setOrderConversations(response.data || []);
-      }
-
-      // Update the selected message status
-      if (selectedMessage) {
-        if ('order_info' in selectedMessage) {
-          // Update order conversation status
-          const updatedOrderConversations = orderConversations.map(oc =>
-            oc.id === selectedMessage.id ? { ...oc, status: 'active' } : oc
-          );
-          setOrderConversations(updatedOrderConversations);
-          setSelectedMessage({ ...selectedMessage, status: 'active' });
-        } else {
-          // Update inquiry status
-          setSelectedMessage({
-            ...selectedMessage,
-            status: 'in_progress',
-            message: `${selectedMessage.message}\n\nAdmin Reply: ${replyMessage}`
-          });
-        }
-      }
-    } catch (error) {
-      toast.error('Failed to send reply');
-      console.error('Error sending reply:', error);
-    }
-  };
-
-  // Combine inquiries and order conversations for unified display
-  const allMessages = [
-    ...inquiries.map(inquiry => ({
-      ...inquiry,
-      type: 'inquiry' as const
-    })),
-    ...orderConversations.map(conv => ({
-      id: conv.id.toString(),
-      name: conv.name || `Order #${conv.order_info?.id} - ${conv.order_info?.vehicle?.make} ${conv.order_info?.vehicle?.model}`,
-      message: conv.last_message?.content || `New order request for ${conv.order_info?.vehicle?.make} ${conv.order_info?.vehicle?.model}`,
-      email: conv.order_info?.customer?.email || '',
-      phone: conv.order_info?.customer?.phone || '',
-      status: conv.status,
-      created_at: conv.created_at,
-      type: 'order_conversation' as const,
-      order_info: conv.order_info
-    }))
-  ];
-
-  // Sort messages by most recent first
-  allMessages.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-  const filteredMessages = allMessages.filter(
-    (m) =>
-      m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (isLoading) {
+  if (loading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <LoadingSpinner size="lg" />
         </div>
       </AdminLayout>
     );
   }
 
+  const filteredOrders = orders.filter(order => {
+    const matchesStatus = !filters.status || order.status === filters.status;
+    const matchesPaymentStatus = !filters.paymentStatus || order.payment_status === filters.paymentStatus;
+    const matchesSearch = !filters.search ||
+      order.vehicle?.make?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      order.vehicle?.model?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      order.customer?.full_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      order.id.toString().includes(filters.search);
+    const matchesDateFrom = !filters.dateFrom || new Date(order.created_at) >= new Date(filters.dateFrom);
+    const matchesDateTo = !filters.dateTo || new Date(order.created_at) <= new Date(filters.dateTo);
+
+    return matchesStatus && matchesPaymentStatus && matchesSearch && matchesDateFrom && matchesDateTo;
+  });
+
+  const updateOrderStatus = async (orderId: number, newStatus: string) => {
+    try {
+      const response = await saleService.updateSale(orderId, { status: newStatus });
+      if (response.success) {
+        // Update the order in the local state
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
+            order.id === orderId ? { ...order, status: newStatus } : order
+          )
+        );
+
+        // Update selected order if it matches
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder({ ...selectedOrder, status: newStatus });
+        }
+
+        toast.success(`Order status updated to ${newStatus}`);
+      } else {
+        throw new Error(response.message || 'Failed to update order status');
+      }
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      toast.error('Failed to update order status');
+    }
+  };
+
   return (
     <AdminLayout>
-      <div className="flex h-[calc(100vh-10rem)] overflow-hidden">
-        {/* Message List - Fixed width with independent scroll */}
-        <div className="w-96 border-r border-border flex flex-col min-h-0">
-          {/* Header */}
-          <div className="p-4 border-b border-border bg-muted/5 flex-shrink-0">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-foreground">
-                Order Requests & Inquiries
-              </h2>
-              {pendingCount > 0 && (
-                <span className="ml-2 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs">
-                  {pendingCount} pending
-                </span>
-              )}
-            </div>
+      <div className="space-y-6 h-[calc(100vh-20rem)] flex flex-col overflow-hidden">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                  <Package className="h-5 w-5 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Orders</p>
+                  <p className="text-xl font-semibold">{orders.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Pending</p>
+                  <p className="text-xl font-semibold">
+                    {orders.filter(o => o.status === "pending").length}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Confirmed</p>
+                  <p className="text-xl font-semibold">
+                    {orders.filter(o => o.status === "confirmed").length}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Paid Orders</p>
+                  <p className="text-xl font-semibold">
+                    {orders.filter(o => o.payment_status === "paid").length}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card variant="premium" className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search requests..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search orders..."
+                className="w-full pl-10 pr-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                value={filters.search}
+                onChange={(e) => setFilters({...filters, search: e.target.value})}
               />
             </div>
+            <select
+              className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              value={filters.status}
+              onChange={(e) => setFilters({...filters, status: e.target.value})}
+            >
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <select
+              className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              value={filters.paymentStatus}
+              onChange={(e) => setFilters({...filters, paymentStatus: e.target.value})}
+            >
+              <option value="">All Payment Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+              <option value="failed">Failed</option>
+              <option value="refunded">Refunded</option>
+            </select>
+            <input
+              type="date"
+              className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              value={filters.dateFrom}
+              onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
+            />
+            <input
+              type="date"
+              className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              value={filters.dateTo}
+              onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
+            />
+            <Button 
+              className="w-full"
+              onClick={() => {}}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Apply Filters
+            </Button>
           </div>
+        </Card>
 
-          {/* Tabs */}
-          <Tabs defaultValue="all" className="flex-1 flex flex-col min-h-0">
-            <TabsList className="mx-4 mt-3 flex-shrink-0">
-              <TabsTrigger value="all">All ({allMessages.length})</TabsTrigger>
-              <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
-              <TabsTrigger value="order-requests">Order Requests ({orderRequestCount})</TabsTrigger>
-              <TabsTrigger value="resolved">Resolved</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="all" className="flex-1 overflow-y-auto m-0">
-              <div className="divide-y divide-border">
-                {filteredMessages.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                    <p className="text-muted-foreground">No requests yet</p>
-                  </div>
-                ) : (
-                  filteredMessages.map((message) => (
-                    <button
-                      key={message.id}
-                      onClick={() => setSelectedMessage(message)}
-                      className={cn(
-                        "w-full p-4 text-left hover:bg-secondary/50 transition-colors",
-                        selectedMessage?.id === message.id && 'bg-secondary',
-                        (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
-                      )}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={cn(
-                          "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0",
-                          message.type === 'order_conversation'
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-blue-500/20 text-blue-400'
-                        )}>
-                          {message.type === 'order_conversation' ? (
-                            <ShoppingCart className="w-4 h-4" />
-                          ) : (
-                            <Mail className="w-4 h-4" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className={cn(
-                              "font-medium truncate",
-                              (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
-                            )}>
-                              {message.type === 'order_conversation'
-                                ? message.name
-                                : message.message.includes('New Order Request')
-                                  ? message.subject || `Order: ${message.car_id || 'Car'}`
-                                  : message.name}
-                            </p>
-                            {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
-                              <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground truncate mt-1">
-                            {message.type === 'order_conversation'
-                              ? `Order conversation`
-                              : message.message.substring(0, 50) + '...'}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="pending" className="flex-1 overflow-y-auto m-0">
-              <div className="divide-y divide-border">
-                {filteredMessages.filter(m => m.status === 'new' || m.status === 'in_progress' || m.status === 'active').map((message) => (
-                  <button
-                    key={message.id}
-                    onClick={() => setSelectedMessage(message)}
-                    className={cn(
-                      "w-full p-4 text-left hover:bg-secondary/50 transition-colors",
-                      selectedMessage?.id === message.id && 'bg-secondary',
-                      'bg-primary/5'
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0",
-                        message.type === 'order_conversation'
-                          ? 'bg-emerald-500/20 text-emerald-400'
-                          : 'bg-blue-500/20 text-blue-400'
-                      )}>
-                        {message.type === 'order_conversation' ? (
-                          <ShoppingCart className="w-4 h-4" />
-                        ) : (
-                          <Mail className="w-4 h-4" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">
-                          {message.type === 'order_conversation'
-                            ? message.name
-                            : message.message.includes('New Order Request')
-                              ? message.subject || `Order: ${message.car_id || 'Car'}`
-                              : message.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {message.type === 'order_conversation'
-                            ? `Order conversation`
-                            : message.message.substring(0, 50) + '...'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="order-requests" className="flex-1 overflow-y-auto m-0">
-              <div className="divide-y divide-border">
-                {filteredMessages.filter(m => m.type === 'order_conversation' || m.message.includes('New Order Request')).map((message) => (
-                  <button
-                    key={message.id}
-                    onClick={() => setSelectedMessage(message)}
-                    className={cn(
-                      "w-full p-4 text-left hover:bg-secondary/50 transition-colors",
-                      selectedMessage?.id === message.id && 'bg-secondary',
-                      (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && 'bg-primary/5'
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400">
-                        <ShoppingCart className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className={cn(
-                            "font-medium truncate",
-                            (message.status === 'new' || message.status === 'in_progress' || message.status === 'active') ? 'text-foreground' : 'text-muted-foreground'
-                          )}>
-                            {message.type === 'order_conversation'
-                              ? message.name
-                              : message.subject || `Order: ${message.car_id || 'Car'}`}
-                          </p>
-                          {(message.status === 'new' || message.status === 'in_progress' || message.status === 'active') && (
-                            <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {message.type === 'order_conversation'
-                            ? `Order conversation`
-                            : 'New order request'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="resolved" className="flex-1 overflow-y-auto m-0">
-              <div className="divide-y divide-border">
-                {filteredMessages.filter(m => m.status === 'resolved' || m.status === 'closed').map((message) => (
-                  <button
-                    key={message.id}
-                    onClick={() => setSelectedMessage(message)}
-                    className={cn(
-                      "w-full p-4 text-left hover:bg-secondary/50 transition-colors",
-                      selectedMessage?.id === message.id && 'bg-secondary'
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400">
-                        <CheckCircle className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-muted-foreground truncate">
-                          {message.type === 'order_conversation'
-                            ? message.name
-                            : message.message.includes('New Order Request')
-                              ? message.subject || `Order: ${message.car_id || 'Car'}`
-                              : message.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {message.type === 'order_conversation'
-                            ? `Order #${message.order_info?.id} • ${message.order_info?.vehicle?.make} ${message.order_info?.vehicle?.model}`
-                            : message.message.includes('New Order Request')
-                              ? 'Order request resolved'
-                              : message.message.substring(0, 50) + '...'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'Recently'}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Message Detail - Fixed width with independent scroll */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {selectedMessage ? (
-            // Check if this is an order conversation and show the chat interface
-            ('order_info' in selectedMessage) ? (
-              // Show OrderChat for order conversations
-              <div className="flex-1 flex flex-col min-h-0">
-                <div className="p-4 border-b border-border flex items-center justify-between bg-muted/5 flex-shrink-0">
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setSelectedMessage(null)}
-                      className="h-8 w-8"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-emerald-500/20 text-emerald-400">
-                      <ShoppingCart className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-foreground">
-                        Order #{selectedMessage.order_info.id} - {selectedMessage.order_info.vehicle.make} {selectedMessage.order_info.vehicle.model}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Customer: {selectedMessage.order_info.customer.full_name}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        'px-3 py-1 rounded-full text-xs font-medium',
-                        (selectedMessage.status === 'new' || selectedMessage.status === 'in_progress' || selectedMessage.status === 'active')
-                          ? 'bg-amber-500/20 text-amber-400'
-                          : 'bg-emerald-500/20 text-emerald-400'
-                      )}
-                    >
-                      {selectedMessage.status || 'pending'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-hidden">
-                  <OrderChat
-                    order={selectedMessage.order_info}
-                    conversationId={selectedMessage.id.toString()}
-                    className="h-full"
-                  />
-                </div>
-              </div>
-            ) : (
-              // Show regular message view for inquiries
-              <div className="flex-1 flex flex-col min-h-0">
-                {/* Detail Header */}
-                <div className="p-4 border-b border-border flex items-center justify-between bg-muted/5 flex-shrink-0">
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setSelectedMessage(null)}
-                      className="h-8 w-8"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-500/20 text-blue-400">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-foreground">
-                        {selectedMessage.message.includes('New Order Request')
-                          ? selectedMessage.subject || `Order Request: ${selectedMessage.car_id || 'Car'}`
-                          : selectedMessage.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedMessage.message.includes('New Order Request')
-                          ? selectedMessage.name
-                          : selectedMessage.email}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        'px-3 py-1 rounded-full text-xs font-medium',
-                        (selectedMessage.status === 'new' || selectedMessage.status === 'in_progress')
-                          ? 'bg-amber-500/20 text-amber-400'
-                          : 'bg-emerald-500/20 text-emerald-400'
-                      )}
-                    >
-                      {selectedMessage.status || 'pending'}
-                    </span>
-                    {(selectedMessage.status === 'new' || selectedMessage.status === 'in_progress') && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleMarkResolved(selectedMessage.id)}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Mark Resolved
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Detail Content */}
-                <div className="flex-1 overflow-y-auto p-6">
-                  <div className="flex items-center gap-4 mb-6 text-sm text-muted-foreground">
-                    <span>
-                      {selectedMessage.created_at ? formatDistanceToNow(new Date(selectedMessage.created_at), { addSuffix: true }) : 'Recently'}
-                    </span>
-                    {selectedMessage.phone && (
-                      <>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <Phone className="w-3 h-3" />
-                          {selectedMessage.phone}
-                        </span>
-                      </>
-                    )}
-                  </div>
-
-                  <div className="prose prose-invert max-w-none">
-                    <p className="text-foreground leading-relaxed whitespace-pre-line">{selectedMessage.message}</p>
-                  </div>
-
-                  {selectedMessage.car_id && (
-                    <div className="mt-6 p-4 rounded-xl bg-secondary/30 border border-border">
-                      <p className="text-sm text-muted-foreground">Car ID:</p>
-                      <p className="text-foreground font-medium">{selectedMessage.car_id}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Reply Box */}
-                <div className="p-4 border-t border-border bg-muted/5 flex-shrink-0">
-                  {/* Selected Files Preview */}
-                  {selectedFiles.length > 0 && (
-                    <div className="mb-3 flex flex-wrap gap-2">
-                      {selectedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 text-sm">
-                          <Paperclip className="w-4 h-4 text-muted-foreground" />
-                          <span className="truncate max-w-[120px]">{file.name}</span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeFile(index)}
-                            className="p-1 h-auto"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex gap-2">
-                    <textarea
-                      placeholder="Type your reply to the customer..."
-                      value={replyMessage}
-                      onChange={(e) => setReplyMessage(e.target.value)}
-                      className="flex-1 border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-none"
-                      rows={3}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendReply();
-                        }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="gap-2"
-                    >
-                      <Paperclip className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      onClick={handleSendReply}
-                      className="gap-2"
-                      disabled={!replyMessage.trim() && selectedFiles.length === 0}
-                    >
-                      <Send className="w-4 h-4" />
-                      Send
-                    </Button>
-                  </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileSelect}
-                    multiple
-                    className="hidden"
-                    accept="image/*,application/pdf,.doc,.docx,.txt"
-                  />
-                </div>
-              </div>
-            )
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                <p className="text-lg font-medium text-foreground">Welcome to Messages</p>
-                <p className="text-muted-foreground mt-2">Select a request from the list to view details</p>
-              </div>
+        {/* Orders List */}
+        {filteredOrders.length === 0 ? (
+          <Card variant="premium" className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <Package className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Orders Found</h3>
+              <p className="text-muted-foreground">
+                {orders.length === 0 ? "No orders have been placed yet." : "No orders match your current filters."}
+              </p>
             </div>
-          )}
-        </div>
+          </Card>
+        ) : (
+          <div className="flex-1 overflow-hidden">
+            <div className="overflow-y-auto h-full">
+              <table className="w-full">
+                <thead className="bg-muted/50 sticky top-0 z-10">
+                  <tr>
+                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">Order</th>
+                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">Customer</th>
+                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">Price</th>
+                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">Payment</th>
+                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">Date</th>
+                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-secondary/20 transition-colors">
+                      <td className="p-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-16 h-12 rounded-lg overflow-hidden border flex-shrink-0">
+                            <img
+                              src={order.vehicle?.images?.[0] || '/placeholder-car.jpg'}
+                              alt={`${order.vehicle?.make} ${order.vehicle?.model}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/placeholder-car.jpg';
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <div className="font-medium">{order.vehicle?.make} {order.vehicle?.model}</div>
+                            <div className="text-xs text-muted-foreground">{order.vehicle?.year}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <UserIcon className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-medium">{order.customer?.full_name || 'Unknown'}</div>
+                            <div className="text-xs text-muted-foreground">{order.customer?.email || 'N/A'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="font-semibold">${parseFloat(order.sale_price).toLocaleString()}</div>
+                      </td>
+                      <td className="p-3">
+                        {getStatusBadge(order.status)}
+                      </td>
+                      <td className="p-3">
+                        {getPaymentStatusBadge(order.payment_status)}
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm text-muted-foreground">
+                          {formatDate(order.created_at)}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1">
+                          <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)}>
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <select
+                            value={order.status}
+                            onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                            className="text-xs border border-input rounded px-2 py-1 bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="refunded">Refunded</option>
+                          </select>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </AdminLayout>
   );
 };
 
-export default AdminMessages;
+export default AdminAllOrders;

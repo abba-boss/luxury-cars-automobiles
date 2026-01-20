@@ -32,6 +32,7 @@ interface AdminLayoutProps {
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
+  { icon: Package, label: 'All Orders', href: '/admin/orders' },
   { icon: Car, label: 'Car Management', href: '/admin/cars' },
   { icon: PlusCircle, label: 'Add New Car', href: '/admin/add-car' },
   { icon: Search, label: 'Import Products', href: '/admin/import-products' },
