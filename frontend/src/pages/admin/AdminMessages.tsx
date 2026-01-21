@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Search,
@@ -25,8 +26,6 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useAdminInquiries } from '@/hooks/useAdminData';
-import { localDb } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type { Inquiry } from '@/hooks/useAdminData';
 import { inquiryService, uploadService, chatService } from '@/services';

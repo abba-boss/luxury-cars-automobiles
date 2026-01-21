@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface MediaItem {
   id: string;
@@ -119,127 +120,139 @@ const AdminMedia = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                <Image className="w-5 h-5 text-blue-400" />
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                  <Image className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Images</p>
+                  <p className="text-xl font-bold text-foreground">{media.filter(m => m.type === 'image').length}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Images</p>
-                <p className="text-xl font-bold text-foreground">{media.filter(m => m.type === 'image').length}</p>
+            </CardContent>
+          </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                  <Video className="w-5 h-5 text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Videos</p>
+                  <p className="text-xl font-bold text-foreground">{media.filter(m => m.type === 'video').length}</p>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                <Video className="w-5 h-5 text-purple-400" />
+            </CardContent>
+          </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <Grid3X3 className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">360° Views</p>
+                  <p className="text-xl font-bold text-foreground">{media.filter(m => m.type === '360').length}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Videos</p>
-                <p className="text-xl font-bold text-foreground">{media.filter(m => m.type === 'video').length}</p>
+            </CardContent>
+          </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <Folder className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Storage</p>
+                  <p className="text-xl font-bold text-foreground">2.4 GB</p>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <Grid3X3 className="w-5 h-5 text-amber-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">360° Views</p>
-                <p className="text-xl font-bold text-foreground">{media.filter(m => m.type === '360').length}</p>
-              </div>
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                <Folder className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Storage</p>
-                <p className="text-xl font-bold text-foreground">2.4 GB</p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Upload Zone */}
-        <div
-          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={handleDrop}
-          className={cn(
-            'border-2 border-dashed rounded-2xl p-8 text-center transition-all',
-            isDragging 
-              ? 'border-primary bg-primary/5' 
-              : 'border-border hover:border-primary/50'
-          )}
-        >
-          <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">Drag & Drop Files</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            or click to browse. Supports JPG, PNG, MP4, and ZIP files
-          </p>
-          <Button variant="outline" className="rounded-xl">
-            Browse Files
-          </Button>
-        </div>
+        <Card variant="premium" className="p-8">
+          <div
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            className={cn(
+              'border-2 border-dashed rounded-xl p-8 text-center transition-all',
+              isDragging
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50'
+            )}
+          >
+            <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">Drag & Drop Files</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              or click to browse. Supports JPG, PNG, MP4, and ZIP files
+            </p>
+            <Button variant="outline" className="rounded-xl">
+              Browse Files
+            </Button>
+          </div>
+        </Card>
 
         {/* Filters & Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex flex-1 gap-3">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search files..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 rounded-xl"
-              />
+        <Card variant="premium" className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex flex-1 gap-3">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search files..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex gap-2">
+                {['all', 'image', 'video', '360'].map((type) => (
+                  <Button
+                    key={type}
+                    variant={typeFilter === type ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTypeFilter(type)}
+                    className="rounded-lg capitalize"
+                  >
+                    {type === 'all' ? 'All' : type}
+                  </Button>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-2">
-              {['all', 'image', 'video', '360'].map((type) => (
-                <Button
-                  key={type}
-                  variant={typeFilter === type ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTypeFilter(type)}
-                  className="rounded-lg capitalize"
-                >
-                  {type === 'all' ? 'All' : type}
+            <div className="flex items-center gap-2">
+              {selectedItems.length > 0 && (
+                <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="rounded-lg gap-2">
+                  <Trash2 className="w-4 h-4" />
+                  Delete ({selectedItems.length})
                 </Button>
-              ))}
+              )}
+              <div className="flex border border-border rounded-lg overflow-hidden">
+                <Button
+                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-none"
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-none"
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {selectedItems.length > 0 && (
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="rounded-lg gap-2">
-                <Trash2 className="w-4 h-4" />
-                Delete ({selectedItems.length})
-              </Button>
-            )}
-            <div className="flex border border-border rounded-lg overflow-hidden">
-              <Button 
-                variant={viewMode === 'grid' ? 'secondary' : 'ghost'} 
-                size="icon"
-                onClick={() => setViewMode('grid')}
-                className="rounded-none"
-              >
-                <Grid3X3 className="w-4 h-4" />
-              </Button>
-              <Button 
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
-                size="icon"
-                onClick={() => setViewMode('list')}
-                className="rounded-none"
-              >
-                <List className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Card>
 
         {/* Media Grid/List */}
         {viewMode === 'grid' ? (

@@ -40,6 +40,7 @@ import { toast } from 'sonner';
 import { useAdminProfiles, useAdminUserRoles, useAdminFavorites, useAdminInquiries } from '@/hooks/useAdminData';
 import { localDb } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent } from '@/components/ui/card';
 
 const AdminUsers = () => {
   const [searchQuery, setSearchQuery] = useState('');

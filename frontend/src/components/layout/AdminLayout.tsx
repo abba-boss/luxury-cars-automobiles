@@ -39,6 +39,7 @@ const navItems = [
   { icon: Tag, label: 'Brand Management', href: '/admin/brands' },
   { icon: Image, label: 'Media Manager', href: '/admin/media' },
   { icon: Users, label: 'User Management', href: '/admin/users' },
+  { icon: Package, label: 'All Orders', href: '/admin/orders' },
   { icon: MessageSquare, label: 'Messages', href: '/admin/messages' },
   { icon: Calendar, label: 'Bookings', href: '/admin/bookings' },
   { icon: Star, label: 'Reviews', href: '/admin/reviews' },

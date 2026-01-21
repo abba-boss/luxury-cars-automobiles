@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { bookingService } from '@/services';
 import { LoadingSpinner } from '@/components/ui/loading';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface Booking {
   id: number;

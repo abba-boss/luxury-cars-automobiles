@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 import {
   Settings,
   User,
@@ -23,6 +23,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -30,8 +32,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { toast } from 'sonner';
+} from '@/components/ui/select';
 
 const AdminSettings = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -83,9 +84,9 @@ const AdminSettings = () => {
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-6">
-            <div className="rounded-2xl bg-card border border-border p-6">
+            <Card variant="premium" className="p-6">
               <h3 className="text-lg font-semibold text-foreground mb-6">Admin Profile</h3>
-              
+
               <div className="flex items-start gap-6 mb-6">
                 <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
                   <span className="text-3xl font-bold text-primary">AD</span>
@@ -105,34 +106,48 @@ const AdminSettings = () => {
                   <Input defaultValue="Admin User" className="mt-1 rounded-xl" />
                 </div>
                 <div>
-                  <Label>Email</Label>
-                  <Input defaultValue="admin@sarkinmota.com" className="mt-1 rounded-xl" />
-                  {/* Note: Email domain still uses original brand name - should be updated separately if needed */}
+                  <Label>Email Address</Label>
+                  <Input defaultValue="admin@sarkimmota.com" className="mt-1 rounded-xl" />
                 </div>
                 <div>
-                  <Label>Phone</Label>
+                  <Label>Phone Number</Label>
                   <Input defaultValue="+234 801 234 5678" className="mt-1 rounded-xl" />
                 </div>
                 <div>
                   <Label>Role</Label>
-                  <Input value="Administrator" disabled className="mt-1 rounded-xl bg-secondary/50" />
+                  <Input defaultValue="Administrator" className="mt-1 rounded-xl" readOnly />
                 </div>
               </div>
-            </div>
+            </Card>
+
+            <Card variant="premium" className="p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-6">Personal Information</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label>Address</Label>
+                  <Textarea defaultValue="123 Luxury Avenue, Abuja, Nigeria" className="mt-1 rounded-xl" />
+                </div>
+                <div>
+                  <Label>Biography</Label>
+                  <Textarea defaultValue="Experienced admin managing luxury car sales and customer relations." className="mt-1 rounded-xl h-32" />
+                </div>
+              </div>
+            </Card>
           </TabsContent>
 
           {/* Security Tab */}
           <TabsContent value="security" className="space-y-6">
-            <div className="rounded-2xl bg-card border border-border p-6">
+            <Card variant="premium" className="p-6">
               <h3 className="text-lg font-semibold text-foreground mb-6">Change Password</h3>
-              
+
               <div className="space-y-4 max-w-md">
                 <div>
                   <Label>Current Password</Label>
                   <div className="relative mt-1">
-                    <Input 
-                      type={showPassword ? 'text' : 'password'} 
-                      className="rounded-xl pr-10" 
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      className="rounded-xl pr-10"
                     />
                     <Button
                       variant="ghost"
@@ -152,49 +167,58 @@ const AdminSettings = () => {
                   <Label>Confirm New Password</Label>
                   <Input type="password" className="mt-1 rounded-xl" />
                 </div>
-                <Button className="rounded-xl">Update Password</Button>
+                <Button className="mt-4 rounded-xl gap-2" onClick={handleSave}>
+                  <Shield className="w-4 h-4" />
+                  Update Password
+                </Button>
               </div>
-            </div>
+            </Card>
 
-            <div className="rounded-2xl bg-card border border-border p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-6">Two-Factor Authentication</h3>
-              
-              <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
-                <div>
-                  <p className="font-medium text-foreground">Enable 2FA</p>
-                  <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
-                </div>
-                <Switch />
-              </div>
-            </div>
+            <Card variant="premium" className="p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-6">Security Preferences</h3>
 
-            <div className="rounded-2xl bg-card border border-border p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Active Sessions</h3>
-              
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
                   <div>
-                    <p className="font-medium text-foreground">Chrome on MacOS</p>
-                    <p className="text-xs text-muted-foreground">Lagos, Nigeria • Current session</p>
+                    <p className="font-medium text-foreground">Two-Factor Authentication</p>
+                    <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
                   </div>
-                  <span className="text-xs text-emerald-400">Active</span>
+                  <Switch />
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
                   <div>
-                    <p className="font-medium text-foreground">Safari on iPhone</p>
-                    <p className="text-xs text-muted-foreground">Abuja, Nigeria • 2 days ago</p>
+                    <p className="font-medium text-foreground">Login Notifications</p>
+                    <p className="text-sm text-muted-foreground">Receive email notifications for new logins</p>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-destructive">Revoke</Button>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
+                  <div>
+                    <p className="font-medium text-foreground">Session Timeout</p>
+                    <p className="text-sm text-muted-foreground">Automatically log out after inactivity</p>
+                  </div>
+                  <Select defaultValue="24h">
+                    <SelectTrigger className="w-32 rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1h">1 Hour</SelectItem>
+                      <SelectItem value="6h">6 Hours</SelectItem>
+                      <SelectItem value="12h">12 Hours</SelectItem>
+                      <SelectItem value="24h">24 Hours</SelectItem>
+                      <SelectItem value="never">Never</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            </div>
+            </Card>
           </TabsContent>
 
           {/* Business Tab */}
           <TabsContent value="business" className="space-y-6">
-            <div className="rounded-2xl bg-card border border-border p-6">
+            <Card variant="premium" className="p-6">
               <h3 className="text-lg font-semibold text-foreground mb-6">Business Information</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label>Business Name</Label>
@@ -202,88 +226,48 @@ const AdminSettings = () => {
                 </div>
                 <div>
                   <Label>Registration Number</Label>
-                  <Input defaultValue="RC123456" className="mt-1 rounded-xl" />
+                  <Input defaultValue="RC-1234567" className="mt-1 rounded-xl" />
+                </div>
+                <div>
+                  <Label>Business Email</Label>
+                  <Input defaultValue="info@sarkimmota.com" className="mt-1 rounded-xl" />
+                </div>
+                <div>
+                  <Label>Business Phone</Label>
+                  <Input defaultValue="+234 801 234 5678" className="mt-1 rounded-xl" />
                 </div>
                 <div className="md:col-span-2">
                   <Label>Business Address</Label>
-                  <Textarea 
-                    defaultValue="Plot 123, Victoria Island, Lagos, Nigeria" 
-                    className="mt-1 rounded-xl"
-                    rows={2}
-                  />
+                  <Textarea defaultValue="123 Luxury Avenue, Abuja, Nigeria" className="mt-1 rounded-xl" />
+                </div>
+                <div className="md:col-span-2">
+                  <Label>Business Description</Label>
+                  <Textarea defaultValue="Premium luxury car dealership offering the finest vehicles and exceptional customer service." className="mt-1 rounded-xl h-32" />
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <div className="rounded-2xl bg-card border border-border p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-6">Contact Information</h3>
-              
+            <Card variant="premium" className="p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-6">Tax & Legal Information</h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" /> Primary Phone
-                  </Label>
-                  <Input defaultValue="+234 801 234 5678" className="mt-1 rounded-xl" />
+                  <Label>Tax ID Number</Label>
+                  <Input defaultValue="TAX-7654321" className="mt-1 rounded-xl" />
                 </div>
                 <div>
-                  <Label className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" /> WhatsApp
-                  </Label>
-                  <Input defaultValue="+234 801 234 5678" className="mt-1 rounded-xl" />
-                </div>
-                <div>
-                  <Label className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" /> Support Email
-                  </Label>
-                  <Input defaultValue="support@sarkinmota.com" className="mt-1 rounded-xl" />
-                  {/* Note: Email domain still uses original brand name - should be updated separately if needed */}
-                </div>
-                <div>
-                  <Label className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" /> Sales Email
-                  </Label>
-                  <Input defaultValue="sales@sarkinmota.com" className="mt-1 rounded-xl" />
-                  {/* Note: Email domain still uses original brand name - should be updated separately if needed */}
+                  <Label>VAT Registration</Label>
+                  <Input defaultValue="VAT-123456789" className="mt-1 rounded-xl" />
                 </div>
               </div>
-            </div>
-
-            <div className="rounded-2xl bg-card border border-border p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-6">Showroom Locations</h3>
-              
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-secondary/30">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-medium text-foreground">Lagos Showroom</p>
-                      <p className="text-sm text-muted-foreground">Plot 123, Victoria Island, Lagos</p>
-                      <p className="text-xs text-muted-foreground mt-1">Mon-Sat: 9AM - 6PM</p>
-                    </div>
-                    <Button variant="ghost" size="sm">Edit</Button>
-                  </div>
-                </div>
-                <div className="p-4 rounded-xl bg-secondary/30">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-medium text-foreground">Abuja Showroom</p>
-                      <p className="text-sm text-muted-foreground">Plot 456, Maitama District, Abuja</p>
-                      <p className="text-xs text-muted-foreground mt-1">Mon-Sat: 9AM - 6PM</p>
-                    </div>
-                    <Button variant="ghost" size="sm">Edit</Button>
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full rounded-xl">Add Location</Button>
-              </div>
-            </div>
+            </Card>
           </TabsContent>
 
           {/* Appearance Tab */}
           <TabsContent value="appearance" className="space-y-6">
-            <div className="rounded-2xl bg-card border border-border p-6">
+            <Card variant="premium" className="p-6">
               <h3 className="text-lg font-semibold text-foreground mb-6">Theme Settings</h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
                   <div>
@@ -292,50 +276,61 @@ const AdminSettings = () => {
                   </div>
                   <Switch checked={darkMode} onCheckedChange={setDarkMode} />
                 </div>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
+                  <div>
+                    <p className="font-medium text-foreground">Compact Mode</p>
+                    <p className="text-sm text-muted-foreground">Use compact layout for more content</p>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
+                  <div>
+                    <p className="font-medium text-foreground">Large Text</p>
+                    <p className="text-sm text-muted-foreground">Increase text size for better readability</p>
+                  </div>
+                  <Switch />
+                </div>
               </div>
-            </div>
+            </Card>
 
-            <div className="rounded-2xl bg-card border border-border p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-6">Brand Colors</h3>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card variant="premium" className="p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-6">Customization</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label>Primary Color</Label>
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-lg bg-primary" />
-                    <Input defaultValue="#D72638" className="rounded-lg" />
+                  <div className="flex gap-2 mt-1">
+                    {['red', 'blue', 'green', 'purple', 'orange'].map(color => (
+                      <div
+                        key={color}
+                        className={`w-8 h-8 rounded-full bg-${color}-500 cursor-pointer border-2 ${
+                          color === 'blue' ? 'border-primary' : 'border-transparent'
+                        }`}
+                      />
+                    ))}
                   </div>
                 </div>
                 <div>
-                  <Label>Background</Label>
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-lg bg-background border" />
-                    <Input defaultValue="#0D0F12" className="rounded-lg" />
-                  </div>
-                </div>
-                <div>
-                  <Label>Success</Label>
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-lg bg-success" />
-                    <Input defaultValue="#22C55E" className="rounded-lg" />
-                  </div>
-                </div>
-                <div>
-                  <Label>Warning</Label>
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-lg bg-warning" />
-                    <Input defaultValue="#F59E0B" className="rounded-lg" />
+                  <Label>Logo Upload</Label>
+                  <div className="flex items-center gap-4 mt-1">
+                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+                      <span className="text-primary-foreground font-bold text-sm">SM</span>
+                    </div>
+                    <Button variant="outline" className="rounded-xl gap-2">
+                      <Upload className="w-4 h-4" />
+                      Change Logo
+                    </Button>
                   </div>
                 </div>
               </div>
-            </div>
+            </Card>
           </TabsContent>
 
           {/* System Tab */}
           <TabsContent value="system" className="space-y-6">
-            <div className="rounded-2xl bg-card border border-border p-6">
+            <Card variant="premium" className="p-6">
               <h3 className="text-lg font-semibold text-foreground mb-6">System Settings</h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
                   <div>
@@ -344,85 +339,50 @@ const AdminSettings = () => {
                   </div>
                   <Switch checked={maintenanceMode} onCheckedChange={setMaintenanceMode} />
                 </div>
-
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
                   <div>
-                    <p className="font-medium text-foreground">Currency</p>
-                    <p className="text-sm text-muted-foreground">Default currency for pricing</p>
+                    <p className="font-medium text-foreground">Email Notifications</p>
+                    <p className="text-sm text-muted-foreground">Send email notifications for system events</p>
                   </div>
-                  <Select defaultValue="ngn">
-                    <SelectTrigger className="w-32 rounded-lg">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ngn">NGN (₦)</SelectItem>
-                      <SelectItem value="usd">USD ($)</SelectItem>
-                      <SelectItem value="gbp">GBP (£)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Switch defaultChecked />
                 </div>
-
                 <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
                   <div>
-                    <p className="font-medium text-foreground">Timezone</p>
-                    <p className="text-sm text-muted-foreground">System timezone</p>
+                    <p className="font-medium text-foreground">Backup Schedule</p>
+                    <p className="text-sm text-muted-foreground">Automatically backup data daily</p>
                   </div>
-                  <Select defaultValue="wat">
-                    <SelectTrigger className="w-48 rounded-lg">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="wat">West Africa Time (WAT)</SelectItem>
-                      <SelectItem value="utc">UTC</SelectItem>
-                      <SelectItem value="gmt">GMT</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Switch defaultChecked />
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <div className="rounded-2xl bg-card border border-border p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-6">Storage</h3>
-              
+            <Card variant="premium" className="p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-6">Performance Settings</h3>
+
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-foreground">Used Space</span>
-                  <span className="text-muted-foreground">2.4 GB / 10 GB</span>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
+                  <div>
+                    <p className="font-medium text-foreground">Caching</p>
+                    <p className="text-sm text-muted-foreground">Enable caching for better performance</p>
+                  </div>
+                  <Switch defaultChecked />
                 </div>
-                <div className="h-3 bg-secondary rounded-full overflow-hidden">
-                  <div className="h-full w-[24%] bg-primary rounded-full" />
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
+                  <div>
+                    <p className="font-medium text-foreground">Compression</p>
+                    <p className="text-sm text-muted-foreground">Enable compression for faster loading</p>
+                  </div>
+                  <Switch defaultChecked />
                 </div>
-                <div className="flex gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-500" />
-                    <span className="text-muted-foreground">Images: 1.8 GB</span>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
+                  <div>
+                    <p className="font-medium text-foreground">Image Optimization</p>
+                    <p className="text-sm text-muted-foreground">Automatically optimize uploaded images</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-purple-500" />
-                    <span className="text-muted-foreground">Videos: 0.5 GB</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-amber-500" />
-                    <span className="text-muted-foreground">Other: 0.1 GB</span>
-                  </div>
+                  <Switch defaultChecked />
                 </div>
               </div>
-            </div>
-
-            <div className="rounded-2xl bg-destructive/10 border border-destructive/30 p-6">
-              <h3 className="text-lg font-semibold text-destructive mb-4">Danger Zone</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                These actions are irreversible. Please proceed with caution.
-              </p>
-              <div className="flex gap-3">
-                <Button variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10">
-                  Clear Cache
-                </Button>
-                <Button variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10">
-                  Reset Settings
-                </Button>
-              </div>
-            </div>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

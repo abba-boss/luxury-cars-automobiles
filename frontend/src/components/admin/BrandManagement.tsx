@@ -153,17 +153,20 @@ const BrandManagement = () => {
         </Dialog>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Brands ({filteredBrands.length})</CardTitle>
-            <div className="relative w-64">
+      <Card variant="premium">
+        <CardHeader className="p-4 bg-muted/5 rounded-t-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <CardTitle className="flex items-center gap-2">
+              <Car className="h-5 w-5 text-foreground" />
+              Brands ({filteredBrands.length})
+            </CardTitle>
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 placeholder="Search brands..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 w-full"
               />
             </div>
           </div>

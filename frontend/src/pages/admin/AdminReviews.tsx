@@ -32,6 +32,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { reviewService } from '@/services';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface Review {
   id: string;
