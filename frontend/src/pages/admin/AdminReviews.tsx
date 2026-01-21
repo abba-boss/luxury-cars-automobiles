@@ -190,29 +190,39 @@ const AdminReviews = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <p className="text-sm text-muted-foreground">Total Reviews</p>
-            <p className="text-2xl font-bold text-foreground">{reviews.length}</p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <p className="text-sm text-muted-foreground">Average Rating</p>
-            <div className="flex items-center gap-2">
-              <p className="text-2xl font-bold text-foreground">{averageRating}</p>
-              <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <p className="text-sm text-muted-foreground">Pending</p>
-            <p className="text-2xl font-bold text-amber-400">{reviews.filter(r => r.status === 'pending').length}</p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <p className="text-sm text-muted-foreground">Approved</p>
-            <p className="text-2xl font-bold text-emerald-400">{reviews.filter(r => r.status === 'approved').length}</p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <p className="text-sm text-muted-foreground">5-Star Reviews</p>
-            <p className="text-2xl font-bold text-primary">{reviews.filter(r => r.rating === 5).length}</p>
-          </div>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Total Reviews</p>
+              <p className="text-2xl font-bold text-foreground">{reviews.length}</p>
+            </CardContent>
+          </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Average Rating</p>
+              <div className="flex items-center gap-2">
+                <p className="text-2xl font-bold text-foreground">{averageRating}</p>
+                <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Pending</p>
+              <p className="text-2xl font-bold text-amber-400">{reviews.filter(r => r.status === 'pending').length}</p>
+            </CardContent>
+          </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Approved</p>
+              <p className="text-2xl font-bold text-emerald-400">{reviews.filter(r => r.status === 'approved').length}</p>
+            </CardContent>
+          </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">5-Star Reviews</p>
+              <p className="text-2xl font-bold text-primary">{reviews.filter(r => r.rating === 5).length}</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Filters */}

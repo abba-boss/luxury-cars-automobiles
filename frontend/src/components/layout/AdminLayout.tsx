@@ -137,6 +137,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </nav>
 
         {/* Footer */}
+        {/*
         <div className="p-3 border-t border-border space-y-1">
           {collapsed && (
             <Button
@@ -158,7 +159,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             <ChevronLeft className="w-5 h-5" />
             {!collapsed && <span className="font-medium text-sm">Back to Website</span>}
           </Link>
-          <button 
+          <button
             onClick={handleSignOut}
             className={cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors w-full',
@@ -169,6 +170,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             {!collapsed && <span className="font-medium text-sm">Log Out</span>}
           </button>
         </div>
+        */}
       </aside>
 
       {/* Main Content */}

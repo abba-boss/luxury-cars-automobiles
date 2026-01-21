@@ -36,7 +36,7 @@ export function KPICard({ title, value, change, icon, format = 'number', isDemo 
   const isNegative = change && change < 0;
 
   return (
-    <Card>
+    <Card variant="premium">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}

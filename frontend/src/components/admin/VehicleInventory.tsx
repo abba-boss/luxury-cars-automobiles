@@ -170,58 +170,66 @@ const VehicleInventory = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card variant="premium">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Vehicles</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
-              <Car className="w-8 h-8 text-blue-500" />
+              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <Car className="w-5 h-5 text-blue-400" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
+
+        <Card variant="premium">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Available</p>
-                <p className="text-2xl font-bold text-green-600">{stats.available}</p>
+                <p className="text-2xl font-bold text-emerald-400">{stats.available}</p>
               </div>
-              <Package className="w-8 h-8 text-green-500" />
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                <Package className="w-5 h-5 text-emerald-400" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
+
+        <Card variant="premium">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Sold</p>
-                <p className="text-2xl font-bold text-red-600">{stats.sold}</p>
+                <p className="text-2xl font-bold text-red-400">{stats.sold}</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-red-500" />
+              <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-red-400" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
+
+        <Card variant="premium">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Reserved</p>
-                <p className="text-2xl font-bold text-yellow-600">{stats.reserved}</p>
+                <p className="text-2xl font-bold text-amber-400">{stats.reserved}</p>
               </div>
-              <DollarSign className="w-8 h-8 text-yellow-500" />
+              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-amber-400" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
+      <Card variant="premium">
+        <CardHeader className="p-4 bg-muted/5 rounded-t-xl">
           <div className="flex gap-4 items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />

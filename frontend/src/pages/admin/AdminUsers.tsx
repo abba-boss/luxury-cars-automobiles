@@ -114,22 +114,30 @@ const AdminUsers = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <p className="text-sm text-muted-foreground">Total Users</p>
-            <p className="text-2xl font-bold text-foreground">{users.length}</p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <p className="text-sm text-muted-foreground">Admins</p>
-            <p className="text-2xl font-bold text-primary">{adminCount}</p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <p className="text-sm text-muted-foreground">Total Inquiries</p>
-            <p className="text-2xl font-bold text-emerald-400">{inquiries?.length || 0}</p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <p className="text-sm text-muted-foreground">Regular Users</p>
-            <p className="text-2xl font-bold text-blue-400">{users.length - adminCount}</p>
-          </div>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Total Users</p>
+              <p className="text-2xl font-bold text-foreground">{users.length}</p>
+            </CardContent>
+          </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Admins</p>
+              <p className="text-2xl font-bold text-primary">{adminCount}</p>
+            </CardContent>
+          </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Total Inquiries</p>
+              <p className="text-2xl font-bold text-emerald-400">{inquiries?.length || 0}</p>
+            </CardContent>
+          </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Regular Users</p>
+              <p className="text-2xl font-bold text-blue-400">{users.length - adminCount}</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Filters */}

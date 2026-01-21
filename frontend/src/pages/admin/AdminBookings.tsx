@@ -133,54 +133,64 @@ const AdminBookings = () => {
           <>
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 rounded-xl bg-card border border-border">
-                <p className="text-sm text-muted-foreground">Total Bookings</p>
-                <p className="text-2xl font-bold text-foreground">{bookings.length}</p>
-              </div>
-              <div className="p-4 rounded-xl bg-card border border-border">
-                <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold text-amber-400">
-                  {bookings.filter(b => b.status === 'pending').length}
-                </p>
-              </div>
-              <div className="p-4 rounded-xl bg-card border border-border">
-                <p className="text-sm text-muted-foreground">Confirmed</p>
-                <p className="text-2xl font-bold text-emerald-400">
-                  {bookings.filter(b => b.status === 'confirmed').length}
-                </p>
-              </div>
-              <div className="p-4 rounded-xl bg-card border border-border">
-                <p className="text-sm text-muted-foreground">Completed</p>
-                <p className="text-2xl font-bold text-blue-400">
-                  {bookings.filter(b => b.status === 'completed').length}
-                </p>
-              </div>
+              <Card variant="premium">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground">Total Bookings</p>
+                  <p className="text-2xl font-bold text-foreground">{bookings.length}</p>
+                </CardContent>
+              </Card>
+              <Card variant="premium">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground">Pending</p>
+                  <p className="text-2xl font-bold text-amber-400">
+                    {bookings.filter(b => b.status === 'pending').length}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card variant="premium">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground">Confirmed</p>
+                  <p className="text-2xl font-bold text-emerald-400">
+                    {bookings.filter(b => b.status === 'confirmed').length}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card variant="premium">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground">Completed</p>
+                  <p className="text-2xl font-bold text-blue-400">
+                    {bookings.filter(b => b.status === 'completed').length}
+                  </p>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Search bookings..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+            <Card variant="premium" className="p-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search bookings..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            </Card>
 
             {/* Bookings Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
