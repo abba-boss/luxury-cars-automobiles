@@ -24,6 +24,7 @@ import AdminLayout from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useAdminInquiries } from '@/hooks/useAdminData';
 import { toast } from 'sonner';
@@ -353,31 +354,32 @@ const AdminMessages = () => {
         <div className="flex h-[calc(100vh-10rem)] overflow-hidden">
           {/* Message List */}
           <div className="w-96 border-r border-border flex flex-col min-h-0">
-            {/* Header */}
-            <div className="p-4 border-b border-border bg-muted/5 flex-shrink-0">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold text-foreground">
-                  Order Requests & Inquiries
-                </h2>
-                {pendingCount > 0 && (
-                  <span className="ml-2 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs">
-                    {pendingCount} pending
-                  </span>
-                )}
+            <Card variant="premium" className="flex-1 flex flex-col min-h-0">
+              {/* Header */}
+              <div className="p-4 border-b border-border bg-muted/5 flex-shrink-0">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Order Requests & Inquiries
+                  </h2>
+                  {pendingCount > 0 && (
+                    <span className="ml-2 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs">
+                      {pendingCount} pending
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search requests..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search requests..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="all" className="flex-1 flex flex-col min-h-0">
+              {/* Tabs */}
+              <Tabs defaultValue="all" className="flex-1 flex flex-col min-h-0">
             <TabsList className="mx-4 mt-3 flex-shrink-0">
               <TabsTrigger value="all">All ({allMessages.length})</TabsTrigger>
               <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
@@ -637,7 +639,8 @@ const AdminMessages = () => {
               </div>
             </TabsContent>
           </Tabs>
-        </div>
+        </Card>
+      </div>
 
         {/* Message Detail */}
         <div className="flex-1 flex flex-col min-h-0">

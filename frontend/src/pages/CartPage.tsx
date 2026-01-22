@@ -109,12 +109,12 @@ const CartPage = () => {
             ))}
           </div>
 
-          <div className="lg:col-span-1">
-            <Card variant="premium" className="sticky top-4">
+          <div className="lg:col-span-1 flex">
+            <Card variant="premium" className="w-full h-full flex flex-col">
               <CardHeader className="p-4 pb-3">
                 <CardTitle className="text-lg">Order Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 p-4 pt-0">
+              <CardContent className="space-y-4 p-4 pt-0 flex-1">
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Subtotal ({getItemCount()} items)</span>
@@ -133,7 +133,7 @@ const CartPage = () => {
                   <span className="text-primary">{formatPrice(getTotalPrice())}</span>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 mt-auto">
                   <Button className="w-full" size="lg" onClick={() => navigate('/checkout')}>
                     Proceed to Checkout
                     <ArrowRight className="w-4 h-4 ml-2" />

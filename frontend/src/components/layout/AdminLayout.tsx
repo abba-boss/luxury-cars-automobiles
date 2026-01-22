@@ -32,10 +32,10 @@ interface AdminLayoutProps {
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
+  { icon: Car, label: 'Browse Cars', href: '/cars' },
   { icon: Package, label: 'All Orders', href: '/admin/orders' },
   { icon: Car, label: 'Car Management', href: '/admin/cars' },
   { icon: PlusCircle, label: 'Add New Car', href: '/admin/add-car' },
-  { icon: Search, label: 'Import Products', href: '/admin/import-products' },
   { icon: Tag, label: 'Brand Management', href: '/admin/brands' },
   { icon: Image, label: 'Media Manager', href: '/admin/media' },
   { icon: Users, label: 'User Management', href: '/admin/users' },
@@ -137,7 +137,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </nav>
 
         {/* Footer */}
-        {/*
         <div className="p-3 border-t border-border space-y-1">
           {collapsed && (
             <Button
@@ -170,7 +169,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             {!collapsed && <span className="font-medium text-sm">Log Out</span>}
           </button>
         </div>
-        */}
       </aside>
 
       {/* Main Content */}

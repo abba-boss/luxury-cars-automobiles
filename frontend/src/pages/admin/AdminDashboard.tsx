@@ -182,12 +182,6 @@ const AdminDashboard: React.FC = () => {
                 </Link>
               </Button>
               <Button asChild className="w-full justify-start" variant="ghost">
-                <Link to="/admin/import-products">
-                  <Car className="w-4 h-4 mr-2" />
-                  Import Real Products
-                </Link>
-              </Button>
-              <Button asChild className="w-full justify-start" variant="ghost">
                 <Link to="/admin/bookings">
                   <Calendar className="w-4 h-4 mr-2" />
                   Manage Bookings

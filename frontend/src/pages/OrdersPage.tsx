@@ -233,7 +233,7 @@ const OrdersPage = () => {
       title={user?.role === 'admin' ? "All Orders" : "My Orders"}
       subtitle={user?.role === 'admin' ? "Manage customer orders and chat with them" : "Track your car orders and chat with our team"}
     >
-      <div className="space-y-6 h-[calc(100vh-20rem)] flex flex-col overflow-hidden">
+      <div className="space-y-6 h-full flex flex-col overflow-hidden">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card variant="premium">
@@ -353,7 +353,7 @@ const OrdersPage = () => {
           <div className="flex flex-1 overflow-hidden min-h-0">
             {/* Orders List - Fixed width with independent scroll */}
             <div className="w-96 border-r border-border flex flex-col min-h-0">
-              <Card variant="premium" className="flex-1 flex flex-col shadow-sm min-h-0">
+              <Card variant="premium" className="flex-1 flex flex-col min-h-0">
                 <div className="p-4 border-b bg-muted/5 rounded-t-xl flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold flex items-center gap-2">
@@ -429,69 +429,71 @@ const OrdersPage = () => {
                             </div>
                           </div>
                           
-                          {/* Order Actions */}
-                          <div className="flex gap-1 mt-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Update order status to confirmed
-                                saleService.updateSale(order.id, { status: 'confirmed' })
-                                  .then(response => {
-                                    if (response.success) {
-                                      setOrders(prev => prev.map(o => 
-                                        o.id === order.id ? {...o, status: 'confirmed'} : o
-                                      ));
-                                      if (selectedOrder?.id === order.id) {
-                                        setSelectedOrder({...selectedOrder, status: 'confirmed'});
+                          {/* Order Actions - Only for admin users */}
+                          {user?.role === 'admin' && (
+                            <div className="flex gap-1 mt-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Update order status to confirmed
+                                  saleService.updateSale(order.id, { status: 'confirmed' })
+                                    .then(response => {
+                                      if (response.success) {
+                                        setOrders(prev => prev.map(o =>
+                                          o.id === order.id ? {...o, status: 'confirmed'} : o
+                                        ));
+                                        if (selectedOrder?.id === order.id) {
+                                          setSelectedOrder({...selectedOrder, status: 'confirmed'});
+                                        }
                                       }
-                                    }
-                                  });
-                              }}
-                              className="text-xs px-2 py-1 border rounded hover:bg-accent"
-                            >
-                              Confirm
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Update order status to completed
-                                saleService.updateSale(order.id, { status: 'completed' })
-                                  .then(response => {
-                                    if (response.success) {
-                                      setOrders(prev => prev.map(o => 
-                                        o.id === order.id ? {...o, status: 'completed'} : o
-                                      ));
-                                      if (selectedOrder?.id === order.id) {
-                                        setSelectedOrder({...selectedOrder, status: 'completed'});
+                                    });
+                                }}
+                                className="text-xs px-2 py-1 border rounded hover:bg-accent"
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Update order status to completed
+                                  saleService.updateSale(order.id, { status: 'completed' })
+                                    .then(response => {
+                                      if (response.success) {
+                                        setOrders(prev => prev.map(o =>
+                                          o.id === order.id ? {...o, status: 'completed'} : o
+                                        ));
+                                        if (selectedOrder?.id === order.id) {
+                                          setSelectedOrder({...selectedOrder, status: 'completed'});
+                                        }
                                       }
-                                    }
-                                  });
-                              }}
-                              className="text-xs px-2 py-1 border rounded hover:bg-accent"
-                            >
-                              Complete
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Update order status to cancelled
-                                saleService.updateSale(order.id, { status: 'cancelled' })
-                                  .then(response => {
-                                    if (response.success) {
-                                      setOrders(prev => prev.map(o => 
-                                        o.id === order.id ? {...o, status: 'cancelled'} : o
-                                      ));
-                                      if (selectedOrder?.id === order.id) {
-                                        setSelectedOrder({...selectedOrder, status: 'cancelled'});
+                                    });
+                                }}
+                                className="text-xs px-2 py-1 border rounded hover:bg-accent"
+                              >
+                                Complete
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Update order status to cancelled
+                                  saleService.updateSale(order.id, { status: 'cancelled' })
+                                    .then(response => {
+                                      if (response.success) {
+                                        setOrders(prev => prev.map(o =>
+                                          o.id === order.id ? {...o, status: 'cancelled'} : o
+                                        ));
+                                        if (selectedOrder?.id === order.id) {
+                                          setSelectedOrder({...selectedOrder, status: 'cancelled'});
+                                        }
                                       }
-                                    }
-                                  });
-                              }}
-                              className="text-xs px-2 py-1 border rounded hover:bg-destructive/20"
-                            >
-                              Cancel
-                            </button>
-                          </div>
+                                    });
+                                }}
+                                className="text-xs px-2 py-1 border rounded hover:bg-destructive/20"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

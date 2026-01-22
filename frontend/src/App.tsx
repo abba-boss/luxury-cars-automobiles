@@ -43,7 +43,6 @@ import AdminEditCar from "./pages/admin/AdminEditCar";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminBrands from "./pages/admin/AdminBrands";
 import AdminOrders from "./pages/admin/AdminOrders";
-import ImportProductsPage from "./pages/admin/ImportProductsPage";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import CheckoutProtection from "./components/auth/CheckoutProtection";
@@ -214,11 +213,6 @@ const App = () => {
                     <Route path="/admin/brands" element={
                       <ProtectedRoute requireAdmin>
                         <AdminBrands />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/admin/import-products" element={
-                      <ProtectedRoute requireAdmin>
-                        <ImportProductsPage />
                       </ProtectedRoute>
                     } />
 
