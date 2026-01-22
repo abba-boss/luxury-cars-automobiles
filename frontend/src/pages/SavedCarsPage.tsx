@@ -57,32 +57,36 @@ const SavedCarsPage = () => {
 
   return (
     <DashboardLayout title="Saved Cars" subtitle="Your favorite vehicles">
-      {favorites.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {favorites.map((car: any, index: number) => (
-            <div
-              key={car.id}
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${0.1 * index}s` }}
-            >
-              <CarCard car={car} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-            <Heart className="h-8 w-8 text-muted-foreground" />
+      <div className="space-y-6 h-full flex flex-col overflow-hidden">
+        {favorites.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 min-h-0 overflow-y-auto">
+            {favorites.map((car: any, index: number) => (
+              <div
+                key={car.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${0.1 * index}s` }}
+              >
+                <CarCard car={car} />
+              </div>
+            ))}
           </div>
-          <h3 className="text-xl font-semibold text-foreground mb-2">No saved cars</h3>
-          <p className="text-muted-foreground mb-4">
-            Start browsing and save your favorite vehicles
-          </p>
-          <Button asChild>
-            <Link to="/cars">Browse Cars</Link>
-          </Button>
-        </div>
-      )}
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center py-16">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                <Heart className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">No saved cars</h3>
+              <p className="text-muted-foreground mb-4">
+                Start browsing and save your favorite vehicles
+              </p>
+              <Button asChild>
+                <Link to="/cars">Browse Cars</Link>
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </DashboardLayout>
   );
 };

@@ -341,31 +341,40 @@ const AdminMessages = () => {
 
   return (
     <AdminLayout>
-      <div className="flex h-[calc(100vh-10rem)] overflow-hidden">
-        {/* Message List */}
-        <div className="w-96 border-r border-border flex flex-col min-h-0">
-          {/* Header */}
-          <div className="p-4 border-b border-border bg-muted/5 flex-shrink-0">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-foreground">
-                Order Requests & Inquiries
-              </h2>
-              {pendingCount > 0 && (
-                <span className="ml-2 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs">
-                  {pendingCount} pending
-                </span>
-              )}
-            </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search requests..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
+      <div className="space-y-6 h-full flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Messages</h2>
+            <p className="text-muted-foreground">Manage customer inquiries and order requests</p>
           </div>
+        </div>
+
+        <div className="flex h-[calc(100vh-10rem)] overflow-hidden">
+          {/* Message List */}
+          <div className="w-96 border-r border-border flex flex-col min-h-0">
+            {/* Header */}
+            <div className="p-4 border-b border-border bg-muted/5 flex-shrink-0">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-foreground">
+                  Order Requests & Inquiries
+                </h2>
+                {pendingCount > 0 && (
+                  <span className="ml-2 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs">
+                    {pendingCount} pending
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search requests..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
 
           {/* Tabs */}
           <Tabs defaultValue="all" className="flex-1 flex flex-col min-h-0">
@@ -841,6 +850,7 @@ const AdminMessages = () => {
           )}
         </div>
       </div>
+    </div>
     </AdminLayout>
   );
 };

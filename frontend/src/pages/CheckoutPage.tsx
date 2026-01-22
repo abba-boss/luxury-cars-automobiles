@@ -177,22 +177,23 @@ ${formData.notes ? `Additional Notes: ${formData.notes}` : ''}
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <Button variant="outline" onClick={() => navigate('/cart')} className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Cart
-        </Button>
+      <div className="space-y-6 h-full flex flex-col overflow-hidden">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={() => navigate('/cart')}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Cart
+          </Button>
+          <h1 className="text-2xl font-bold">Checkout</h1>
+        </div>
 
-        <h1 className="text-2xl font-bold mb-8">Checkout</h1>
-
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Customer Information</CardTitle>
+        <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 space-y-4">
+              <Card variant="premium">
+                <CardHeader className="p-4 pb-3">
+                  <CardTitle className="text-lg">Customer Information</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 p-4 pt-0">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="fullName">Full Name *</Label>
@@ -255,11 +256,11 @@ ${formData.notes ? `Additional Notes: ${formData.notes}` : ''}
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Payment Method</CardTitle>
+              <Card variant="premium">
+                <CardHeader className="p-4 pb-3">
+                  <CardTitle className="text-lg">Payment Method</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 pt-0">
                   <Select value={formData.paymentMethod} onValueChange={(value) => setFormData(prev => ({ ...prev, paymentMethod: value }))}>
                     <SelectTrigger>
                       <SelectValue />
@@ -274,11 +275,11 @@ ${formData.notes ? `Additional Notes: ${formData.notes}` : ''}
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Additional Notes (Optional)</CardTitle>
+              <Card variant="premium">
+                <CardHeader className="p-4 pb-3">
+                  <CardTitle className="text-lg">Additional Notes (Optional)</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 pt-0">
                   <Textarea
                     id="notes"
                     value={formData.notes}
@@ -289,7 +290,7 @@ ${formData.notes ? `Additional Notes: ${formData.notes}` : ''}
                 </CardContent>
               </Card>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 p-4 bg-secondary/30 rounded-xl">
                 <Checkbox
                   id="terms"
                   checked={formData.agreeToTerms}
@@ -302,11 +303,11 @@ ${formData.notes ? `Additional Notes: ${formData.notes}` : ''}
             </div>
 
             <div className="lg:col-span-1">
-              <Card className="sticky top-4">
-                <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
+              <Card variant="premium" className="sticky top-4">
+                <CardHeader className="p-4 pb-3">
+                  <CardTitle className="text-lg">Order Summary</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 p-4 pt-0">
                   <div className="space-y-3">
                     {items.map((item) => (
                       <div key={item.id} className="flex justify-between text-sm">
@@ -315,9 +316,9 @@ ${formData.notes ? `Additional Notes: ${formData.notes}` : ''}
                       </div>
                     ))}
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
                     <span className="text-primary">{formatPrice(getTotalPrice())}</span>

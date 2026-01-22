@@ -36,8 +36,8 @@ const CartPage = () => {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="space-y-6 h-full flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Shopping Cart</h1>
             <p className="text-muted-foreground">
@@ -54,69 +54,67 @@ const CartPage = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
+          <div className="lg:col-span-2 space-y-4 flex-1 min-h-0 overflow-y-auto">
             {items.map((item) => (
-              <Card key={item.id}>
-                <CardContent className="p-4">
-                  <div className="flex gap-4">
-                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={`${item.make} ${item.model}`}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ShoppingBag className="w-8 h-8 text-muted-foreground" />
-                        </div>
-                      )}
+              <Card variant="premium" key={item.id} className="p-4">
+                <div className="flex gap-4">
+                  <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={`${item.make} ${item.model}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ShoppingBag className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-lg">
+                          {item.year} {item.make} {item.model}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Added on {new Date(item.addedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
 
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold text-lg">
-                            {item.year} {item.make} {item.model}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            Added on {new Date(item.addedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFromCart(item.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      
-                      <div className="mt-4 flex items-center justify-between">
-                        <p className="text-xl font-bold text-primary">
-                          {formatPrice(item.price)}
-                        </p>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/cars/${item.id}`}>
-                            View Details
-                          </Link>
-                        </Button>
-                      </div>
+                    <div className="mt-4 flex items-center justify-between">
+                      <p className="text-xl font-bold text-primary">
+                        {formatPrice(item.price)}
+                      </p>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={`/cars/${item.id}`}>
+                          View Details
+                        </Link>
+                      </Button>
                     </div>
                   </div>
-                </CardContent>
+                </div>
               </Card>
             ))}
           </div>
 
           <div className="lg:col-span-1">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
+            <Card variant="premium" className="sticky top-4">
+              <CardHeader className="p-4 pb-3">
+                <CardTitle className="text-lg">Order Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 pt-0">
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Subtotal ({getItemCount()} items)</span>
@@ -127,9 +125,9 @@ const CartPage = () => {
                     <span>Calculated at checkout</span>
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
                   <span className="text-primary">{formatPrice(getTotalPrice())}</span>

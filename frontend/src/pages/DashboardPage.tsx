@@ -87,83 +87,130 @@ const DashboardPage = () => {
 
   return (
     <DashboardLayout title="Dashboard" subtitle={`Welcome back, ${user?.full_name || 'Customer'}`}>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <KPICard
-          title="Saved Vehicles"
-          value={stats.savedVehicles}
-          icon={<Heart className="h-4 w-4" />}
-        />
-        <KPICard
-          title="Active Bookings"
-          value={stats.activeBookings}
-          icon={<Calendar className="h-4 w-4" />}
-        />
-        <KPICard
-          title="Total Views"
-          value={stats.totalViews}
-          icon={<Eye className="h-4 w-4" />}
-        />
-        <KPICard
-          title="Cart Items"
-          value={getItemCount()}
-          icon={<ShoppingBag className="h-4 w-4" />}
-        />
-      </div>
-
-      {/* Dashboard Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-center gap-4">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{activity.title}</p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                  </div>
-                  <Badge variant={activity.status === 'new' ? 'default' : 'secondary'}>
-                    {activity.status}
-                  </Badge>
+      <div className="space-y-6 h-full flex flex-col overflow-hidden">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
+                  <Heart className="h-5 w-5 text-white" />
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div>
+                  <p className="text-sm text-muted-foreground">Saved Vehicles</p>
+                  <p className="text-xl font-bold">{stats.savedVehicles}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <Button asChild className="w-full justify-start" variant="outline">
-                <Link to="/cars">
-                  <Car className="w-4 h-4 mr-2" />
-                  Browse Vehicles
-                </Link>
-              </Button>
-              <Button asChild className="w-full justify-start" variant="outline">
-                <Link to="/saved-cars">
-                  <Heart className="w-4 h-4 mr-2" />
-                  View Saved Cars
-                </Link>
-              </Button>
-              <Button asChild className="w-full justify-start" variant="outline">
-                <Link to="/bookings">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  My Bookings
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Active Bookings</p>
+                  <p className="text-xl font-bold">{stats.activeBookings}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
+                  <Eye className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Views</p>
+                  <p className="text-xl font-bold">{stats.totalViews}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card variant="premium">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center">
+                  <ShoppingBag className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Cart Items</p>
+                  <p className="text-xl font-bold">{getItemCount()}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Dashboard Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
+          {/* Recent Activity */}
+          <Card variant="premium" className="flex-1 flex flex-col min-h-0">
+            <CardHeader className="p-4 pb-3">
+              <CardTitle className="text-lg">Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto p-4 pt-0">
+              <div className="space-y-4">
+                {recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-center gap-4 p-3 rounded-lg bg-secondary/30">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                      {activity.type === 'saved' && <Heart className="h-4 w-4 text-primary" />}
+                      {activity.type === 'inquiry' && <MessageSquare className="h-4 w-4 text-primary" />}
+                      {activity.type === 'order' && <ShoppingBag className="h-4 w-4 text-primary" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{activity.title}</p>
+                      <p className="text-xs text-muted-foreground">{activity.time}</p>
+                    </div>
+                    <Badge variant={activity.status === 'new' ? 'default' : 'secondary'}>
+                      {activity.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card variant="premium" className="flex-1 flex flex-col min-h-0">
+            <CardHeader className="p-4 pb-3">
+              <CardTitle className="text-lg">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 p-4 pt-0">
+              <div className="space-y-3">
+                <Button asChild className="w-full justify-start" variant="outline">
+                  <Link to="/cars">
+                    <Car className="w-4 h-4 mr-2" />
+                    Browse Vehicles
+                  </Link>
+                </Button>
+                <Button asChild className="w-full justify-start" variant="outline">
+                  <Link to="/saved-cars">
+                    <Heart className="w-4 h-4 mr-2" />
+                    View Saved Cars
+                  </Link>
+                </Button>
+                <Button asChild className="w-full justify-start" variant="outline">
+                  <Link to="/bookings">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    My Bookings
+                  </Link>
+                </Button>
+                <Button asChild className="w-full justify-start" variant="outline">
+                  <Link to="/orders">
+                    <ShoppingBag className="w-4 h-4 mr-2" />
+                    My Orders
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </DashboardLayout>
   );
