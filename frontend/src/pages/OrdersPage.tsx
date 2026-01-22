@@ -233,9 +233,9 @@ const OrdersPage = () => {
       title={user?.role === 'admin' ? "All Orders" : "My Orders"}
       subtitle={user?.role === 'admin' ? "Manage customer orders and chat with them" : "Track your car orders and chat with our team"}
     >
-      <div className="space-y-6 h-full flex flex-col overflow-hidden">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="space-y-6 h-[calc(100vh-150px)] flex flex-col overflow-hidden">
+        {/* Stats - Fixed height */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-shrink-0">
           <Card variant="premium">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -299,44 +299,53 @@ const OrdersPage = () => {
           </Card>
         </div>
 
-        {/* Filters */}
-        <Card variant="premium" className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        {/* Filters - Only for admin users - Fixed height */}
+        {user?.role === 'admin' && (
+          <Card variant="premium" className="p-4 flex-shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search orders..."
+                  className="w-full pl-10 pr-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={filters.search}
+                  onChange={(e) => setFilters({...filters, search: e.target.value})}
+                />
+              </div>
+              <select
+                className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                value={filters.status}
+                onChange={(e) => setFilters({...filters, status: e.target.value})}
+              >
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
               <input
-                type="text"
-                placeholder="Search orders..."
-                className="w-full pl-10 pr-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                value={filters.search}
-                onChange={(e) => setFilters({...filters, search: e.target.value})}
+                type="date"
+                className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                value={filters.dateFrom}
+                onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
+              />
+              <input
+                type="date"
+                className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                value={filters.dateTo}
+                onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
               />
             </div>
-            <select
-              className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              value={filters.status}
-              onChange={(e) => setFilters({...filters, status: e.target.value})}
-            >
-              <option value="">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-            <input
-              type="date"
-              className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              value={filters.dateFrom}
-              onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
-            />
-            <input
-              type="date"
-              className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              value={filters.dateTo}
-              onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
-            />
+          </Card>
+        )}
+
+        {/* For non-admin users, show a simple header instead of filters */}
+        {user?.role !== 'admin' && (
+          <div className="text-sm text-muted-foreground flex-shrink-0">
+            Showing all your orders
           </div>
-        </Card>
+        )}
 
         {/* Orders and Chat Layout */}
         {orders.length === 0 ? (
@@ -350,9 +359,9 @@ const OrdersPage = () => {
             </div>
           </Card>
         ) : (
-          <div className="flex flex-1 overflow-hidden min-h-0">
+          <div className="flex flex-1 overflow-hidden min-h-0 flex-shrink-0">
             {/* Orders List - Fixed width with independent scroll */}
-            <div className="w-96 border-r border-border flex flex-col min-h-0">
+            <div className="w-96 border-r border-border flex flex-col min-h-0 flex-shrink-0">
               <Card variant="premium" className="flex-1 flex flex-col min-h-0">
                 <div className="p-4 border-b bg-muted/5 rounded-t-xl flex-shrink-0">
                   <div className="flex items-center justify-between">
@@ -428,7 +437,7 @@ const OrdersPage = () => {
                               )}
                             </div>
                           </div>
-                          
+
                           {/* Order Actions - Only for admin users */}
                           {user?.role === 'admin' && (
                             <div className="flex gap-1 mt-2">
@@ -494,6 +503,13 @@ const OrdersPage = () => {
                               </button>
                             </div>
                           )}
+
+                          {/* For non-admin users, show a message indicating status is managed by admin */}
+                          {user?.role !== 'admin' && (
+                            <div className="mt-2 text-xs text-muted-foreground italic">
+                              Status managed by admin team
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -503,15 +519,15 @@ const OrdersPage = () => {
             </div>
 
             {/* Order Chat - Fixed width with independent scroll */}
-            <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0 flex-shrink-0">
               {selectedOrder && selectedOrder.orderConversation?.conversation ? (
                 <OrderChat
                   order={selectedOrder}
                   conversationId={selectedOrder.orderConversation.conversation.id.toString()}
-                  className="flex-1"
+                  className="flex-1 flex-shrink-0"
                 />
               ) : (
-                <Card variant="premium" className="flex-1 flex items-center justify-center shadow-sm">
+                <Card variant="premium" className="flex-1 flex items-center justify-center shadow-sm flex-shrink-0">
                   <div className="text-center text-muted-foreground p-8 max-w-sm mx-auto">
                     {selectedOrder ? (
                       <>

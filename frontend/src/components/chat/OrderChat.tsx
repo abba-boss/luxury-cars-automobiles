@@ -351,6 +351,11 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
                       <option value="refunded">Refunded</option>
                     </select>
                   )}
+                  {user?.role !== 'admin' && (
+                    <span className="text-xs text-muted-foreground italic">
+                      Status managed by admin
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-4 text-sm">
