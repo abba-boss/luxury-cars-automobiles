@@ -312,6 +312,46 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
     }
   };
 
+  // Helper function to group messages by date
+  const groupMessagesByDate = () => {
+    const grouped: Record<string, Message[]> = {};
+
+    // Sort messages by date (oldest first globally)
+    const sortedMessages = [...messages].sort((a, b) =>
+      new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime()
+    );
+
+    sortedMessages.forEach(msg => {
+      const date = msg.created_at ? new Date(msg.created_at).toDateString() : 'Unknown Date';
+      if (!grouped[date]) {
+        grouped[date] = [];
+      }
+      grouped[date].push(msg);
+    });
+
+    return grouped;
+  };
+
+  const groupedMessages = groupMessagesByDate();
+
+  // Format date for display
+  const formatDateDisplay = (dateStr?: string) => {
+    if (!dateStr) return 'Just now';
+
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    }
+  };
+
   return (
     <div className={cn('flex flex-col h-full', className)}>
       <Card variant="premium" className="flex flex-col flex-1 min-h-0 h-full">
@@ -379,104 +419,138 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
         {/* Messages Area - Scrollable */}
         <CardContent className="flex-1 p-0 flex flex-col min-h-0 overflow-hidden">
           <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
+            <div className="space-y-6">
               {isLoading && (
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground">Loading messages...</p>
                 </div>
               )}
 
-              {messages.map((msg) => {
-                const isOwnMessage = msg.sender_id === user?.id;
-                const isSystemMessage = msg.message_type === 'system';
-
-                if (isSystemMessage) {
-                  return (
-                    <div key={msg.localId || msg.id} className="flex justify-center">
-                      <div className="max-w-md px-4 py-2 rounded-lg bg-secondary/50 text-center">
-                        <div className="flex items-center justify-center gap-2 mb-1">
-                          <Package className="w-4 h-4 text-primary" />
-                          <span className="text-xs font-medium text-muted-foreground">
-                            System Message
-                          </span>
-                        </div>
-                        <p className="text-sm whitespace-pre-line">{msg.content}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {formatDateTime(msg.created_at)}
-                        </p>
+              {Object.entries(groupedMessages).map(([date, dateMessages]) => (
+                <div key={date} className="space-y-3">
+                  {/* Date separator */}
+                  <div className="flex items-center justify-center my-4">
+                    <div className="relative flex items-center">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-border"></div>
                       </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div
-                    key={msg.localId || msg.id}
-                    className={cn(
-                      'flex gap-3',
-                      msg.sender_id === user?.id ? 'flex-row-reverse' : 'flex-row'
-                    )}
-                  >
-                    <div className="flex-shrink-0">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${msg.sender.full_name}`} />
-                        <AvatarFallback>
-                          {msg.sender.role === 'admin' ? (
-                            <UserIcon className="w-4 h-4" />
-                          ) : (
-                            msg.sender.full_name?.charAt(0)
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="flex-1 max-w-[75%]">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={cn(
-                          'text-xs font-medium',
-                          msg.sender_id === user?.id ? 'text-right' : 'text-left'
-                        )}>
-                          {msg.sender.full_name}
-                        </span>
-                        {msg.sender.role === 'admin' && (
-                          <Badge variant="verified" className="text-xs py-0 px-1.5">
-                            Admin
-                          </Badge>
-                        )}
-                      </div>
-                      <div
-                        className={cn(
-                          'px-4 py-2.5 rounded-2xl text-sm break-words',
-                          msg.sender_id === user?.id
-                            ? 'bg-primary text-primary-foreground rounded-br-md'
-                            : 'bg-secondary text-foreground rounded-bl-md'
-                        )}
-                      >
-                        {msg.content}
-                      </div>
-                      <div
-                        className={cn(
-                          'flex items-center gap-1 mt-1 text-xs text-muted-foreground',
-                          msg.sender_id === user?.id ? 'justify-end' : 'justify-start'
-                        )}
-                      >
-                        <span>
-                          {formatTime(msg.created_at)}
-                        </span>
-                        {msg.sender_id === user?.id && (
-                          <>
-                            {msg.status === 'sent' && <Check className="w-3 h-3" />}
-                            {msg.status === 'delivered' && <CheckCheck className="w-3 h-3" />}
-                            {msg.status === 'read' && <CheckCheck className="w-3 h-3 text-primary" />}
-                          </>
-                        )}
+                      <div className="relative flex items-center justify-center px-4 py-1 bg-background text-xs text-muted-foreground">
+                        {formatDateDisplay(date)}
                       </div>
                     </div>
                   </div>
-                );
-              })}
+
+                  {/* Messages for this date */}
+                  {dateMessages.map((msg) => {
+                    const isOwnMessage = msg.sender_id === user?.id;
+                    const isSystemMessage = msg.message_type === 'system';
+                    const messageDate = msg.created_at ? new Date(msg.created_at) : new Date();
+                    const timeString = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    if (isSystemMessage) {
+                      return (
+                        <div key={msg.localId || msg.id} className="flex justify-center">
+                          <div className="max-w-md px-4 py-2 rounded-lg bg-secondary/50 text-center">
+                            <div className="flex items-center justify-center gap-2 mb-1">
+                              <Package className="w-4 h-4 text-primary" />
+                              <span className="text-xs font-medium text-muted-foreground">
+                                System Message
+                              </span>
+                            </div>
+                            <p className="text-sm whitespace-pre-line">{msg.content}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {timeString}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={msg.localId || msg.id}
+                        className={cn(
+                          'flex gap-3',
+                          msg.sender_id === user?.id ? 'flex-row-reverse' : 'flex-row'
+                        )}
+                      >
+                        {!isOwnMessage && (
+                          <div className="flex-shrink-0">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${msg.sender.full_name}`} />
+                              <AvatarFallback>
+                                {msg.sender.role === 'admin' ? (
+                                  <UserIcon className="w-4 h-4" />
+                                ) : (
+                                  msg.sender.full_name?.charAt(0)
+                                )}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
+                        )}
+
+                        <div className="flex-1 max-w-[85%]">
+                          <div className="flex items-center gap-2 mb-1">
+                            {!isOwnMessage && (
+                              <>
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  {msg.sender.full_name}
+                                </span>
+                                {msg.sender.role === 'admin' && (
+                                  <Badge variant="verified" className="text-xs py-0 px-1.5">
+                                    Admin
+                                  </Badge>
+                                )}
+                              </>
+                            )}
+                          </div>
+
+                          <div
+                            className={cn(
+                              'px-4 py-2.5 rounded-2xl text-sm break-words',
+                              isOwnMessage
+                                ? 'bg-primary text-primary-foreground rounded-br-md rounded-tr-md rounded-tl-md'
+                                : 'bg-secondary text-foreground rounded-bl-md rounded-tl-md rounded-tr-md'
+                            )}
+                          >
+                            {msg.content}
+                          </div>
+
+                          <div
+                            className={cn(
+                              'flex items-center gap-1 mt-1 text-xs text-muted-foreground',
+                              isOwnMessage ? 'justify-end' : 'justify-start'
+                            )}
+                          >
+                            <span>{timeString}</span>
+                            {isOwnMessage && (
+                              <>
+                                {msg.status === 'sent' && <Check className="w-3 h-3" />}
+                                {msg.status === 'delivered' && <CheckCheck className="w-3 h-3" />}
+                                {msg.status === 'read' && <CheckCheck className="w-3 h-3 text-primary" />}
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {isOwnMessage && (
+                          <div className="flex-shrink-0">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${user?.full_name || user?.email}`} />
+                              <AvatarFallback>
+                                {user?.full_name?.charAt(0) || user?.email?.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
 
               {isTyping && (
-                <div className="flex gap-3">
+                <div className="flex gap-3 mt-4">
                   <div className="flex-shrink-0">
                     <Avatar className="w-8 h-8">
                       <AvatarFallback>
@@ -484,7 +558,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  <div className="px-4 py-2.5 rounded-2xl text-sm bg-secondary text-foreground rounded-bl-md">
+                  <div className="px-4 py-2.5 rounded-2xl text-sm bg-secondary text-foreground rounded-bl-md rounded-tl-md rounded-tr-md">
                     <div className="flex gap-1">
                       <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
                       <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
