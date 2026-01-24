@@ -315,3 +315,17 @@ export interface CartData {
     itemCount: number;
   };
 }
+
+export interface HomepageImage {
+  id: number;
+  title: string;
+  subtitle?: string;
+  image_url: string;
+  cta_text?: string;
+  cta_link?: string;
+  position: number;
+  is_active: boolean;
+  section_type: 'hero' | 'banner' | 'testimonial' | 'feature' | 'promotion';
+  created_at: string;
+  updated_at: string;
+}

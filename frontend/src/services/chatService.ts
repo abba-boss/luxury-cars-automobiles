@@ -107,14 +107,48 @@ export class ChatService {
     return await response.json();
   }
 
-  async sendMessage(conversationId: string, data: SendMessageRequest): Promise<{ success: boolean; message: string; data: Message }> {
-    const response = await fetch(`${this.baseUrl}/chat/conversations/${conversationId}/messages`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(data)
-    });
+  async sendMessage(conversationId: string, data: SendMessageRequest & { files?: File[] }): Promise<{ success: boolean; message: string; data: Message }> {
+    const token = this.token || localStorage.getItem('auth_token');
+    const headers = {
+      'Authorization': `Bearer ${token}`
+    };
 
-    return await response.json();
+    // If there are files to upload, use FormData
+    if (data.files && data.files.length > 0) {
+      const formData = new FormData();
+
+      // Add text content
+      if (data.content) {
+        formData.append('content', data.content);
+      }
+
+      // Add message type
+      if (data.messageType) {
+        formData.append('message_type', data.messageType);
+      }
+
+      // Add files
+      for (let i = 0; i < data.files.length; i++) {
+        formData.append('files', data.files[i]);
+      }
+
+      const response = await fetch(`${this.baseUrl}/chat/conversations/${conversationId}/messages`, {
+        method: 'POST',
+        headers,
+        body: formData
+      });
+
+      return await response.json();
+    } else {
+      // If no files, use JSON
+      const response = await fetch(`${this.baseUrl}/chat/conversations/${conversationId}/messages`, {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      return await response.json();
+    }
   }
 
   async markMessagesAsRead(conversationId: string): Promise<{ success: boolean; message: string }> {
@@ -175,7 +209,7 @@ export const chatService = {
     const token = localStorage.getItem('auth_token');
     return new ChatService(token).getConversationMessages(conversationId, params);
   },
-  sendMessage: (conversationId: string, data: SendMessageRequest) => {
+  sendMessage: (conversationId: string, data: SendMessageRequest & { files?: File[] }) => {
     const token = localStorage.getItem('auth_token');
     return new ChatService(token).sendMessage(conversationId, data);
   },

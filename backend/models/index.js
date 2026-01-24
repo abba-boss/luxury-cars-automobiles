@@ -18,6 +18,7 @@ const Payment = require('./Payment');
 const FinancingApplication = require('./FinancingApplication');
 const Cart = require('./Cart');
 const CartItem = require('./CartItem');
+const HomepageImage = require('./HomepageImage');
 
 // Initialize all models
 const models = {
@@ -39,7 +40,8 @@ const models = {
   Payment,
   FinancingApplication,
   Cart,
-  CartItem
+  CartItem,
+  HomepageImage
 };
 
 // Set up associations

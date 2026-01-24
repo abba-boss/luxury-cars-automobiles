@@ -325,7 +325,7 @@ const getConversationMessages = async (req, res, next) => {
 const sendMessage = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
-    const { content, messageType = 'text', fileUrl, fileName } = req.body;
+    const { content, messageType = 'text' } = req.body;
     const userId = req.user.id;
 
     // Validate conversation exists and user is participant
@@ -412,12 +412,70 @@ const sendMessage = async (req, res, next) => {
       }
     }
 
+    // Handle file uploads if present
+    let fileUrl = null;
+    let fileName = null;
+
+    if (req.files && req.files.length > 0) {
+      // Import cloudinary if not already available
+      const cloudinary = require('../config/cloudinary');
+      const fs = require('fs');
+
+      // Process the first file (for now, we'll just use the first file for single file storage)
+      // In a more advanced implementation, you could store multiple files
+      const file = req.files[0];
+      fileName = file.originalname;
+
+      try {
+        // Upload to Cloudinary
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: 'chat_attachments',
+          use_filename: false,
+          unique_filename: true,
+          resource_type: 'auto' // Automatically detect if it's an image, video, or raw file
+        });
+
+        fileUrl = result.secure_url;
+
+        // Remove the temporary file after upload
+        fs.unlinkSync(file.path);
+      } catch (uploadError) {
+        console.error('Cloudinary upload error:', uploadError);
+        // Remove the temporary file even if upload fails
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to upload file to cloud storage'
+        });
+      }
+    }
+
+    // Set message type based on content and file presence
+    let finalMessageType = messageType;
+    if (!finalMessageType) {
+      if (fileUrl) {
+        // Determine message type based on file extension
+        const fileExt = fileName ? fileName.split('.').pop()?.toLowerCase() : '';
+        if (fileExt && ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
+          finalMessageType = 'image';
+        } else if (fileExt && ['mp4', 'mov', 'avi', 'mkv'].includes(fileExt)) {
+          finalMessageType = 'video';
+        } else {
+          finalMessageType = 'file';
+        }
+      } else {
+        finalMessageType = 'text';
+      }
+    }
+
     // Create message
     const message = await Message.create({
       conversation_id: conversationId,
       sender_id: userId,
-      content,
-      message_type: messageType,
+      content: content || '', // Use empty string if no content provided
+      message_type: finalMessageType,
       file_url: fileUrl,
       file_name: fileName
     });
@@ -436,12 +494,74 @@ const sendMessage = async (req, res, next) => {
       ]
     });
 
+    // Emit the new message to the conversation room via socket
+    // We need to access the io instance to emit the event
+    if (global.io) {
+      global.io.to(`conversation_${conversationId}`).emit('new_message', fullMessage);
+
+      // Check if this is an order conversation and emit order update
+      const { OrderConversation } = require('../models');
+      const orderConversation = await OrderConversation.findOne({
+        where: { conversation_id: conversationId },
+        include: [
+          {
+            model: require('../models').Sale,
+            as: 'sale',
+            include: [
+              {
+                model: require('../models').Vehicle,
+                as: 'vehicle'
+              },
+              {
+                model: require('../models').Customer,
+                as: 'customer'
+              }
+            ]
+          }
+        ]
+      });
+
+      if (orderConversation) {
+        // Emit order message update to all participants in the conversation
+        const { ConversationParticipant } = require('../models');
+        const participants = await ConversationParticipant.findAll({
+          where: { conversation_id: conversationId }
+        });
+
+        for (const participant of participants) {
+          global.io.to(`user_${participant.user_id}`).emit('order_message_update', {
+            orderId: orderConversation.sale_id,
+            conversationId,
+            message: fullMessage,
+            orderDetails: orderConversation.sale
+          });
+        }
+
+        // Additionally, emit to admin role room so all admins can see updates
+        global.io.to(`role_admin`).emit('order_message_update', {
+          orderId: orderConversation.sale_id,
+          conversationId,
+          message: fullMessage,
+          orderDetails: orderConversation.sale
+        });
+      }
+    }
+
     res.json({
       success: true,
       message: 'Message sent successfully',
       data: fullMessage
     });
   } catch (error) {
+    // Clean up any uploaded files in case of error
+    if (req.files) {
+      const fs = require('fs');
+      req.files.forEach(file => {
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      });
+    }
     next(error);
   }
 };

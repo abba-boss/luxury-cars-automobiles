@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useAuth } from '@/hooks/useAuth';
 import { chatService, saleService } from '@/services';
@@ -18,7 +18,17 @@ import {
   AlertCircle,
   CheckCircle2,
   User as UserIcon,
-  User as UserAvatarIcon
+  Paperclip,
+  X,
+  Image as ImageIcon,
+  FileText,
+  Download,
+  Eye,
+  Video,
+  FileImage,
+  File,
+  FileAudio,
+  FileVideo
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LoadingSpinner } from '@/components/ui/loading';
@@ -32,6 +42,8 @@ interface Message {
   message_type: string;
   status: string;
   created_at?: string;
+  file_url?: string;
+  file_name?: string;
   sender: {
     id: number;
     full_name: string;
@@ -53,8 +65,14 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState<number[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [currentImage, setCurrentImage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load conversation messages when conversation changes
   useEffect(() => {
@@ -123,11 +141,22 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
       }
     };
 
+    // Handle online status updates
+    const handleUserOnline = (data: { userId: number }) => {
+      setOnlineUsers(prev => [...prev, data.userId]);
+    };
+
+    const handleUserOffline = (data: { userId: number }) => {
+      setOnlineUsers(prev => prev.filter(id => id !== data.userId));
+    };
+
     socket.on('new_message', handleNewMessage);
     socket.on('user_typing', handleTypingStart);
     socket.on('user_stopped_typing', handleTypingStop);
     socket.on('message_delivered', handleMessageDelivered);
     socket.on('message_read', handleMessageRead);
+    socket.on('user_online', handleUserOnline);
+    socket.on('user_offline', handleUserOffline);
 
     return () => {
       socket.off('new_message', handleNewMessage);
@@ -135,6 +164,8 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
       socket.off('user_stopped_typing', handleTypingStop);
       socket.off('message_delivered', handleMessageDelivered);
       socket.off('message_read', handleMessageRead);
+      socket.off('user_online', handleUserOnline);
+      socket.off('user_offline', handleUserOffline);
     };
   }, [socket, conversationId, user]);
 
@@ -173,25 +204,36 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
     }
   };
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   const handleSend = async () => {
-    if (!message.trim() || !conversationId || !user) return;
+    if ((!message.trim() && selectedFiles.length === 0) || !conversationId || !user) return;
+
+    // Validate file sizes before sending
+    if (selectedFiles.length > 0) {
+      const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0);
+      if (totalSize > 50 * 1024 * 1024) { // 50MB limit
+        toast.error('Total file size exceeds 50MB limit');
+        return;
+      }
+    }
 
     const localId = `local-${Date.now()}`;
+    const content = message.trim() || `[${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}]`;
+
     const optimisticMessage: Message = {
       id: 0,
       localId,
       conversation_id: parseInt(conversationId),
       sender_id: user.id,
-      content: message,
-      message_type: 'text',
+      content,
+      message_type: selectedFiles.length > 0 ? 'file' : 'text',
       status: 'sent',
       created_at: new Date().toISOString(),
       sender: {
@@ -203,10 +245,13 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
 
     setMessages(prev => [...prev, optimisticMessage]);
     setMessage('');
+    setSelectedFiles([]);
+    setIsUploading(true);
 
     try {
       const response = await chatService.sendMessage(conversationId, {
-        content: message
+        content: message,
+        files: selectedFiles.length > 0 ? selectedFiles : undefined
       });
 
       if (response.success) {
@@ -215,14 +260,18 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
             msg.localId === localId ? response.data : msg
           )
         );
-
+        toast.success('Message sent successfully');
       } else {
         setMessages(prev => prev.filter(msg => msg.localId !== localId));
         console.error('Failed to send message:', response.message);
+        toast.error(response.message || 'Failed to send message');
       }
-    } catch (error) {
+    } catch (error: any) {
       setMessages(prev => prev.filter(msg => msg.localId !== localId));
       console.error('Failed to send message:', error);
+      toast.error(error.message || 'Failed to send message');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -233,7 +282,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
     }
   };
 
-  const handleTypingStart = () => {
+  const handleTypingStart = useCallback(() => {
     if (!conversationId || !socket) return;
 
     socket.emit('typing_start', { conversationId });
@@ -245,15 +294,41 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
     typingTimeoutRef.current = setTimeout(() => {
       socket.emit('typing_stop', { conversationId });
     }, 2000);
-  };
+  }, [conversationId, socket]);
 
-  const handleTypingStop = () => {
+  const handleTypingStop = useCallback(() => {
     if (!conversationId || !socket) return;
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
       socket.emit('typing_stop', { conversationId });
     }
+  }, [conversationId, socket]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+
+      // Validate file count
+      if (selectedFiles.length + files.length > 5) {
+        toast.error('Maximum 5 files allowed per message');
+        return;
+      }
+
+      // Validate individual file sizes
+      for (const file of files) {
+        if (file.size > 50 * 1024 * 1024) { // 50MB limit
+          toast.error(`File ${file.name} exceeds 50MB limit`);
+          return;
+        }
+      }
+
+      setSelectedFiles(prev => [...prev, ...files]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const getStatusBadge = (status: string) => {
@@ -313,7 +388,7 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
   };
 
   // Helper function to group messages by date
-  const groupMessagesByDate = () => {
+  const groupMessagesByDate = useCallback(() => {
     const grouped: Record<string, Message[]> = {};
 
     // Sort messages by date (oldest first globally)
@@ -330,12 +405,12 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
     });
 
     return grouped;
-  };
+  }, [messages]);
 
   const groupedMessages = groupMessagesByDate();
 
   // Format date for display
-  const formatDateDisplay = (dateStr?: string) => {
+  const formatDateDisplay = useCallback((dateStr?: string) => {
     if (!dateStr) return 'Just now';
 
     const date = new Date(dateStr);
@@ -350,6 +425,144 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
     } else {
       return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
     }
+  }, []);
+
+  // Check if admin is online
+  const isAdminOnline = onlineUsers.some(userId =>
+    messages.some(msg => msg.sender_id === userId && msg.sender.role === 'admin')
+  );
+
+  // Function to determine file type and icon
+  const getFileIcon = (fileName?: string, fileType?: string) => {
+    if (fileType?.startsWith('image/')) {
+      return <ImageIcon className="w-4 h-4" />;
+    }
+    
+    if (fileType?.startsWith('video/')) {
+      return <Video className="w-4 h-4" />;
+    }
+    
+    if (fileType?.startsWith('audio/')) {
+      return <FileAudio className="w-4 h-4" />;
+    }
+    
+    if (fileName) {
+      const ext = fileName.split('.').pop()?.toLowerCase();
+      if (ext === 'pdf') return <FileText className="w-4 h-4" />;
+      if (['doc', 'docx'].includes(ext)) return <FileText className="w-4 h-4" />;
+      if (['xls', 'xlsx'].includes(ext)) return <FileText className="w-4 h-4" />;
+      if (['ppt', 'pptx'].includes(ext)) return <FileText className="w-4 h-4" />;
+      if (['zip', 'rar', '7z'].includes(ext)) return <File className="w-4 h-4" />;
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return <FileImage className="w-4 h-4" />;
+      if (['mp4', 'mov', 'avi', 'mkv'].includes(ext)) return <FileVideo className="w-4 h-4" />;
+    }
+    
+    return <File className="w-4 h-4" />;
+  };
+
+  // Function to format file size
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  // Function to get file size from URL (approximate)
+  const getFileSizeFromUrl = async (url: string): Promise<number> => {
+    try {
+      const response = await fetch(url, { method: 'HEAD' });
+      const contentLength = response.headers.get('content-length');
+      return contentLength ? parseInt(contentLength, 10) : 0;
+    } catch (error) {
+      console.error('Error getting file size:', error);
+      return 0;
+    }
+  };
+
+  // Function to render file message
+  const renderFileMessage = (msg: Message) => {
+    if (!msg.file_url) return null;
+
+    const isImage = msg.message_type === 'image' || (msg.file_name && /\.(jpg|jpeg|png|gif|webp)$/i.test(msg.file_name));
+    const isVideo = msg.message_type === 'video' || (msg.file_name && /\.(mp4|mov|avi|mkv)$/i.test(msg.file_name));
+
+    if (isImage) {
+      return (
+        <div className="group relative">
+          <img
+            src={msg.file_url}
+            alt={msg.file_name || 'Shared image'}
+            className="max-w-[250px] max-h-[250px] object-cover rounded-2xl cursor-pointer bg-transparent"
+            onClick={() => {
+              setCurrentImage(msg.file_url || '');
+              setImageModalOpen(true);
+            }}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/placeholder-image.jpg'; // fallback image
+            }}
+          />
+          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center">
+            <Eye className="w-8 h-8 text-white" />
+          </div>
+          {msg.content && (
+            <p className="text-xs text-muted-foreground mt-1">{msg.content}</p>
+          )}
+        </div>
+      );
+    }
+
+    if (isVideo) {
+      return (
+        <div className="relative group">
+          <video
+            src={msg.file_url}
+            controls
+            className="max-w-[250px] max-h-[250px] object-cover rounded-2xl"
+          />
+          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center">
+            <PlayIcon className="w-8 h-8 text-white" />
+          </div>
+          {msg.content && (
+            <p className="text-xs text-muted-foreground mt-1">{msg.content}</p>
+          )}
+        </div>
+      );
+    }
+
+    // For other file types
+    return (
+      <div className="flex items-center gap-3 p-3 bg-secondary rounded-2xl max-w-[250px]">
+        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          {getFileIcon(msg.file_name)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm truncate">{msg.file_name}</p>
+          <p className="text-xs text-muted-foreground">
+            {msg.file_url ? formatFileSize(0) /* Will implement actual file size retrieval */ : 'File'}
+          </p>
+        </div>
+        <a
+          href={msg.file_url}
+          download={msg.file_name}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-1 rounded-full hover:bg-primary/10 transition-colors"
+        >
+          <Download className="w-4 h-4" />
+        </a>
+      </div>
+    );
+  };
+
+  // Function to render message content
+  const renderMessageContent = (msg: Message) => {
+    if (msg.file_url) {
+      return renderFileMessage(msg);
+    }
+    return msg.content;
   };
 
   return (
@@ -392,9 +605,15 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
                     </select>
                   )}
                   {user?.role !== 'admin' && (
-                    <span className="text-xs text-muted-foreground italic">
-                      Status managed by admin
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className={cn(
+                        'w-2 h-2 rounded-full',
+                        isAdminOnline ? 'bg-green-500' : 'bg-gray-400'
+                      )}></div>
+                      <span className="text-xs text-muted-foreground italic">
+                        {isAdminOnline ? 'Admin online' : 'Admin offline'}
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -441,11 +660,15 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
                   </div>
 
                   {/* Messages for this date */}
-                  {dateMessages.map((msg) => {
+                  {dateMessages.map((msg, index, arr) => {
                     const isOwnMessage = msg.sender_id === user?.id;
                     const isSystemMessage = msg.message_type === 'system';
                     const messageDate = msg.created_at ? new Date(msg.created_at) : new Date();
                     const timeString = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    // Check if we should show the sender name (when consecutive messages from same person)
+                    const prevMsg = index > 0 ? arr[index - 1] : null;
+                    const showSenderName = !prevMsg || prevMsg.sender_id !== msg.sender_id;
 
                     if (isSystemMessage) {
                       return (
@@ -490,30 +713,31 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
                         )}
 
                         <div className="flex-1 max-w-[85%]">
-                          <div className="flex items-center gap-2 mb-1">
-                            {!isOwnMessage && (
-                              <>
-                                <span className="text-xs font-medium text-muted-foreground">
-                                  {msg.sender.full_name}
-                                </span>
-                                {msg.sender.role === 'admin' && (
-                                  <Badge variant="verified" className="text-xs py-0 px-1.5">
-                                    Admin
-                                  </Badge>
-                                )}
-                              </>
-                            )}
-                          </div>
-
+                          {showSenderName && !isOwnMessage && (
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-medium text-muted-foreground">
+                                {msg.sender.full_name}
+                              </span>
+                              {msg.sender.role === 'admin' && (
+                                <Badge variant="verified" className="text-xs py-0 px-1.5">
+                                  Admin
+                                </Badge>
+                              )}
+                            </div>
+                          )}
                           <div
                             className={cn(
-                              'px-4 py-2.5 rounded-2xl text-sm break-words',
-                              isOwnMessage
-                                ? 'bg-primary text-primary-foreground rounded-br-md rounded-tr-md rounded-tl-md'
-                                : 'bg-secondary text-foreground rounded-bl-md rounded-tl-md rounded-tr-md'
+                              msg.file_url && (msg.message_type === 'image' || (msg.file_name && /\.(jpg|jpeg|png|gif|webp)$/i.test(msg.file_name)))
+                                ? 'px-1 py-1' // Minimal padding for images
+                                : cn(
+                                    'px-4 py-2.5 rounded-2xl text-sm break-words',
+                                    isOwnMessage
+                                      ? 'bg-primary text-primary-foreground rounded-br-md rounded-tr-md rounded-tl-md'
+                                      : 'bg-secondary text-foreground rounded-bl-md rounded-tl-md rounded-tr-md'
+                                  )
                             )}
                           >
-                            {msg.content}
+                            {renderMessageContent(msg)}
                           </div>
 
                           <div
@@ -574,8 +798,54 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
         </CardContent>
 
         {/* Input Area - Fixed at bottom */}
-        <CardFooter className="p-4 border-t flex-shrink-0">
+        <CardFooter className="p-4 border-t flex-shrink-0 flex-col">
+          {/* Selected Files Preview */}
+          {selectedFiles.length > 0 && (
+            <div className="w-full mb-3 flex flex-wrap gap-2">
+              {selectedFiles.map((file, index) => {
+                const isImage = file.type.startsWith('image/');
+                
+                return (
+                  <div key={index} className="flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 text-sm max-w-xs">
+                    {isImage ? (
+                      <div className="w-10 h-10 rounded-md overflow-hidden flex-shrink-0">
+                        <img 
+                          src={URL.createObjectURL(file)} 
+                          alt={file.name} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        {getFileIcon(file.name, file.type)}
+                      </div>
+                    )}
+                    <span className="truncate max-w-[120px]">{file.name}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile(index)}
+                      className="p-1 h-auto"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <div className="flex gap-2 w-full">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-2"
+            >
+              <Paperclip className="w-4 h-4" />
+            </Button>
+            
             <Input
               value={message}
               onChange={(e) => {
@@ -587,22 +857,75 @@ const OrderChat = ({ order, conversationId, className }: OrderChatProps) => {
               placeholder="Type your message to admin..."
               className="flex-1"
             />
+            
             <Button
               onClick={handleSend}
-              disabled={!message.trim()}
+              disabled={(!message.trim() && selectedFiles.length === 0) || isUploading}
               className="gap-2"
             >
               <Send className="w-4 h-4" />
               Send
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
+          
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            multiple
+            className="hidden"
+            accept="image/*,video/*,application/pdf,.doc,.docx,.txt,.zip,.rar"
+          />
+          
+          <p className="text-xs text-muted-foreground mt-2 w-full">
             Chat with our team about your order. We'll respond as soon as possible.
           </p>
         </CardFooter>
       </Card>
+
+      {/* Image Modal */}
+      {imageModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setImageModalOpen(false)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh]">
+            <div className="absolute top-4 right-4 flex gap-2 z-10">
+              <a
+                href={currentImage}
+                download
+                className="bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+                title="Download image"
+              >
+                <Download className="w-5 h-5" />
+              </a>
+              <button
+                className="bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+                onClick={() => setImageModalOpen(false)}
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <img
+              src={currentImage}
+              alt="Enlarged view"
+              className="max-w-full max-h-[80vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+// PlayIcon component for video files
+const PlayIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+  </svg>
+);
 
 export default OrderChat;

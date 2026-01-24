@@ -192,13 +192,13 @@ export const adminService = {
 export const uploadService = {
   async uploadVehicleMedia(files: { images?: FileList; videos?: FileList }): Promise<ApiResponse<UploadResponse>> {
     const formData = new FormData();
-    
+
     if (files.images) {
       Array.from(files.images).forEach(file => {
         formData.append('images', file);
       });
     }
-    
+
     if (files.videos) {
       Array.from(files.videos).forEach(file => {
         formData.append('videos', file);
@@ -206,6 +206,13 @@ export const uploadService = {
     }
 
     return api.upload<ApiResponse<UploadResponse>>('/upload/vehicles', formData);
+  },
+
+  async uploadHomepageImage(file: File): Promise<ApiResponse<{ url: string }>> {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    return api.upload<ApiResponse<{ url: string }>>('/upload/homepage', formData);
   }
 };
 
@@ -452,6 +459,39 @@ export const brandService = {
 
   async searchBrands(query: string, limit?: number): Promise<ApiResponse<Brand[]>> {
     return api.get<ApiResponse<Brand[]>>('/brands/search', { q: query, limit });
+  }
+};
+
+export const homepageImageService = {
+  async getHomepageImages(params?: {
+    section_type?: string;
+    is_active?: boolean
+  }): Promise<ApiResponse<HomepageImage[]>> {
+    return api.get<ApiResponse<HomepageImage[]>>('/homepage-images', params);
+  },
+
+  async getActiveHomepageImagesBySection(section_type: string): Promise<ApiResponse<HomepageImage[]>> {
+    return api.get<ApiResponse<HomepageImage[]>>(`/homepage-images/active/${section_type}`);
+  },
+
+  async getHomepageImage(id: number): Promise<ApiResponse<HomepageImage>> {
+    return api.get<ApiResponse<HomepageImage>>(`/homepage-images/${id}`);
+  },
+
+  async createHomepageImage(data: Omit<HomepageImage, 'id' | 'created_at' | 'updated_at'>): Promise<ApiResponse<HomepageImage>> {
+    return api.post<ApiResponse<HomepageImage>>('/homepage-images', data);
+  },
+
+  async updateHomepageImage(id: number, data: Partial<HomepageImage>): Promise<ApiResponse<HomepageImage>> {
+    return api.put<ApiResponse<HomepageImage>>(`/homepage-images/${id}`, data);
+  },
+
+  async deleteHomepageImage(id: number): Promise<ApiResponse<null>> {
+    return api.delete<ApiResponse<null>>(`/homepage-images/${id}`);
+  },
+
+  async updateHomepageImagePositions(images: Array<{ id: number; position: number }>): Promise<ApiResponse<null>> {
+    return api.put<ApiResponse<null>>('/homepage-images/update-positions', { images });
   }
 };
 

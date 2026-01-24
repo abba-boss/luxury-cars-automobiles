@@ -158,6 +158,10 @@ app.use('/api/user/analytics', userAnalyticsRoutes);
 const chatRoutes = require('./routes/chat');
 app.use('/api/chat', chatRoutes);
 
+// Homepage images routes
+const homepageImageRoutes = require('./routes/homepageImages');
+app.use('/api/homepage-images', homepageImageRoutes);
+
 // Serve static files with CORS headers
 app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -180,6 +184,9 @@ const io = new Server(server, {
   },
   transports: ['websocket', 'polling']
 });
+
+// Make io available globally so controllers can access it
+global.io = io;
 
 // Socket.IO connection handling
 io.use(async (socket, next) => {

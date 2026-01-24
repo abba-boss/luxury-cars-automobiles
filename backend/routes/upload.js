@@ -287,4 +287,86 @@ router.post('/vehicles', authenticateUser, requireAdmin, (req, res, next) => {
   }
 });
 
+// Upload homepage image to Cloudinary
+router.post('/homepage', authenticateUser, requireAdmin, (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'File size too large. Maximum allowed is 10MB.'
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Upload failed',
+        error: err.message
+      });
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No file uploaded'
+      });
+    }
+
+    let filePath = req.file.path; // Start with the original file path
+
+    try {
+      // Compress image if it exceeds Cloudinary's size limit (10MB)
+      filePath = await compressImageIfNeeded(req.file.path, 10 * 1024 * 1024);
+
+      const result = await cloudinary.uploader.upload(filePath, {
+        folder: 'sarkin_mota/homepage',
+        resource_type: 'image',
+        use_filename: false,
+        unique_filename: true,
+      });
+
+      // Remove temporary file (original or compressed)
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      const uploadedFile = {
+        filename: path.basename(result.public_id),
+        originalName: req.file.originalname,
+        url: result.secure_url,
+        publicId: result.public_id,
+        size: result.bytes,
+        format: result.format
+      };
+
+      res.json({
+        success: true,
+        message: 'Homepage image uploaded to Cloudinary successfully',
+        data: uploadedFile
+      });
+    } catch (uploadError) {
+      // Remove temporary file even if upload fails
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      console.error('Cloudinary homepage image upload error:', uploadError);
+      res.status(500).json({
+        success: false,
+        message: 'Upload failed',
+        error: uploadError.message
+      });
+    }
+  } catch (error) {
+    console.error('Homepage upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Upload failed',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
