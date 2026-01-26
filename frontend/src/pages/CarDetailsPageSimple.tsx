@@ -79,12 +79,12 @@ const CarDetailsPage = () => {
 
   const fetchVehicle = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/vehicles/${id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3002/api'}/vehicles/${id}`);
       const result = await response.json();
       
       if (result.success && result.data) {
         const vehicleData = result.data;
-        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002';
         setVehicle({
           id: vehicleData.id.toString(),
           make: vehicleData.make,

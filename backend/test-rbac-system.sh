@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Comprehensive RBAC Testing Script
-API_URL="http://localhost:3001/api"
+API_URL="http://localhost:3002/api"
 
 echo "🧪 RBAC System Testing"
 echo "======================"

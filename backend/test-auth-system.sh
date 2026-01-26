@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Test script for authentication system
-API_URL="http://localhost:3001/api"
+API_URL="http://localhost:3002/api"
 
 echo "🧪 Testing Authentication System"
 echo "================================"

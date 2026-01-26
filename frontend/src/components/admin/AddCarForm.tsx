@@ -10,7 +10,7 @@ import { X, Upload, Plus, Download, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { productSearchService, ExternalProduct } from "@/services/productSearchService";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
 interface MediaFile {
   filename: string;

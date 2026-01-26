@@ -68,7 +68,7 @@
 - ✅ Shopping cart and checkout operational
 - ✅ Admin panel accessible and functional
 
-### Backend (Port 3001):
+### Backend (Port 3002):
 - ✅ API endpoints responding correctly
 - ✅ Vehicle data properly structured
 - ✅ Image serving working

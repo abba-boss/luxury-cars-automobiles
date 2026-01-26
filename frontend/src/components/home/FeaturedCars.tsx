@@ -34,7 +34,7 @@ export function FeaturedCars() {
               fuelType: vehicle.fuel_type || 'Petrol',
               color: vehicle.color || '',
               images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img =>
-                img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${img}`
+                img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/${img}`
               ) : [],
               description: vehicle.description || '',
               features: vehicle.features || [],
@@ -107,7 +107,7 @@ export function FeaturedCars() {
                 {/* Image Container */}
                 <div className="relative aspect-[3/2] sm:aspect-[4/3] md:aspect-[16/10] overflow-hidden bg-muted">
                   <img
-                    src={car.images[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`}
+                    src={car.images[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/placeholder-car.svg`}
                     alt={`${car.make} ${car.model}`}
                     className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
                     loading="lazy"

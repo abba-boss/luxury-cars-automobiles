@@ -248,7 +248,7 @@ If you're still seeing "customer" role after following all steps:
 
 1. **Check browser console** (F12) for errors
 2. **Check backend logs** for authentication errors
-3. **Verify backend is running** on port 3001
+3. **Verify backend is running** on port 3002
 4. **Verify frontend is running** on port 5173
 5. **Try different browser** (Chrome, Firefox, Edge)
 6. **Restart both servers**:

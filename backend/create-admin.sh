@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Create admin user for RBAC testing
-API_URL="http://localhost:3001/api"
+API_URL="http://localhost:3002/api"
 
 echo "🔧 Creating Admin User for RBAC Testing"
 echo "======================================="

@@ -51,7 +51,7 @@
 
 ## Access Points
 - **Frontend:** http://localhost:8080
-- **Backend API:** http://localhost:3001/api
+- **Backend API:** http://localhost:3002/api
 - **Admin Dashboard:** Login with admin credentials to access admin features
 
 ## Next Steps

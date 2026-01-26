@@ -79,7 +79,7 @@ export function Car360Viewer({ images, carName }: Car360ViewerProps) {
     setTimeout(() => setIsTransitioning(false), 400);
   };
 
-  const currentImage = images && images.length > 0 ? (images[currentIndex] || images[0]) : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`;
+  const currentImage = images && images.length > 0 ? (images[currentIndex] || images[0]) : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/placeholder-car.svg`;
 
   // If no images are available, show skeleton
   if (!images || images.length === 0) {

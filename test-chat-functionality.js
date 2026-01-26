@@ -7,7 +7,7 @@ const axios = require('axios');
 async function testChatFunctionality() {
   console.log('Testing chat functionality...\n');
   
-  const BASE_URL = 'http://localhost:3001/api';
+  const BASE_URL = 'http://localhost:3002/api';
   
   try {
     // Login as admin

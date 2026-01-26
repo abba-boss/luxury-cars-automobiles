@@ -15,7 +15,7 @@ export const validateEnvironment = (): { valid: boolean; missing: string[] } => 
 };
 
 export const getApiUrl = (): string => {
-  return requiredEnvVars.VITE_API_URL || 'http://localhost:3001/api';
+  return requiredEnvVars.VITE_API_URL || 'http://localhost:3002/api';
 };
 
 // Validate on app start

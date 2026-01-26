@@ -3,7 +3,7 @@
 ## Issues Fixed
 
 ### 1. Hardcoded API URLs
-**Problem**: Multiple components had hardcoded `localhost:3001` URLs that wouldn't work in different environments.
+**Problem**: Multiple components had hardcoded `localhost:3002` URLs that wouldn't work in different environments.
 
 **Fixed Files**:
 - `src/pages/CarDetailsPage.tsx`
@@ -20,10 +20,10 @@
 **Solution**: Replaced hardcoded URLs with environment variable fallbacks:
 ```typescript
 // Before
-`http://localhost:3001/uploads/${img}`
+`http://localhost:3002/uploads/${img}`
 
 // After  
-`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${img}`
+`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/${img}`
 ```
 
 ### 2. Type Inconsistency in Vehicle Price

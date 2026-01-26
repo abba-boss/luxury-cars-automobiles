@@ -10,7 +10,7 @@
     <script>
         async function testAPI() {
             try {
-                const response = await fetch('http://localhost:3001/api/vehicles?limit=5');
+                const response = await fetch('http://localhost:3002/api/vehicles?limit=5');
                 const data = await response.json();
                 document.getElementById('result').innerHTML = `
                     <h2>API Response:</h2>

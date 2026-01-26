@@ -2,7 +2,7 @@
 
 # Create admin user for Sarkin Mota Automobiles
 
-API_URL="http://localhost:3001/api"
+API_URL="http://localhost:3002/api"
 
 echo "Creating admin user..."
 

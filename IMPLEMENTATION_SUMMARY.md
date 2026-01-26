@@ -99,10 +99,10 @@ Add new data to admin dashboard:
 ### Test Reviews API:
 ```bash
 # Get reviews for vehicle
-curl -X GET http://localhost:3001/api/reviews/vehicle/9
+curl -X GET http://localhost:3002/api/reviews/vehicle/9
 
 # Create review (requires auth)
-curl -X POST http://localhost:3001/api/reviews \
+curl -X POST http://localhost:3002/api/reviews \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"vehicle_id": 9, "rating": 5, "comment": "Great car!"}'
@@ -111,7 +111,7 @@ curl -X POST http://localhost:3001/api/reviews \
 ### Test Bookings API:
 ```bash
 # Create booking (requires auth)
-curl -X POST http://localhost:3001/api/bookings \
+curl -X POST http://localhost:3002/api/bookings \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -125,7 +125,7 @@ curl -X POST http://localhost:3001/api/bookings \
 ### Test Favorites API:
 ```bash
 # Add to favorites (requires auth)
-curl -X POST http://localhost:3001/api/favorites \
+curl -X POST http://localhost:3002/api/favorites \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"vehicle_id": 9}'

@@ -82,7 +82,6 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [importing, setImporting] = useState(false);
   const [searching, setSearching] = useState(false);
   const [formData, setFormData] = useState<CreateVehicleData>({
     make: "",
@@ -113,7 +112,6 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
   const [newFeature, setNewFeature] = useState("");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadedVideos, setUploadedVideos] = useState<string[]>([]);
-  const [importProductId, setImportProductId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -267,31 +265,6 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
     }
   };
 
-  const handleImportProduct = async () => {
-    if (!importProductId.trim()) {
-      toast.error("Please enter a product ID to import");
-      return;
-    }
-
-    setImporting(true);
-    try {
-      // In a real implementation, this would call the import API
-      // const response = await productService.importProduct(importProductId);
-      // if (response.success) {
-      //   setFormData(response.data);
-      //   toast.success("Product imported successfully");
-      // } else {
-      //   throw new Error(response.message || "Failed to import product");
-      // }
-      
-      // For demo purposes, just show a toast
-      toast.success("Product import functionality would be implemented here");
-    } catch (error) {
-      toast.error("Failed to import product");
-    } finally {
-      setImporting(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -437,57 +410,6 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
           </CardContent>
         </Card>
 
-        {/* Import Product */}
-        <Card variant="premium">
-          <CardHeader className="p-4 bg-muted/5 rounded-t-xl">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Download className="w-5 h-5" />
-              Import Product Data
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Import product information from external sources
-            </p>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="flex gap-2">
-              <Input
-                value={importProductId}
-                onChange={(e) => setImportProductId(e.target.value)}
-                placeholder="Enter product ID to import"
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                onClick={handleImportProduct}
-                disabled={importing}
-                variant="secondary"
-              >
-                {importing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Importing...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Import
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setShowSearchModal(true)}
-                variant="outline"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Enter a product ID to import or search for products from external sources
-            </p>
-          </CardContent>
-        </Card>
 
         {/* Specifications */}
         <Card variant="premium">
@@ -771,7 +693,7 @@ const VehicleForm = ({ mode, vehicleId }: VehicleFormProps) => {
                 {uploadedImages.map((img, index) => (
                   <div key={index} className="relative group">
                     <img
-                      src={img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${img}`}
+                      src={img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}${img}`}
                       alt={`Vehicle image ${index + 1}`}
                       className="w-full h-24 object-cover rounded border"
                       onError={(e) => {

@@ -245,11 +245,188 @@ const searchBrands = async (req, res, next) => {
   }
 };
 
+// Create new brand with file upload (Admin only)
+const createBrandWithFile = async (req, res, next) => {
+  try {
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file uploaded'
+      });
+    }
+
+    const { name } = req.body;
+
+    // Validate name
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Brand name is required'
+      });
+    }
+
+    // Check if brand already exists
+    const existingBrand = await Brand.findOne({ where: { name: name.trim() } });
+    if (existingBrand) {
+      return res.status(400).json({
+        success: false,
+        message: 'Brand already exists'
+      });
+    }
+
+    // Upload image to Cloudinary
+    const cloudinary = require('../config/cloudinary');
+    const path = require('path');
+
+    let result;
+    try {
+      result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'sarkin_mota/brands',
+        resource_type: 'image',
+        use_filename: false,
+        unique_filename: true,
+      });
+
+      // Remove temporary file
+      const fs = require('fs');
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+    } catch (uploadError) {
+      console.error('Cloudinary upload error:', uploadError);
+      // Remove temporary file even if upload fails
+      const fs = require('fs');
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(500).json({
+        success: false,
+        message: 'Image upload failed',
+        error: uploadError.message
+      });
+    }
+
+    // Create brand with image URL
+    const brand = await Brand.create({
+      name: name.trim(),
+      image: result.secure_url
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Brand created successfully',
+      data: brand
+    });
+  } catch (error) {
+    console.error('Create brand with file error:', error);
+    next(error);
+  }
+};
+
+// Update brand with file upload (Admin only)
+const updateBrandWithFile = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file uploaded'
+      });
+    }
+
+    const { name } = req.body;
+
+    // Validate name
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Brand name is required'
+      });
+    }
+
+    const brand = await Brand.findByPk(id);
+    if (!brand) {
+      return res.status(404).json({
+        success: false,
+        message: 'Brand not found'
+      });
+    }
+
+    // Check if name is being changed and if it conflicts
+    if (name.trim() !== brand.name) {
+      const existingBrand = await Brand.findOne({
+        where: {
+          name: name.trim(),
+          id: { [require('sequelize').Op.ne]: id }
+        }
+      });
+      if (existingBrand) {
+        return res.status(400).json({
+          success: false,
+          message: 'Brand name already exists'
+        });
+      }
+    }
+
+    // Upload image to Cloudinary
+    const cloudinary = require('../config/cloudinary');
+    const path = require('path');
+
+    let result;
+    try {
+      result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'sarkin_mota/brands',
+        resource_type: 'image',
+        use_filename: false,
+        unique_filename: true,
+      });
+
+      // Remove temporary file
+      const fs = require('fs');
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+    } catch (uploadError) {
+      console.error('Cloudinary upload error:', uploadError);
+      // Remove temporary file even if upload fails
+      const fs = require('fs');
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(500).json({
+        success: false,
+        message: 'Image upload failed',
+        error: uploadError.message
+      });
+    }
+
+    // Update brand with new image URL
+    await brand.update({
+      name: name.trim(),
+      image: result.secure_url
+    });
+
+    res.json({
+      success: true,
+      message: 'Brand updated successfully',
+      data: brand
+    });
+  } catch (error) {
+    console.error('Update brand with file error:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   getBrands,
   getBrandById,
   createBrand,
   updateBrand,
   deleteBrand,
-  searchBrands
+  searchBrands,
+  createBrandWithFile,
+  updateBrandWithFile
 };

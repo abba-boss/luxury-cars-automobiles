@@ -85,7 +85,7 @@ const PremiumCarDetailsPage = () => {
       model: vehicle.model,
       year: vehicle.year,
       price: vehicle.price,
-      image: (vehicle.images && vehicle.images[0]) || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`
+      image: (vehicle.images && vehicle.images[0]) || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/placeholder-car.svg`
     });
   };
 
@@ -152,7 +152,7 @@ const PremiumCarDetailsPage = () => {
             {/* Main Image */}
             <div className="relative rounded-3xl overflow-hidden mb-8 group">
               <img
-                src={vehicle.images?.[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`}
+                src={vehicle.images?.[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/placeholder-car.svg`}
                 alt={`${vehicle.make} ${vehicle.model}`}
                 className="w-full h-96 object-cover transition-transform duration-700 group-hover:scale-105"
               />

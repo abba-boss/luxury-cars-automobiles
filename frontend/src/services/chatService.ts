@@ -53,7 +53,7 @@ interface SendMessageRequest {
 }
 
 export class ChatService {
-  private baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace(/\/$/, '');
+  private baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3002/api').replace(/\/$/, '');
 
   constructor(private token: string | null) {}
 

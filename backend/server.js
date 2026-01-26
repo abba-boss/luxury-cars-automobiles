@@ -18,7 +18,7 @@ const { sanitizeInput } = require('./middlewares/sanitize');
 
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 // Rate limiting - DISABLED FOR TESTING
 // const limiter = rateLimit({
@@ -38,7 +38,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "http://localhost:3001", "https:"],
+      imgSrc: ["'self'", "data:", "http://localhost:3002", "https:"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "https:", "'unsafe-inline'"],
     },

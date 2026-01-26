@@ -26,5 +26,5 @@ npm ci
 npm run build
 
 echo "✅ Deployment complete!"
-echo "Backend: http://localhost:3001"
+echo "Backend: http://localhost:3002"
 echo "Frontend: Serve the 'dist' folder with your web server"

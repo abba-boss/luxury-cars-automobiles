@@ -62,7 +62,7 @@ const vehicleToCartItem = (vehicle: Vehicle) => ({
   model: vehicle.model,
   year: vehicle.year,
   price: typeof vehicle.price === 'string' ? parseFloat(vehicle.price) : vehicle.price,
-  image: vehicle.images?.[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`
+  image: vehicle.images?.[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/placeholder-car.svg`
 });
 
 const CarDetailsPage = () => {
@@ -111,12 +111,12 @@ const CarDetailsPage = () => {
             ...response.data,
             images: response.data.images && response.data.images.length > 0
               ? response.data.images.map(img =>
-                  img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${img}`
+                  img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/${img}`
                 )
               : [],
             videos: response.data.videos && response.data.videos.length > 0
               ? response.data.videos.map(video =>
-                  video.startsWith('http') ? video : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${video}`
+                  video.startsWith('http') ? video : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/${video}`
                 )
               : []
           };
@@ -468,7 +468,7 @@ const CarDetailsPage = () => {
       {/* Video Section */}
       <CarVideoSection
         carName={`${vehicle.make} ${vehicle.model}`}
-        posterImage={vehicle.images?.[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/placeholder-car.svg`}
+        posterImage={vehicle.images?.[0] || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/placeholder-car.svg`}
         videos={vehicle.videos || []}
         loading={loading}
       />

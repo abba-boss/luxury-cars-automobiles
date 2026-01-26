@@ -212,13 +212,13 @@ DELETE /api/brands/:id          // Delete brand (with vehicle count validation)
 ### API Usage:
 ```bash
 # Get all brands
-curl http://localhost:3001/api/brands
+curl http://localhost:3002/api/brands
 
 # Search brands for typeahead
-curl "http://localhost:3001/api/brands/search?q=BMW"
+curl "http://localhost:3002/api/brands/search?q=BMW"
 
 # Create new brand (admin token required)
-curl -X POST http://localhost:3001/api/brands \
+curl -X POST http://localhost:3002/api/brands \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name":"Tesla","image":"https://example.com/tesla-logo.png"}'

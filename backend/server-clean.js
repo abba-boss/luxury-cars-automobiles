@@ -14,7 +14,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const { sanitizeInput } = require('./middlewares/sanitize');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 // Rate limiting
 const limiter = rateLimit({

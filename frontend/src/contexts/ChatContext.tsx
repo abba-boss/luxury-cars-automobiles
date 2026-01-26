@@ -24,7 +24,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     // Initialize Socket.IO connection with reconnection options
     // Extract base URL from API URL (remove '/api' suffix if present)
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
     const socketUrl = apiUrl.replace(/\/api$/, '');
 
     const newSocket = io(socketUrl, {

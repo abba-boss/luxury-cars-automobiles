@@ -77,7 +77,7 @@
 8. **Admin Panel** - Vehicle management interface
 
 ### Servers Running
-- ✅ Backend: `http://localhost:3001` (Node.js/Express)
+- ✅ Backend: `http://localhost:3002` (Node.js/Express)
 - ✅ Frontend: `http://localhost:8080` (Vite/React)
 - ✅ Database: MySQL with all new tables created
 

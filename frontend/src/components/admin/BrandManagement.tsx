@@ -20,6 +20,9 @@ const BrandManagement = () => {
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [formData, setFormData] = useState({ name: "", image: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [imageMethod, setImageMethod] = useState<'url' | 'file'>('url');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBrands();
@@ -43,6 +46,21 @@ const BrandManagement = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+
+      // Create a preview URL for the selected file
+      const previewUrl = URL.createObjectURL(file);
+      setPreviewImage(previewUrl);
+
+      // For now, we'll handle the file upload separately in the submit function
+      // Just update the form data with a placeholder
+      setFormData(prev => ({ ...prev, image: previewUrl }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
@@ -52,19 +70,45 @@ const BrandManagement = () => {
 
     setSubmitting(true);
     try {
-      if (editingBrand) {
-        const response = await brandService.updateBrand(editingBrand.id, formData);
+      // Prepare form data based on the selected method
+      let submitData = { ...formData };
+
+      if (imageMethod === 'file' && selectedFile) {
+        // For file upload, we need to use multipart/form-data
+        const brandData = new FormData();
+        brandData.append('name', formData.name);
+        brandData.append('image', selectedFile);
+
+        let response;
+        if (editingBrand) {
+          response = await brandService.updateBrandWithFile(editingBrand.id, brandData);
+        } else {
+          response = await brandService.createBrandWithFile(brandData);
+        }
+
         if (response.success) {
-          toast.success("Brand updated successfully");
+          toast.success(`Brand ${editingBrand ? 'updated' : 'created'} successfully`);
           fetchBrands();
+        } else {
+          throw new Error(response.message || 'Failed to save brand');
         }
       } else {
-        const response = await brandService.createBrand(formData);
+        // For URL method, use the original approach
+        let response;
+        if (editingBrand) {
+          response = await brandService.updateBrand(editingBrand.id, submitData);
+        } else {
+          response = await brandService.createBrand(submitData);
+        }
+
         if (response.success) {
-          toast.success("Brand created successfully");
+          toast.success(`Brand ${editingBrand ? 'updated' : 'created'} successfully`);
           fetchBrands();
+        } else {
+          throw new Error(response.message || 'Failed to save brand');
         }
       }
+
       handleCloseDialog();
     } catch (error: any) {
       toast.error(error.message || "Failed to save brand");
@@ -87,7 +131,11 @@ const BrandManagement = () => {
 
   const handleEdit = (brand: Brand) => {
     setEditingBrand(brand);
-    setFormData({ name: brand.name, image: brand.image || "" });
+    const brandImage = brand.image || "";
+    // Determine if the image is a URL or a local file
+    const isUrl = brandImage.startsWith('http') || brandImage.startsWith('/');
+    setFormData({ name: brand.name, image: brandImage });
+    setImageMethod(isUrl ? 'url' : 'file');
     setIsDialogOpen(true);
   };
 
@@ -95,6 +143,9 @@ const BrandManagement = () => {
     setIsDialogOpen(false);
     setEditingBrand(null);
     setFormData({ name: "", image: "" });
+    setImageMethod('url');
+    setSelectedFile(null);
+    setPreviewImage(null);
   };
 
   const filteredBrands = brands.filter(brand =>
@@ -130,14 +181,60 @@ const BrandManagement = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="image">Brand Image URL</Label>
-                <Input
-                  id="image"
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                  placeholder="https://example.com/brand-logo.png"
-                />
+                <Label htmlFor="imageMethod">Image Method</Label>
+                <div className="flex gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      id="urlMethod"
+                      name="imageMethod"
+                      checked={imageMethod === 'url'}
+                      onChange={() => setImageMethod('url')}
+                    />
+                    <Label htmlFor="urlMethod">URL</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      id="fileMethod"
+                      name="imageMethod"
+                      checked={imageMethod === 'file'}
+                      onChange={() => setImageMethod('file')}
+                    />
+                    <Label htmlFor="fileMethod">Local File</Label>
+                  </div>
+                </div>
+
+                {imageMethod === 'url' ? (
+                  <Input
+                    id="image"
+                    type="url"
+                    value={formData.image}
+                    onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                    placeholder="https://example.com/brand-logo.png"
+                  />
+                ) : (
+                  <div>
+                    <Input
+                      id="imageFile"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                    {previewImage && (
+                      <div className="mt-2">
+                        <Label>Preview:</Label>
+                        <div className="mt-1">
+                          <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="max-w-[200px] max-h-[100px] object-contain border rounded"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={handleCloseDialog}>

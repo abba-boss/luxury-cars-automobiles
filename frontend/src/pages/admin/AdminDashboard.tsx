@@ -10,18 +10,14 @@ import { SalesChart } from '../../components/analytics/SalesChart';
 import { BrandChart } from '../../components/analytics/BrandChart';
 import { StatusChart } from '../../components/analytics/StatusChart';
 import { UserGrowthChart } from '../../components/analytics/UserGrowthChart';
-import { vehicleService, analyticsService } from '../../services';
+import { analyticsService } from '../../services';
 import {
   Car,
   Users,
   DollarSign,
   Calendar,
   Activity,
-  Plus,
-  TrendingUp,
-  Eye,
-  Edit,
-  MoreHorizontal
+  Plus
 } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
@@ -30,8 +26,6 @@ const AdminDashboard: React.FC = () => {
   const [salesData, setSalesData] = useState<any>(null);
   const [inventoryData, setInventoryData] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
-  const [recentVehicles, setRecentVehicles] = useState<any[]>([]);
-  const [topSellingCars, setTopSellingCars] = useState<any[]>([]);
   const [isDemo, setIsDemo] = useState(false);
 
   const fetchAnalytics = async () => {
@@ -39,28 +33,17 @@ const AdminDashboard: React.FC = () => {
       setLoading(true);
 
       // Fetch all analytics data
-      const [overviewRes, salesRes, inventoryRes, userRes, vehiclesRes] = await Promise.all([
+      const [overviewRes, salesRes, inventoryRes, userRes] = await Promise.all([
         analyticsService.getOverview(),
         analyticsService.getSalesAnalytics(),
         analyticsService.getInventoryAnalytics(),
-        analyticsService.getUserAnalytics(),
-        vehicleService.getVehicles({ limit: 5, sort: 'created_at', order: 'desc' })
+        analyticsService.getUserAnalytics()
       ]);
 
       setOverview(overviewRes.data);
       setSalesData(salesRes.data);
       setInventoryData(inventoryRes.data);
       setUserData(userRes.data);
-      setRecentVehicles(vehiclesRes.data || []);
-
-      // Mock top selling cars data (since we don't have this endpoint yet)
-      setTopSellingCars([
-        { id: 1, make: 'Toyota', model: 'Camry', brand: 'Toyota', total_sales: 24, revenue: 84000000, status: 'Available' },
-        { id: 2, make: 'Honda', model: 'Civic', brand: 'Honda', total_sales: 18, revenue: 63000000, status: 'Reserved' },
-        { id: 3, make: 'Ford', model: 'F-150', brand: 'Ford', total_sales: 15, revenue: 75000000, status: 'Sold' },
-        { id: 4, make: 'BMW', model: 'X5', brand: 'BMW', total_sales: 12, revenue: 96000000, status: 'Available' },
-        { id: 5, make: 'Mercedes', model: 'C-Class', brand: 'Mercedes-Benz', total_sales: 10, revenue: 85000000, status: 'Reserved' },
-      ]);
 
       setIsDemo(overviewRes.isDemo || salesRes.isDemo || inventoryRes.isDemo || userRes.isDemo);
     } catch (error) {
@@ -86,7 +69,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="h-screen flex flex-col overflow-hidden">
+      <div className="flex flex-col">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 pb-0">
           <div>
@@ -105,8 +88,8 @@ const AdminDashboard: React.FC = () => {
           </Button>
         </div>
 
-        {/* Main Content Area - Scrollable sections only */}
-        <div className="flex-1 overflow-y-auto p-6 pt-0">
+        {/* Main Content Area */}
+        <div className="p-6 pt-0">
           {/* KPI Cards */}
           {overview && (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-6">
@@ -176,115 +159,6 @@ const AdminDashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Recent Car Listings and Top Selling Cars */}
-          <div className="grid gap-6 md:grid-cols-2 mb-6">
-            {/* Recent Car Listings */}
-            <Card className="h-full flex flex-col">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Recent Car Listings</CardTitle>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/admin/cars">View All</Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto max-h-[400px]">
-                <div className="space-y-4">
-                  {recentVehicles.map((vehicle) => (
-                    <div key={vehicle.id} className="flex items-center gap-4 p-3 rounded-lg border hover:bg-accent/50 transition-colors">
-                      <div className="relative w-16 h-12 flex-shrink-0 rounded-md overflow-hidden">
-                        <img
-                          src={vehicle.images?.[0] || '/placeholder-car.jpg'}
-                          alt={`${vehicle.make} ${vehicle.model}`}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/placeholder-car.jpg';
-                          }}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium truncate">{vehicle.make} {vehicle.model}</h4>
-                        <p className="text-sm text-muted-foreground truncate">{vehicle.year}</p>
-                        <p className="text-sm font-semibold">₦{vehicle.price?.toLocaleString()}</p>
-                      </div>
-                      <Badge
-                        variant={
-                          vehicle.status === 'available' ? 'default' :
-                          vehicle.status === 'reserved' ? 'secondary' :
-                          'destructive'
-                        }
-                      >
-                        {vehicle.status?.charAt(0).toUpperCase() + vehicle.status?.slice(1)}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Top Selling Cars */}
-            <Card className="h-full flex flex-col">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Top Selling Cars</CardTitle>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/admin/reports">View Reports</Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto max-h-[400px]">
-                <div className="rounded-md border">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Car</th>
-                        <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Brand</th>
-                        <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Sales</th>
-                        <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Revenue</th>
-                        <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {topSellingCars.map((car) => (
-                        <tr key={car.id} className="hover:bg-accent/50 transition-colors">
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div className="relative w-10 h-8 rounded-md overflow-hidden flex-shrink-0">
-                                <img
-                                  src={`/placeholder-car.jpg`} // Placeholder since we don't have actual images
-                                  alt={`${car.make} ${car.model}`}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <div>
-                                <div className="font-medium">{car.model}</div>
-                                <div className="text-sm text-muted-foreground">{car.make}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-4 text-sm">{car.brand}</td>
-                          <td className="p-4 text-sm">{car.total_sales}</td>
-                          <td className="p-4 text-sm font-medium">₦{car.revenue.toLocaleString()}</td>
-                          <td className="p-4">
-                            <Badge
-                              variant={
-                                car.status === 'Available' ? 'default' :
-                                car.status === 'Reserved' ? 'secondary' :
-                                'destructive'
-                              }
-                            >
-                              {car.status}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* Inventory by Brand */}
           {inventoryData && (

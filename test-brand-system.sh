@@ -36,7 +36,7 @@ run_test() {
 
 # Get admin token
 echo "🔐 Getting admin authentication token..."
-ADMIN_TOKEN=$(curl -s -X POST http://localhost:3001/api/auth/login \
+ADMIN_TOKEN=$(curl -s -X POST http://localhost:3002/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@test.com","password":"admin123"}' | jq -r '.token')
 
@@ -50,22 +50,22 @@ echo ""
 
 # Test 1: Get all brands
 run_test "Get all brands" \
-    "curl -s http://localhost:3001/api/brands" \
+    "curl -s http://localhost:3002/api/brands" \
     '"success":true'
 
 # Test 2: Search brands
 run_test "Search brands (BMW)" \
-    "curl -s 'http://localhost:3001/api/brands/search?q=BMW'" \
+    "curl -s 'http://localhost:3002/api/brands/search?q=BMW'" \
     '"name":"BMW"'
 
 # Test 3: Get specific brand
 run_test "Get specific brand" \
-    "curl -s http://localhost:3001/api/brands/1" \
+    "curl -s http://localhost:3002/api/brands/1" \
     '"success":true'
 
 # Test 4: Create new brand (admin only)
 run_test "Create new brand (admin)" \
-    "curl -s -X POST http://localhost:3001/api/brands \
+    "curl -s -X POST http://localhost:3002/api/brands \
       -H 'Content-Type: application/json' \
       -H 'Authorization: Bearer $ADMIN_TOKEN' \
       -d '{\"name\":\"Test Brand $(date +%s)\",\"image\":\"https://example.com/logo.png\"}'" \
@@ -73,19 +73,19 @@ run_test "Create new brand (admin)" \
 
 # Test 5: Get vehicles with brand information
 run_test "Get vehicles with brands" \
-    "curl -s 'http://localhost:3001/api/vehicles?limit=1'" \
+    "curl -s 'http://localhost:3002/api/vehicles?limit=1'" \
     '"brand":'
 
 # Test 6: Unauthorized brand creation (should fail)
 run_test "Unauthorized brand creation (should fail)" \
-    "curl -s -X POST http://localhost:3001/api/brands \
+    "curl -s -X POST http://localhost:3002/api/brands \
       -H 'Content-Type: application/json' \
       -d '{\"name\":\"Unauthorized Brand\"}'" \
     '"success":false'
 
 # Test 7: Invalid brand creation (missing name)
 run_test "Invalid brand creation (missing name)" \
-    "curl -s -X POST http://localhost:3001/api/brands \
+    "curl -s -X POST http://localhost:3002/api/brands \
       -H 'Content-Type: application/json' \
       -H 'Authorization: Bearer $ADMIN_TOKEN' \
       -d '{\"image\":\"https://example.com/logo.png\"}'" \
@@ -93,7 +93,7 @@ run_test "Invalid brand creation (missing name)" \
 
 # Test 8: Brand search with no results
 run_test "Brand search with no results" \
-    "curl -s 'http://localhost:3001/api/brands/search?q=NonExistentBrand123'" \
+    "curl -s 'http://localhost:3002/api/brands/search?q=NonExistentBrand123'" \
     '"data":\[\]'
 
 echo ""

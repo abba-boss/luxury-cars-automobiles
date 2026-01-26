@@ -459,6 +459,14 @@ export const brandService = {
 
   async searchBrands(query: string, limit?: number): Promise<ApiResponse<Brand[]>> {
     return api.get<ApiResponse<Brand[]>>('/brands/search', { q: query, limit });
+  },
+
+  async createBrandWithFile(formData: FormData): Promise<ApiResponse<Brand>> {
+    return api.upload<ApiResponse<Brand>>('/brands/upload', formData, 'POST');
+  },
+
+  async updateBrandWithFile(id: number, formData: FormData): Promise<ApiResponse<Brand>> {
+    return api.upload<ApiResponse<Brand>>(`/brands/${id}/upload`, formData, 'PUT');
   }
 };
 

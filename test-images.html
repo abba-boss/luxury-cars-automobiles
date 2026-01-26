@@ -10,7 +10,7 @@
     <script>
         async function testAPI() {
             try {
-                const response = await fetch('http://localhost:3001/api/vehicles');
+                const response = await fetch('http://localhost:3002/api/vehicles');
                 const data = await response.json();
                 
                 if (data.success && data.data.length > 0) {
@@ -22,7 +22,7 @@
                         <p>Images: ${vehicle.images.length}</p>
                         <div>
                             ${vehicle.images.map(img => {
-                                const fullUrl = img.startsWith('http') ? img : `http://localhost:3001/uploads/${img}`;
+                                const fullUrl = img.startsWith('http') ? img : `http://localhost:3002/uploads/${img}`;
                                 return `<img src="${fullUrl}" style="width:200px;margin:10px;" onerror="this.style.border='2px solid red'" onload="this.style.border='2px solid green'">`;
                             }).join('')}
                         </div>

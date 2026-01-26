@@ -125,7 +125,7 @@ const CarsPage = () => {
               bodyType: vehicle.body_type || '',
               color: vehicle.color || '',
               images: vehicle.images && vehicle.images.length > 0 ? vehicle.images.map(img =>
-                img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}/uploads/${img}`
+                img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/${img}`
               ) : [],
               videos: vehicle.videos || [],
               description: vehicle.description || '',

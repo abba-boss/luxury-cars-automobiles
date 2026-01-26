@@ -3,18 +3,12 @@
 > vite
 
 Port 8080 is in use, trying another one...
+Port 8081 is in use, trying another one...
 
-  VITE v5.4.21  ready in 684 ms
+  VITE v5.4.21  ready in 565 ms
 
-  ➜  Local:   http://localhost:8081/
-  ➜  Network: http://192.168.1.75:8081/
-Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  ➜  Local:   http://localhost:8082/
+  ➜  Network: http://192.168.1.75:8082/
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
   npx update-browserslist-db@latest
   Why you should do it regularly: https://github.com/browserslist/update-db#readme
-12:46:52 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
-12:46:57 PM [vite] hmr update /src/pages/CarDetailsPage.tsx, /src/index.css
-12:47:02 PM [vite] hmr update /src/pages/CarDetailsPage.tsx, /src/index.css
-1:25:10 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
-1:25:26 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
-1:25:39 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
-1:31:03 PM [vite] hmr update /src/pages/CarsPage.tsx, /src/index.css
