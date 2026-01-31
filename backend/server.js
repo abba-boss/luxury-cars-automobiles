@@ -162,6 +162,10 @@ app.use('/api/chat', chatRoutes);
 const homepageImageRoutes = require('./routes/homepageImages');
 app.use('/api/homepage-images', homepageImageRoutes);
 
+// Staff routes
+const staffRoutes = require('./routes/staff');
+app.use('/api/staff', staffRoutes);
+
 // Serve static files with CORS headers
 app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');

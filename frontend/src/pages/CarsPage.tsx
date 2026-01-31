@@ -378,50 +378,53 @@ const CarsPage = () => {
   return (
     <Layout title="Browse Cars" subtitle={`${sortedCars.length} vehicles available`}>
       {/* Search & Controls */}
-      <div className="flex flex-col lg:flex-row gap-3 mb-8">
+      <div className="flex flex-col gap-3 mb-6 sm:mb-8">
         {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative">
+          <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by make, model, year..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-12 rounded-xl border-border/50 shadow-sm focus:shadow-md focus:ring-0 focus:ring-offset-0"
+            className="pl-10 sm:pl-12 h-10 sm:h-12 rounded-lg sm:rounded-xl border-border/50 shadow-sm focus:shadow-md focus:ring-0 focus:ring-offset-0"
           />
         </div>
 
-        {/* Controls */}
-        <div className="flex flex-wrap gap-3">
-          <Button
-            variant={showFilters ? "default" : "outline"}
-            onClick={() => setShowFilters(!showFilters)}
-            className="gap-2 px-4 border-border/50"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            <span>Filters</span>
-            {activeFiltersCount > 0 && (
-              <Badge variant="primary" className="ml-1 h-5 w-5 p-0 justify-center rounded-full">
-                {activeFiltersCount}
-              </Badge>
-            )}
-          </Button>
+        {/* Controls - Stacked on mobile, side-by-side on larger screens */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={showFilters ? "default" : "outline"}
+              onClick={() => setShowFilters(!showFilters)}
+              className="gap-2 px-3 sm:px-4 py-2 sm:py-3 text-sm border-border/50 min-w-[100px]"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden sm:inline">Filters</span>
+              <span className="sm:hidden">Filter</span>
+              {activeFiltersCount > 0 && (
+                <Badge variant="primary" className="ml-1 h-4 w-4 sm:h-5 sm:w-5 p-0 justify-center rounded-full text-[10px] sm:text-xs">
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
 
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="h-12 px-4 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-          >
-            <option value="newest">Newest First</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="year">Year: Newest</option>
-          </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="h-10 sm:h-12 px-3 sm:px-4 rounded-lg sm:rounded-xl bg-secondary border border-border text-foreground text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="newest">Newest First</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="year">Year: Newest</option>
+            </select>
+          </div>
 
-          <div className="flex items-center border border-border rounded-xl overflow-hidden">
+          <div className="flex items-center border border-border rounded-lg sm:rounded-xl overflow-hidden">
             <Button
               variant={viewMode === "grid" ? "secondary" : "ghost"}
               size="icon"
-              className="rounded-none h-12 w-12"
+              className="rounded-none h-10 sm:h-12 w-10 sm:w-12"
               onClick={() => setViewMode("grid")}
             >
               <Grid3X3 className="h-4 w-4" />
@@ -429,7 +432,7 @@ const CarsPage = () => {
             <Button
               variant={viewMode === "list" ? "secondary" : "ghost"}
               size="icon"
-              className="rounded-none h-12 w-12"
+              className="rounded-none h-10 sm:h-12 w-10 sm:w-12"
               onClick={() => setViewMode("list")}
             >
               <List className="h-4 w-4" />
@@ -440,28 +443,28 @@ const CarsPage = () => {
 
       {/* Filters Panel */}
       {showFilters && (
-        <Card variant="premium" className="p-5 mb-8 animate-fade-in shadow-sm">
-          <div className="flex items-center justify-between mb-5">
+        <Card variant="premium" className="p-4 sm:p-5 mb-6 sm:mb-8 animate-fade-in shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-5">
             <h3 className="text-lg font-bold text-foreground">Advanced Filters</h3>
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground">
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground text-sm">
               Clear All
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             {/* Brands */}
             <div>
-              <label className="text-sm font-medium text-foreground mb-3 block flex items-center gap-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground mb-2 sm:mb-3 block flex items-center gap-2">
                 <Car className="h-4 w-4" />
                 Brands
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {brands.slice(0, 8).map((brand) => (
                   <Button
                     key={brand}
                     variant={selectedBrands.includes(brand) ? "default" : "outline"}
                     size="sm"
-                    className="rounded-full text-xs"
+                    className="rounded-full text-[10px] sm:text-xs px-2 py-1"
                     onClick={() => toggleBrand(brand)}
                   >
                     {brand}
@@ -472,11 +475,11 @@ const CarsPage = () => {
 
             {/* Condition */}
             <div>
-              <label className="text-sm font-medium text-foreground mb-3 block flex items-center gap-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground mb-2 sm:mb-3 block flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
                 Condition
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {conditions.map((condition) => (
                   <Button
                     key={condition}
@@ -484,7 +487,7 @@ const CarsPage = () => {
                       selectedConditions.includes(condition) ? "default" : "outline"
                     }
                     size="sm"
-                    className="rounded-full text-xs"
+                    className="rounded-full text-[10px] sm:text-xs px-2 py-1"
                     onClick={() => toggleCondition(condition)}
                   >
                     {condition}
@@ -495,17 +498,17 @@ const CarsPage = () => {
 
             {/* Transmission */}
             <div>
-              <label className="text-sm font-medium text-foreground mb-3 block flex items-center gap-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground mb-2 sm:mb-3 block flex items-center gap-2">
                 <SettingsIcon className="h-4 w-4" />
                 Transmission
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {["Automatic", "Manual"].map((transmission) => (
                   <Button
                     key={transmission}
                     variant={selectedTransmission.includes(transmission) ? "default" : "outline"}
                     size="sm"
-                    className="rounded-full text-xs"
+                    className="rounded-full text-[10px] sm:text-xs px-2 py-1"
                     onClick={() => toggleTransmission(transmission)}
                   >
                     {transmission}
@@ -516,17 +519,17 @@ const CarsPage = () => {
 
             {/* Fuel Type */}
             <div>
-              <label className="text-sm font-medium text-foreground mb-3 block flex items-center gap-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground mb-2 sm:mb-3 block flex items-center gap-2">
                 <FuelIcon className="h-4 w-4" />
                 Fuel Type
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {["Petrol", "Diesel", "Hybrid", "Electric"].map((fuelType) => (
                   <Button
                     key={fuelType}
                     variant={selectedFuelType.includes(fuelType) ? "default" : "outline"}
                     size="sm"
-                    className="rounded-full text-xs"
+                    className="rounded-full text-[10px] sm:text-xs px-2 py-1"
                     onClick={() => toggleFuelType(fuelType)}
                   >
                     {fuelType}
@@ -537,12 +540,12 @@ const CarsPage = () => {
 
             {/* Price Range */}
             <div>
-              <label className="text-sm font-medium text-foreground mb-3 block flex items-center gap-2">
+              <label className="text-xs sm:text-sm font-medium text-foreground mb-2 sm:mb-3 block flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
                 Price Range
               </label>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <Input
                     type="number"
                     placeholder="Min"
@@ -550,9 +553,9 @@ const CarsPage = () => {
                     onChange={(e) =>
                       setPriceRange([Number(e.target.value), priceRange[1]])
                     }
-                    className="text-xs p-2 h-8"
+                    className="text-[10px] sm:text-xs p-1.5 sm:p-2 h-7 sm:h-8"
                   />
-                  <span className="text-muted-foreground text-xs">-</span>
+                  <span className="text-muted-foreground text-[10px] sm:text-xs">-</span>
                   <Input
                     type="number"
                     placeholder="Max"
@@ -563,10 +566,10 @@ const CarsPage = () => {
                         Number(e.target.value) || 100000000,
                       ])
                     }
-                    className="text-xs p-2 h-8"
+                    className="text-[10px] sm:text-xs p-1.5 sm:p-2 h-7 sm:h-8"
                   />
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-[10px] sm:text-xs text-muted-foreground">
                   {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
                 </div>
               </div>

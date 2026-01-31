@@ -133,7 +133,8 @@ const authorizeRoles = (...allowedRoles) => {
 };
 
 // Convenience middleware for common role checks
-const requireUser = authorizeRoles('user', 'admin');
+const requireUser = authorizeRoles('user', 'staff', 'admin');
+const requireStaff = authorizeRoles('staff', 'admin');
 const requireAdmin = authorizeRoles('admin');
 
 // Middleware to check if user owns resource or is admin
@@ -153,9 +154,28 @@ const requireOwnershipOrAdmin = (resourceUserIdField = 'user_id') => {
         return next();
       }
 
+      // Staff can access based on their permissions
+      if (req.user.role === 'staff') {
+        // For now, staff can access their own resources or resources assigned to them
+        // This can be expanded based on specific business rules
+        const resourceUserId = req.params.userId || req.body[resourceUserIdField] || req.query.userId;
+
+        if (resourceUserId && parseInt(resourceUserId) === req.user.id) {
+          return next();
+        }
+
+        // Add additional staff access rules here as needed
+        // For example, if staff can access resources they created
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied - insufficient permissions for staff',
+          code: 'STAFF_INSUFFICIENT_PERMISSIONS'
+        });
+      }
+
       // Check ownership - resource user ID should match authenticated user
       const resourceUserId = req.params.userId || req.body[resourceUserIdField] || req.query.userId;
-      
+
       if (parseInt(resourceUserId) !== req.user.id) {
         return res.status(403).json({
           success: false,
@@ -176,10 +196,72 @@ const requireOwnershipOrAdmin = (resourceUserIdField = 'user_id') => {
   };
 };
 
+// Middleware for staff vehicle management permissions
+const requireStaffVehicleManagement = () => {
+  return (req, res, next) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required',
+          code: 'AUTH_REQUIRED'
+        });
+      }
+
+      // Admin can do everything
+      if (req.user.role === 'admin') {
+        return next();
+      }
+
+      // Staff can manage vehicles
+      if (req.user.role === 'staff') {
+        // Allow specific vehicle operations for staff
+        const allowedMethods = ['GET', 'POST', 'PUT', 'PATCH']; // Staff can view, add, update vehicles
+        if (allowedMethods.includes(req.method)) {
+          return next();
+        }
+
+        return res.status(403).json({
+          success: false,
+          message: 'Staff cannot perform this operation on vehicles',
+          code: 'STAFF_VEHICLE_OPERATION_DENIED'
+        });
+      }
+
+      // Regular users can only view vehicles
+      if (req.user.role === 'user') {
+        if (req.method === 'GET') {
+          return next();
+        }
+        return res.status(403).json({
+          success: false,
+          message: 'Regular users cannot modify vehicles',
+          code: 'USER_VEHICLE_MODIFICATION_DENIED'
+        });
+      }
+
+      return res.status(403).json({
+        success: false,
+        message: 'Insufficient permissions',
+        code: 'INSUFFICIENT_PERMISSIONS'
+      });
+    } catch (error) {
+      console.error('Vehicle management authorization error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Authorization failed',
+        code: 'AUTHZ_ERROR'
+      });
+    }
+  };
+};
+
 module.exports = {
   authenticateUser,
   authorizeRoles,
   requireUser,
+  requireStaff,
   requireAdmin,
-  requireOwnershipOrAdmin
+  requireOwnershipOrAdmin,
+  requireStaffVehicleManagement
 };

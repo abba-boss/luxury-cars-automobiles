@@ -29,7 +29,7 @@ const User = sequelize.define('User', {
     allowNull: true
   },
   role: {
-    type: DataTypes.ENUM('user', 'admin'),
+    type: DataTypes.ENUM('user', 'staff', 'admin'),
     allowNull: false,
     defaultValue: 'user'
   },
@@ -79,7 +79,7 @@ User.prototype.hasAnyRole = function(roles) {
 
 // Class method to get valid roles
 User.getValidRoles = function() {
-  return ['user', 'admin'];
+  return ['user', 'staff', 'admin'];
 };
 
 module.exports = User;

@@ -72,26 +72,26 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       )}
 
       {/* Sidebar */}
-      <aside 
+      <aside
         className={cn(
           'fixed left-0 top-0 h-screen bg-card border-r border-border flex flex-col z-50 transition-all duration-300',
-          collapsed ? 'w-20' : 'w-64',
+          collapsed ? 'w-16 sm:w-20' : 'w-60 sm:w-64',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         {/* Logo */}
         <div className={cn(
-          'h-16 px-4 flex items-center border-b border-border',
+          'h-14 sm:h-16 px-3 sm:px-4 flex items-center border-b border-border',
           collapsed ? 'justify-center' : 'justify-between'
         )}>
-          <Link to="/admin" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-red">
-              <span className="text-primary-foreground font-bold text-sm">SM</span>
+          <Link to="/admin" className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-red">
+              <span className="text-primary-foreground font-bold text-xs sm:text-sm">SM</span>
             </div>
             {!collapsed && (
-              <div className="animate-fade-in">
-                <span className="font-bold text-foreground text-lg">Sarkin Mota</span>
-                <p className="text-xs text-muted-foreground">Admin Panel</p>
+              <div className="animate-fade-in hidden sm:block">
+                <span className="font-bold text-foreground text-base sm:text-lg">Sarkin Mota</span>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Admin Panel</p>
               </div>
             )}
           </Link>
@@ -99,14 +99,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             variant="ghost"
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
-            className={cn('hidden lg:flex', collapsed && 'hidden')}
+            className={cn('hidden lg:flex', collapsed && 'hidden sm:block')}
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto scrollbar-thin">
+        <nav className="flex-1 p-2 sm:p-3 space-y-1 overflow-y-auto scrollbar-thin">
           {navItems.map((item, idx) => {
             const isActive = location.pathname === item.href;
             return (
@@ -115,19 +115,19 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 to={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group',
+                  'flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg sm:rounded-xl transition-all duration-200 group',
                   isActive
                     ? 'bg-primary text-primary-foreground shadow-red'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 )}
                 style={{ animationDelay: `${idx * 50}ms` }}
               >
-                <item.icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'animate-scale-in')} />
+                <item.icon className={cn('w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0', isActive && 'animate-scale-in')} />
                 {!collapsed && (
-                  <span className="font-medium text-sm truncate">{item.label}</span>
+                  <span className="font-medium text-xs sm:text-sm truncate">{item.label}</span>
                 )}
                 {collapsed && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-card border border-border rounded-md text-sm text-foreground opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-card border border-border rounded-md text-xs sm:text-sm text-foreground opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                     {item.label}
                   </div>
                 )}
@@ -137,7 +137,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-border space-y-1">
+        <div className="p-2 sm:p-3 border-t border-border space-y-1">
           {collapsed && (
             <Button
               variant="ghost"
@@ -151,22 +151,22 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           <Link
             to="/"
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors',
+              'flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg sm:rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors',
               collapsed && 'justify-center'
             )}
           >
-            <ChevronLeft className="w-5 h-5" />
-            {!collapsed && <span className="font-medium text-sm">Back to Website</span>}
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            {!collapsed && <span className="font-medium text-xs sm:text-sm">Back to Website</span>}
           </Link>
           <button
             onClick={handleSignOut}
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors w-full',
+              'flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg sm:rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors w-full',
               collapsed && 'justify-center'
             )}
           >
-            <LogOut className="w-5 h-5" />
-            {!collapsed && <span className="font-medium text-sm">Log Out</span>}
+            <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+            {!collapsed && <span className="font-medium text-xs sm:text-sm">Log Out</span>}
           </button>
         </div>
       </aside>
@@ -174,62 +174,62 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       {/* Main Content */}
       <main className={cn(
         'flex-1 transition-all duration-300',
-        collapsed ? 'lg:ml-20' : 'lg:ml-64'
+        collapsed ? 'lg:ml-16 lg:sm:ml-20' : 'lg:ml-60 lg:sm:ml-64'
       )}>
         {/* Top Bar */}
-        <header className="h-16 px-4 lg:px-8 flex items-center justify-between border-b border-border bg-card/50 backdrop-blur-xl sticky top-0 z-40">
-          <div className="flex items-center gap-4">
+        <header className="h-14 sm:h-16 px-3 sm:px-4 lg:px-8 flex items-center justify-between border-b border-border bg-card/50 backdrop-blur-xl sticky top-0 z-40">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setMobileOpen(true)}
               className="lg:hidden"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
             <div>
-              <h1 className="text-lg font-semibold text-foreground">
+              <h1 className="text-base sm:text-lg font-semibold text-foreground">
                 {currentPage?.label || 'Dashboard'}
               </h1>
-              <p className="text-xs text-muted-foreground hidden sm:block">
+              <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
                 Manage your automotive business
               </p>
             </div>
           </div>
-          
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Search */}
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search..." 
-                className="w-64 pl-9 bg-secondary border-border focus:border-primary"
+            <div className="relative hidden sm:block">
+              <Search className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                className="w-32 sm:w-64 pl-8 sm:pl-9 bg-secondary border-border focus:border-primary text-xs sm:text-sm py-2"
               />
             </div>
 
             {/* Notifications */}
             <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-pulse" />
             </Button>
 
             {/* User */}
-            <div className="flex items-center gap-3 pl-3 border-l border-border">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-                <span className="text-sm font-semibold text-primary">
+            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-border">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                <span className="text-xs sm:text-sm font-semibold text-primary">
                   {user?.email?.charAt(0).toUpperCase() || 'A'}
                 </span>
               </div>
-              <div className="hidden sm:block text-sm">
+              <div className="hidden sm:block text-xs sm:text-sm">
                 <p className="font-medium text-foreground">{user?.email?.split('@')[0] || 'Admin'}</p>
-                <p className="text-xs text-muted-foreground">Administrator</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Administrator</p>
               </div>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <div className="p-4 lg:p-8 animate-fade-in">{children}</div>
+        <div className="p-3 sm:p-4 lg:p-8 animate-fade-in">{children}</div>
       </main>
     </div>
   );

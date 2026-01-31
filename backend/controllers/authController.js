@@ -48,7 +48,7 @@ const register = async (req, res, next) => {
       password,
       full_name,
       phone,
-      role: 'user',
+      role: 'user', // Registration defaults to 'user' role for security
       status: 'active'
     }, { transaction });
 

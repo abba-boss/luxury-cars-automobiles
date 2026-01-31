@@ -95,9 +95,9 @@ const Vehicle = sequelize.define('Vehicle', {
     defaultValue: false
   },
   status: {
-    type: DataTypes.ENUM('available', 'sold', 'reserved', 'inactive'),
+    type: DataTypes.ENUM('available', 'sold', 'reserved', 'inactive', 'pending_approval'),
     allowNull: false,
-    defaultValue: 'available'
+    defaultValue: 'pending_approval'
   },
   brand_id: {
     type: DataTypes.INTEGER,
@@ -126,6 +126,26 @@ const Vehicle = sequelize.define('Vehicle', {
     type: DataTypes.STRING(20),
     allowNull: true,
     comment: 'Engine torque (e.g., "368 lb-ft")'
+  },
+  added_by_staff_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  },
+  approved_by_admin_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  },
+  approval_date: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 }, {
   tableName: 'vehicles',

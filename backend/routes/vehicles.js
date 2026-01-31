@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const vehicleController = require('../controllers/vehicleController');
-const { authenticateUser, requireAdmin } = require('../middlewares/rbac');
+const { authenticateUser, requireAdmin, requireStaff } = require('../middlewares/rbac');
 const { body } = require('express-validator');
+const { staffVehicleValidation, staffVehicleUpdateValidation } = require('../middlewares/staffValidation');
 
 // Validation middleware
 const vehicleValidation = [
@@ -17,9 +18,9 @@ const vehicleValidation = [
 router.get('/', vehicleController.getVehicles);
 router.get('/:id', vehicleController.getVehicleById);
 
-// Admin routes
-router.post('/', authenticateUser, requireAdmin, vehicleValidation, vehicleController.createVehicle);
-router.put('/:id', authenticateUser, requireAdmin, vehicleController.updateVehicle);
-router.delete('/:id', authenticateUser, requireAdmin, vehicleController.deleteVehicle);
+// Staff and Admin routes
+router.post('/', authenticateUser, requireStaff, staffVehicleValidation, vehicleController.createVehicle);
+router.put('/:id', authenticateUser, requireStaff, staffVehicleUpdateValidation, vehicleController.updateVehicle);
+router.delete('/:id', authenticateUser, requireAdmin, vehicleController.deleteVehicle); // Only admin can delete
 
 module.exports = router;

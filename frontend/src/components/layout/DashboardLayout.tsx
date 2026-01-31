@@ -58,9 +58,9 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
       )}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-6 border-b border-border">
+          <div className="p-4 sm:p-6 border-b border-border">
             <div className="flex items-center justify-between">
-              <Link to="/" className="text-xl font-bold text-primary">
+              <Link to="/" className="text-lg sm:text-xl font-bold text-primary">
                 Sarkin Mota
               </Link>
               <Button
@@ -75,27 +75,27 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
           </div>
 
           {/* User Info */}
-          <div className="p-4">
+          <div className="p-3 sm:p-4">
             <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
-              <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
-                <p className="font-medium text-sm">{user?.email?.split('@')[0]}</p>
+                <p className="font-medium text-xs sm:text-sm">{user?.email?.split('@')[0]}</p>
                 <p className="text-xs text-muted-foreground">Buyer</p>
               </div>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 space-y-1">
+          <nav className="flex-1 px-3 sm:px-4 space-y-1">
             {sidebarItems.map((item) => {
               const isActive = location.pathname === item.href;
               return (
                 <Link key={item.href} to={item.href}>
                   <Button
                     variant={isActive ? "secondary" : "ghost"}
-                    className="w-full justify-start gap-3 h-11"
+                    className="w-full justify-start gap-3 h-10 sm:h-11 text-sm"
                     onClick={() => setSidebarOpen(false)}
                   >
                     <item.icon className="h-4 w-4" />
@@ -107,10 +107,10 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
           </nav>
 
           {/* Logout */}
-          <div className="p-4 border-t border-border">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start gap-3 h-11 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+          <div className="p-3 sm:p-4 border-t border-border">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 h-10 sm:h-11 text-red-500 hover:text-red-600 hover:bg-red-500/10 text-sm"
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />
@@ -124,8 +124,8 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
       <div className="lg:ml-64">
         {/* Top Bar */}
         <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between p-3 sm:p-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <Button
                 variant="ghost"
                 size="icon"
@@ -135,15 +135,15 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                 <Menu className="h-5 w-5" />
               </Button>
               <div>
-                {title && <h1 className="text-2xl font-bold">{title}</h1>}
-                {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
+                {title && <h1 className="text-xl sm:text-2xl font-bold">{title}</h1>}
+                {subtitle && <p className="text-sm text-muted-foreground hidden sm:block">{subtitle}</p>}
               </div>
             </div>
           </div>
         </div>
 
         {/* Page Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {children}
         </div>
       </div>

@@ -62,21 +62,21 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             : "bg-transparent py-6"
         )}
       >
-        <nav className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24">
+        <nav className="max-w-[1800px] mx-auto px-4 sm:px-6 md:px-12 lg:px-24">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-sm">
-                <span className="text-primary-foreground font-bold text-lg">SM</span>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-primary rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-sm">
+                <span className="text-primary-foreground font-bold text-base sm:text-lg">SM</span>
               </div>
               <div className="hidden sm:block">
-                <p className="font-bold text-foreground tracking-wide">SARKIN MOTA</p>
-                <p className="text-[10px] text-muted-foreground tracking-[0.2em]">AUTOS</p>
+                <p className="font-bold text-foreground tracking-wide text-sm sm:text-base">SARKIN MOTA</p>
+                <p className="text-[8px] sm:text-[10px] text-muted-foreground tracking-[0.15em] sm:tracking-[0.2em]">AUTOS</p>
               </div>
             </Link>
 
             {/* Desktop Navigation - Centered */}
-            <div className="hidden lg:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
+            <div className="hidden lg:flex items-center gap-6 xl:gap-10 absolute left-1/2 -translate-x-1/2">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -97,7 +97,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
 
               {/* Search Toggle */}
               <Button
@@ -106,7 +106,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 className="rounded-full hover:bg-foreground/10"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
 
               {/* Notifications */}
@@ -118,9 +118,9 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                   size="icon"
                   className="relative rounded-full hover:bg-foreground/10"
                 >
-                  <ShoppingCart className="h-5 w-5" />
+                  <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
                   {getItemCount() > 0 && (
-                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                    <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 bg-primary text-primary-foreground text-[8px] sm:text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
                       {getItemCount()}
                     </span>
                   )}
@@ -135,10 +135,10 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                       size="icon"
                       className="rounded-full hover:bg-foreground/10"
                     >
-                      <User className="h-5 w-5" />
+                      <User className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-44 sm:w-48">
                     {isAdmin ? (
                       // Admin menu
                       <>
@@ -199,10 +199,10 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Link to="/auth" className="hidden md:block">
+                <Link to="/auth" className="hidden sm:block">
                   <Button
                     variant="ghost"
-                    className="rounded-full hover:bg-foreground/10"
+                    className="rounded-full hover:bg-foreground/10 text-xs sm:text-sm"
                   >
                     Sign In
                   </Button>
@@ -216,7 +216,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 className="lg:hidden rounded-full hover:bg-foreground/10"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isMobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
               </Button>
             </div>
           </div>
@@ -325,19 +325,19 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       {/* Footer - Minimal Tesla Style */}
       <footer className="bg-card border-t border-border">
         <div className="max-w-[1800px] mx-auto section-padding">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 mb-12">
             {/* Brand */}
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2">
               <Link to="/" className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center shadow-sm">
-                  <span className="text-primary-foreground font-bold text-xl">SM</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-primary rounded-full flex items-center justify-center shadow-sm">
+                  <span className="text-primary-foreground font-bold text-lg sm:text-xl">SM</span>
                 </div>
                 <div>
-                  <p className="font-bold text-foreground text-lg tracking-wide">SARKIN MOTA</p>
-                  <p className="text-xs text-muted-foreground tracking-[0.2em]">AUTOS</p>
+                  <p className="font-bold text-foreground text-base sm:text-lg tracking-wide">SARKIN MOTA</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground tracking-[0.15em] sm:tracking-[0.2em]">AUTOS</p>
                 </div>
               </Link>
-              <p className="text-muted-foreground max-w-md leading-relaxed">
+              <p className="text-muted-foreground max-w-xs sm:max-w-md text-sm leading-relaxed">
                 Your premier destination for premium automobiles.
                 We curate exceptional vehicles for discerning clients who appreciate
                 quality, elegance, and uncompromising excellence.
@@ -347,10 +347,10 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             {/* Quick Links */}
             <div>
               <h4 className="font-semibold text-foreground mb-6 text-sm tracking-wider">QUICK LINKS</h4>
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {navLinks.map((link) => (
                   <li key={link.href}>
-                    <Link to={link.href} className="text-muted-foreground hover:text-primary transition-colors duration-300">
+                    <Link to={link.href} className="text-muted-foreground hover:text-primary transition-colors duration-300 text-sm block">
                       {link.label}
                     </Link>
                   </li>
@@ -361,14 +361,14 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             {/* Contact */}
             <div>
               <h4 className="font-semibold text-foreground mb-6 text-sm tracking-wider">CONTACT</h4>
-              <ul className="space-y-4 text-muted-foreground">
+              <ul className="space-y-3 text-muted-foreground">
                 <li>
                   <a
                     href="mailto:alaminsarkinmota@gmail.com"
-                    className="hover:text-primary transition-colors cursor-pointer block flex items-center gap-2"
+                    className="hover:text-primary transition-colors cursor-pointer block flex items-center gap-2 text-sm"
                   >
                     <MessageSquareLucide className="h-4 w-4" />
-                    alaminsarkinmota@gmail.com
+                    <span className="truncate max-w-[120px] sm:max-w-[150px]">alaminsarkinmota@gmail.com</span>
                   </a>
                 </li>
               </ul>
@@ -376,11 +376,11 @@ export function PublicLayout({ children }: PublicLayoutProps) {
           </div>
 
           {/* Bottom */}
-          <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               © {new Date().getFullYear()} Sarkin Mota Automobiles. All rights reserved.
             </p>
-            <div className="flex gap-8 text-sm text-muted-foreground">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-muted-foreground">
               <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
               <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
             </div>
