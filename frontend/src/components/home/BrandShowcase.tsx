@@ -34,7 +34,7 @@ navigate(`/cars?brandId=${brand.id}`);
   if (loading) {
     return (
       <section className="section-padding bg-card/50">
-        <div className="max-w-[1800px] mx-auto">
+        <div className="max-w-full mx-auto">
           <div className="text-center mb-16">
             <span className="inline-block px-5 py-2 border border-primary/40 text-primary text-xs font-semibold tracking-[0.3em] mb-6 rounded-full bg-primary/5">
               BRANDS
@@ -56,7 +56,7 @@ navigate(`/cars?brandId=${brand.id}`);
 
   return (
     <section className="section-padding bg-card/50">
-      <div className="max-w-[1800px] mx-auto">
+      <div className="max-w-full mx-auto">
         {/* Section Header */}
         <div className="text-center mb-16">
           <span className="inline-block px-5 py-2 border border-primary/40 text-primary text-xs font-semibold tracking-[0.3em] mb-6 rounded-full bg-primary/5">

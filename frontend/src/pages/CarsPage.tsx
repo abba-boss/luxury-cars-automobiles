@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { CarCard } from "@/components/cars/CarCard";
-import { CarCardSkeleton } from "@/components/cars/CarCardSkeleton";
+import { CarCardSkeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

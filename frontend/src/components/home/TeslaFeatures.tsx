@@ -76,7 +76,7 @@ export function TeslaFeatures() {
         <div className="absolute bottom-1/4 -right-64 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
       </div>
 
-      <div className="relative max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24">
+      <div className="relative max-w-full mx-auto px-6 md:px-12 lg:px-24">
         {/* Header */}
         <div className="text-center mb-20">
           <span className="inline-block px-5 py-2 border border-primary/60 text-primary text-xs font-semibold tracking-[0.3em] mb-6">
@@ -139,15 +139,15 @@ export function TeslaFeatures() {
           {/* Background Line */}
           <div className="absolute top-1/2 left-0 right-0 h-px bg-border" />
           
-          <div className="relative grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8">
             {stats.map((stat, index) => (
-              <div 
-                key={stat.label} 
-                className="text-center bg-background px-4"
+              <div
+                key={stat.label}
+                className="text-center bg-background px-2 sm:px-4"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <p className="text-4xl md:text-5xl font-bold text-foreground mb-2">{stat.value}</p>
-                <p className="text-sm text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+                <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-1 sm:mb-2">{stat.value}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</p>
               </div>
             ))}
           </div>

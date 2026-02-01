@@ -78,7 +78,7 @@ export function CarHighlights() {
       {/* Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-primary/5 blur-[100px] rounded-full" />
 
-      <div className="relative max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24">
+      <div className="relative max-w-full mx-auto px-6 md:px-12 lg:px-24">
         {/* Header */}
         <div className="text-center mb-16">
           <span className="inline-block px-5 py-2 border border-primary/60 text-primary text-xs font-semibold tracking-[0.3em] mb-6">
@@ -93,8 +93,10 @@ export function CarHighlights() {
         </div>
 
         {/* Highlights Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          {highlights.map((highlight, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+          {highlights.map((highlight, index) => {
+            const IconComponent = highlight.icon;
+            return (
             <div
               key={highlight.title}
               className={cn(
@@ -105,22 +107,23 @@ export function CarHighlights() {
             >
               {/* Icon */}
               <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center transition-all duration-500 group-hover:bg-primary group-hover:shadow-glow">
-                <highlight.icon className="h-5 w-5 text-foreground transition-colors duration-500 group-hover:text-primary-foreground" />
+                {IconComponent && <IconComponent className="h-5 w-5 text-foreground transition-colors duration-500 group-hover:text-primary-foreground" />}
               </div>
 
               {/* Value */}
               <p className="text-2xl font-bold text-foreground mb-1">{highlight.value}</p>
-              
+
               {/* Title */}
               <p className="text-sm font-medium text-foreground mb-1">{highlight.title}</p>
-              
+
               {/* Description */}
               <p className="text-xs text-muted-foreground">{highlight.description}</p>
 
               {/* Hover Glow */}
               <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Bottom Line Animation */}

@@ -329,3 +329,15 @@ export interface HomepageImage {
   created_at: string;
   updated_at: string;
 }
+
+export interface UserPermission {
+  id: number;
+  user_id: number;
+  permission_key: string;
+  permission_value?: string;
+  granted_by: number;
+  granted_at: string;
+  expires_at?: string;
+  is_active: boolean;
+  grantingUser?: User;
+}

@@ -19,6 +19,7 @@ const FinancingApplication = require('./FinancingApplication');
 const Cart = require('./Cart');
 const CartItem = require('./CartItem');
 const HomepageImage = require('./HomepageImage');
+const UserPermission = require('./UserPermission');
 
 // Initialize all models
 const models = {
@@ -41,7 +42,8 @@ const models = {
   FinancingApplication,
   Cart,
   CartItem,
-  HomepageImage
+  HomepageImage,
+  UserPermission
 };
 
 // Set up associations
@@ -142,6 +144,13 @@ models.CartItem.belongsTo(models.Cart, { foreignKey: 'cart_id', as: 'cart' });
 
 models.Vehicle.hasMany(models.CartItem, { foreignKey: 'vehicle_id', as: 'cartItems' });
 models.CartItem.belongsTo(models.Vehicle, { foreignKey: 'vehicle_id', as: 'vehicle' });
+
+// User Permission associations
+User.hasMany(models.UserPermission, { foreignKey: 'user_id', as: 'permissions' });
+models.UserPermission.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+User.hasMany(models.UserPermission, { foreignKey: 'granted_by', as: 'grantedPermissions' });
+models.UserPermission.belongsTo(User, { foreignKey: 'granted_by', as: 'grantingUser' });
 
 module.exports = {
   sequelize,

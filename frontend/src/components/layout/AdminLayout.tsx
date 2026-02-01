@@ -20,6 +20,7 @@ import {
   Search,
   Tag,
   Menu,
+  ShieldCheckIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ const navItems = [
   { icon: Tag, label: 'Brand Management', href: '/admin/brands' },
   { icon: Image, label: 'Media Manager', href: '/admin/media' },
   { icon: Users, label: 'User Management', href: '/admin/users' },
+  { icon: ShieldCheckIcon, label: 'User Permissions', href: '/admin/user-permissions' },
   { icon: MessageSquare, label: 'Messages', href: '/admin/messages' },
   { icon: Calendar, label: 'Bookings', href: '/admin/bookings' },
   { icon: Star, label: 'Reviews', href: '/admin/reviews' },
@@ -62,7 +64,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const currentPage = navItems.find((item) => item.href === location.pathname);
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex w-full overflow-x-hidden">
       {/* Mobile Overlay */}
       {mobileOpen && (
         <div 
@@ -75,7 +77,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       <aside
         className={cn(
           'fixed left-0 top-0 h-screen bg-card border-r border-border flex flex-col z-50 transition-all duration-300',
-          collapsed ? 'w-16 sm:w-20' : 'w-60 sm:w-64',
+          collapsed ? 'w-16 sm:w-20' : 'w-60 max-w-[80%]',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
@@ -106,7 +108,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-2 sm:p-3 space-y-1 overflow-y-auto scrollbar-thin">
+        <nav className="flex-1 p-2 sm:p-3 space-y-1 overflow-y-auto scrollbar-thin" role="navigation" aria-label="Admin navigation">
           {navItems.map((item, idx) => {
             const isActive = location.pathname === item.href;
             return (
@@ -115,12 +117,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 to={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  'flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg sm:rounded-xl transition-all duration-200 group',
+                  'flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg sm:rounded-xl transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary/50',
                   isActive
                     ? 'bg-primary text-primary-foreground shadow-red'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 )}
                 style={{ animationDelay: `${idx * 50}ms` }}
+                aria-current={isActive ? "page" : undefined}
               >
                 <item.icon className={cn('w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0', isActive && 'animate-scale-in')} />
                 {!collapsed && (

@@ -166,6 +166,14 @@ app.use('/api/homepage-images', homepageImageRoutes);
 const staffRoutes = require('./routes/staff');
 app.use('/api/staff', staffRoutes);
 
+// User permission routes
+const userPermissionRoutes = require('./routes/userPermissions');
+app.use('/api/admin/user-permissions', userPermissionRoutes);
+
+// Premium features routes (protected by permissions)
+const premiumFeaturesRoutes = require('./routes/premiumFeatures');
+app.use('/api/premium', premiumFeaturesRoutes);
+
 // Serve static files with CORS headers
 app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');

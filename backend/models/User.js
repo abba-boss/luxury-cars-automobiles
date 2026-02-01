@@ -82,4 +82,43 @@ User.getValidRoles = function() {
   return ['user', 'staff', 'admin'];
 };
 
+// Instance method to check if user has a specific permission
+User.prototype.hasPermission = async function(permissionKey) {
+  const { UserPermission } = require('./index'); // Import here to avoid circular dependency
+  const { Op } = require('sequelize');
+
+  const permission = await UserPermission.findOne({
+    where: {
+      user_id: this.id,
+      permission_key: permissionKey,
+      is_active: true,
+      [Op.or]: [
+        { expires_at: null },
+        { expires_at: { [Op.gt]: new Date() } }
+      ]
+    }
+  });
+
+  return !!permission;
+};
+
+// Instance method to get all active permissions for a user
+User.prototype.getActivePermissions = async function() {
+  const { UserPermission } = require('./index'); // Import here to avoid circular dependency
+  const { Op } = require('sequelize');
+
+  const permissions = await UserPermission.findAll({
+    where: {
+      user_id: this.id,
+      is_active: true,
+      [Op.or]: [
+        { expires_at: null },
+        { expires_at: { [Op.gt]: new Date() } }
+      ]
+    }
+  });
+
+  return permissions;
+};
+
 module.exports = User;

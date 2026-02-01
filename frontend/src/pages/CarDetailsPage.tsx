@@ -146,7 +146,7 @@ const CarDetailsPage = () => {
   if (error || !vehicle) {
     return (
       <PublicLayout>
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-[70vh] flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-foreground mb-4">Vehicle Not Found</h1>
             <p className="text-muted-foreground mb-8">{error || "The vehicle you're looking for doesn't exist."}</p>
@@ -191,7 +191,7 @@ const CarDetailsPage = () => {
       {/* Hero Section */}
       <section className="relative pt-20 bg-gradient-to-b from-card to-background">
         {/* Back Button */}
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-6">
+        <div className="max-w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-24 py-4 sm:py-6">
           <Link
             to="/cars"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -202,7 +202,7 @@ const CarDetailsPage = () => {
         </div>
 
         {/* Car Title */}
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pb-8">
+        <div className="max-w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-24 pb-6 sm:pb-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <span className="inline-block px-4 py-1.5 border border-primary/60 text-primary text-xs font-semibold tracking-[0.2em] mb-4">
@@ -233,14 +233,14 @@ const CarDetailsPage = () => {
         </div>
 
         {/* 360 Viewer */}
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pb-16">
+        <div className="max-w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-24 pb-8 sm:pb-16">
           <Car360Viewer images={vehicle.images || []} carName={`${vehicle.make} ${vehicle.model}`} />
         </div>
       </section>
 
       {/* Quick Specs Bar */}
       <section className="bg-card border-y border-border">
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-10">
+        <div className="max-w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-24 py-6 sm:py-10">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             {specs.map((spec, index) => (
               <div
@@ -275,7 +275,7 @@ const CarDetailsPage = () => {
       </section>
 
       {/* Main Content */}
-      <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-20">
+      <div className="max-w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-24 py-8 sm:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           {/* Left Column - Details */}
           <div className="lg:col-span-2 space-y-24">
@@ -474,7 +474,7 @@ const CarDetailsPage = () => {
       />
 
       {/* Reviews and Booking Section */}
-      <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-16">
+      <div className="max-w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-24 py-8 sm:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Reviews Section */}
           <div className="space-y-8">

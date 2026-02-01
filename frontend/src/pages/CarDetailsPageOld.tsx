@@ -94,7 +94,7 @@ const CarDetailsPage = () => {
       {/* Hero Section */}
       <section className="relative pt-20 bg-gradient-to-b from-card to-background">
         {/* Back Button */}
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-6">
+        <div className="max-w-full mx-auto px-6 md:px-12 lg:px-24 py-6">
           <Link
             to="/cars"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -105,7 +105,7 @@ const CarDetailsPage = () => {
         </div>
 
         {/* Car Title */}
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pb-8">
+        <div className="max-w-full mx-auto px-6 md:px-12 lg:px-24 pb-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <span className="inline-block px-4 py-1.5 border border-primary/60 text-primary text-xs font-semibold tracking-[0.2em] mb-4">
@@ -136,14 +136,14 @@ const CarDetailsPage = () => {
         </div>
 
         {/* 360 Viewer */}
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pb-16">
+        <div className="max-w-full mx-auto px-6 md:px-12 lg:px-24 pb-16">
           <Car360Viewer images={car.images} carName={`${car.make} ${car.model}`} />
         </div>
       </section>
 
       {/* Quick Specs Bar */}
       <section className="bg-card border-y border-border">
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-10">
+        <div className="max-w-full mx-auto px-6 md:px-12 lg:px-24 py-10">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             {specs.map((spec, index) => (
               <div
@@ -178,7 +178,7 @@ const CarDetailsPage = () => {
       </section>
 
       {/* Main Content */}
-      <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-20">
+      <div className="max-w-full mx-auto px-6 md:px-12 lg:px-24 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           {/* Left Column - Details */}
           <div className="lg:col-span-2 space-y-24">

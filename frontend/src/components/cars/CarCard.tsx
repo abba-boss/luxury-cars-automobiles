@@ -20,7 +20,6 @@ interface CarCardProps {
 
 export function CarCard({ car, className }: CarCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
-  const [imageError, setImageError] = useState(false);
   const { addToCart, isInCart } = useCart();
   const { user } = useAuth();
 
@@ -48,10 +47,6 @@ export function CarCard({ car, className }: CarCardProps) {
     toast.success(`${!isFavorite ? 'Added to' : 'Removed from'} favorites`);
   };
 
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     addToCart({
@@ -60,7 +55,10 @@ export function CarCard({ car, className }: CarCardProps) {
       model: car.model,
       year: car.year,
       price: car.price,
-      image: (car.images && car.images[0]) || `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/placeholder-car.svg`
+      image: (car.images && car.images[0]) ?
+        (car.images[0].startsWith('http') ? car.images[0] :
+         `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/${car.images[0]}`)
+        : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/placeholder-car.svg`
     });
   };
 
@@ -72,11 +70,13 @@ export function CarCard({ car, className }: CarCardProps) {
       {/* Image Container */}
       <div className="relative aspect-[3/2] sm:aspect-[4/3] md:aspect-[16/10] overflow-hidden">
         <img
-          src={imageError || !car.images[0] ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/placeholder-car.svg` : car.images[0]}
+          src={car.images && car.images[0] ?
+            (car.images[0].startsWith('http') ? car.images[0] :
+             `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/${car.images[0]}`)
+            : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002'}/uploads/placeholder-car.svg`}
           alt={`${car.make} ${car.model}`}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
-          onError={handleImageError}
         />
 
         {/* Gradient Overlay */}

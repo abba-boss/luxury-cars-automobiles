@@ -52,7 +52,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background w-full overflow-x-hidden">
       {/* Navigation - Clean Top Nav Only */}
       <header
         className={cn(
@@ -62,7 +62,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             : "bg-transparent py-6"
         )}
       >
-        <nav className="max-w-[1800px] mx-auto px-4 sm:px-6 md:px-12 lg:px-24">
+        <nav className="max-w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-24">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
@@ -85,8 +85,9 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                     "text-sm font-medium transition-all duration-300 relative py-2",
                     location.pathname === link.href
                       ? "text-foreground font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-sm"
                   )}
+                  aria-current={location.pathname === link.href ? "page" : undefined}
                 >
                   {link.label}
                   {location.pathname === link.href && (
@@ -242,7 +243,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
         {/* Mobile Menu */}
         <div
           className={cn(
-            "lg:hidden fixed inset-0 top-[72px] bg-background/98 backdrop-blur-xl transition-all duration-500 z-40",
+            "lg:hidden fixed inset-x-0 top-[72px] bottom-0 bg-background/98 backdrop-blur-xl transition-all duration-500 z-40 overflow-y-auto",
             isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           )}
         >
@@ -262,6 +263,14 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 )}
                 style={{ transitionDelay: `${index * 50}ms` }}
                 onClick={() => setIsMobileMenuOpen(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsMobileMenuOpen(false);
+                  }
+                }}
+                tabIndex={isMobileMenuOpen ? 0 : -1}
+                aria-current={location.pathname === link.href ? "page" : undefined}
               >
                 {link.label}
               </Link>
@@ -324,7 +333,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
 
       {/* Footer - Minimal Tesla Style */}
       <footer className="bg-card border-t border-border">
-        <div className="max-w-[1800px] mx-auto section-padding">
+        <div className="max-w-full mx-auto section-padding">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 mb-12">
             {/* Brand */}
             <div className="sm:col-span-2">

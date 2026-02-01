@@ -67,7 +67,7 @@ export function FeaturedCars() {
 
   return (
     <section className="section-padding bg-card">
-      <div className="max-w-[1800px] mx-auto">
+      <div className="max-w-full mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
           <div>
@@ -213,22 +213,22 @@ export function FeaturedCars() {
                   </div>
 
                   {/* Specs */}
-                  <div className="grid grid-cols-3 gap-3 pt-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 pt-2">
                     <div className="flex flex-col items-center text-center">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                      <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground mb-1">
                         <Gauge className="h-3 w-3" />
                         <span>Mileage</span>
                       </div>
-                      <p className="text-sm font-medium text-foreground">{formatMileage(car.mileage)}</p>
+                      <p className="text-xs sm:text-sm font-medium text-foreground">{formatMileage(car.mileage)}</p>
                     </div>
                     <div className="flex flex-col items-center text-center">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                      <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground mb-1">
                         <Calendar className="h-3 w-3" />
                         <span>Year</span>
                       </div>
-                      <p className="text-sm font-medium text-foreground">{car.year}</p>
+                      <p className="text-xs sm:text-sm font-medium text-foreground">{car.year}</p>
                     </div>
-                    <div className="flex flex-col items-center text-center">
+                    <div className="hidden sm:flex flex-col items-center text-center">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                         <Fuel className="h-3 w-3" />
                         <span>Fuel</span>
@@ -238,12 +238,12 @@ export function FeaturedCars() {
                   </div>
 
                   {/* Additional Specs Row */}
-                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/50">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-2 border-t border-border/50">
+                    <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
                       <Settings className="h-3 w-3" />
                       <span>{car.transmission}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
                       <Palette className="h-3 w-3" />
                       <span>{car.color}</span>
                     </div>

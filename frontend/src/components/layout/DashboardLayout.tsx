@@ -42,7 +42,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background w-full overflow-x-hidden">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div 
@@ -53,7 +53,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
 
       {/* Sidebar */}
       <div className={cn(
-        "fixed left-0 top-0 h-full w-64 bg-card border-r border-border z-50 transform transition-transform duration-300 lg:translate-x-0",
+        "fixed left-0 top-0 h-full w-64 max-w-[80%] bg-card border-r border-border z-50 transform transition-transform duration-300 lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex flex-col h-full">
@@ -88,7 +88,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 sm:px-4 space-y-1">
+          <nav className="flex-1 px-3 sm:px-4 space-y-1" role="navigation" aria-label="Main navigation">
             {sidebarItems.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -97,6 +97,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                     variant={isActive ? "secondary" : "ghost"}
                     className="w-full justify-start gap-3 h-10 sm:h-11 text-sm"
                     onClick={() => setSidebarOpen(false)}
+                    aria-current={isActive ? "page" : undefined}
                   >
                     <item.icon className="h-4 w-4" />
                     {item.label}

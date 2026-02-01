@@ -11,8 +11,8 @@ export function Layout({ children, title, subtitle }: LayoutProps) {
     <PublicLayout>
       {/* Page Header */}
       {(title || subtitle) && (
-        <div className="pt-24 sm:pt-32 pb-6 sm:pb-8 section-padding bg-background">
-          <div className="max-w-[1800px] mx-auto">
+        <div className="pt-16 sm:pt-24 md:pt-32 pb-6 sm:pb-8 section-padding bg-background">
+          <div className="max-w-full mx-auto">
             {title && (
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1 sm:mb-2">
                 {title}
@@ -27,7 +27,7 @@ export function Layout({ children, title, subtitle }: LayoutProps) {
 
       {/* Main Content */}
       <div className="section-padding pb-12 sm:pb-16">
-        <div className="max-w-[1800px] mx-auto">
+        <div className="max-w-full mx-auto">
           {children}
         </div>
       </div>

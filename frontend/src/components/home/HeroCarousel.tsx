@@ -83,7 +83,7 @@ export function HeroCarousel() {
 
   return (
     <section
-      className="relative h-screen min-h-[800px] overflow-hidden bg-background"
+      className="relative h-[70vh] sm:h-screen min-h-[500px] sm:min-h-[600px] md:min-h-[700px] lg:min-h-[800px] overflow-hidden bg-background"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
@@ -112,7 +112,7 @@ export function HeroCarousel() {
       <div className="absolute inset-0 gradient-radial animate-glow-pulse pointer-events-none" />
 
       {/* Content */}
-      <div className="relative h-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 flex items-center">
+      <div className="relative h-full max-w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-24 flex items-center">
         <div className="max-w-3xl">
           {/* Category Badge */}
           <div

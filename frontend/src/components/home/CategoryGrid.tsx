@@ -89,7 +89,7 @@ export function CategoryGrid() {
 
   return (
     <section className="section-padding bg-background">
-      <div className="max-w-[1800px] mx-auto">
+      <div className="max-w-full mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
           <div>
@@ -144,7 +144,7 @@ export function CategoryGrid() {
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent opacity-90 group-hover:opacity-95 transition-opacity duration-500" />
 
                 {/* Content */}
-                <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
+                <div className="absolute inset-0 p-4 sm:p-6 md:p-8 flex flex-col justify-end">
                   <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                     <span className="text-xs text-primary font-semibold tracking-wider mb-2 block">
                       {category.count} VEHICLES

@@ -5,7 +5,7 @@ const PrivacyPolicyPage = () => {
   return (
     <PublicLayout>
       <div className="min-h-screen pt-32 pb-16">
-        <div className="max-w-[1800px] mx-auto section-padding">
+        <div className="max-w-full mx-auto section-padding">
           {/* Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary/10 border border-primary/30 rounded-full mb-6">

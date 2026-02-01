@@ -31,7 +31,7 @@ const CartPage = () => {
     return (
       <PublicLayout>
         <div className="min-h-screen pt-20">
-          <div className="max-w-[1800px] mx-auto section-padding">
+          <div className="max-w-full mx-auto section-padding">
             <div className="text-center py-24">
               <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-8">
                 <ShoppingCart className="h-12 w-12 text-muted-foreground" />
@@ -56,7 +56,7 @@ const CartPage = () => {
   return (
     <PublicLayout>
       <div className="min-h-screen pt-20">
-        <div className="max-w-[1800px] mx-auto section-padding">
+        <div className="max-w-full mx-auto section-padding">
           {/* Header */}
           <div className="mb-12">
             <span className="inline-block px-4 py-1.5 border border-primary/50 text-primary text-xs font-medium tracking-[0.2em] mb-4">

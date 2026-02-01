@@ -504,3 +504,4 @@ export const homepageImageService = {
 };
 
 export { useChatService, chatService } from './chatService';
+export { userPermissionService } from './userPermissionService';

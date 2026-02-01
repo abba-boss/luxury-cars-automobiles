@@ -47,7 +47,7 @@ export function WhyChooseUs() {
 
   return (
     <section className="section-padding bg-background">
-      <div className="max-w-[1800px] mx-auto">
+      <div className="max-w-full mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left - Content */}
           <div>

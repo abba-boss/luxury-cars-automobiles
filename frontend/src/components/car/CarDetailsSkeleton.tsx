@@ -11,7 +11,7 @@ const CarDetailsSkeleton = () => {
     >
       {/* Hero Section Skeleton */}
       <section className="relative pt-20 bg-gradient-to-b from-card to-background">
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-6">
+        <div className="max-w-full mx-auto px-6 md:px-12 lg:px-24 py-6">
           <div
             className="h-6 w-32 bg-gradient-to-r from-gray-800/30 to-gray-900/20 rounded"
             style={{
@@ -20,7 +20,7 @@ const CarDetailsSkeleton = () => {
           ></div>
         </div>
 
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pb-8">
+        <div className="max-w-full mx-auto px-6 md:px-12 lg:px-24 pb-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div
@@ -54,7 +54,7 @@ const CarDetailsSkeleton = () => {
         </div>
 
         {/* 360 Viewer Skeleton */}
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 pb-16">
+        <div className="max-w-full mx-auto px-6 md:px-12 lg:px-24 pb-16">
           <div
             className="aspect-video bg-gradient-to-br from-gray-800/30 to-gray-900/20 rounded-2xl"
             style={{
@@ -66,7 +66,7 @@ const CarDetailsSkeleton = () => {
 
       {/* Quick Specs Bar Skeleton */}
       <section className="bg-card border-y border-border">
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-10">
+        <div className="max-w-full mx-auto px-6 md:px-12 lg:px-24 py-10">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             {Array.from({ length: 6 }).map((_, index) => (
               <div key={index} className="text-center">
@@ -95,7 +95,7 @@ const CarDetailsSkeleton = () => {
       </section>
 
       {/* Main Content Skeleton */}
-      <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-24 py-20">
+      <div className="max-w-full mx-auto px-6 md:px-12 lg:px-24 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           {/* Left Column - Details */}
           <div className="lg:col-span-2 space-y-24">
