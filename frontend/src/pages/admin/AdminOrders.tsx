@@ -416,7 +416,7 @@ const AdminAllOrders = () => {
                       </td>
                       <td className="p-3">
                         <div className="text-sm text-muted-foreground">
-                          {formatDate(order.created_at)}
+                          {order.created_at ? formatDate(order.created_at) : 'N/A'}
                         </div>
                       </td>
                       <td className="p-3">

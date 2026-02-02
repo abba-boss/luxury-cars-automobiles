@@ -5,7 +5,7 @@ import { ArrowRight, ArrowUpRight, Eye, Heart, Gauge, Calendar, Fuel, Settings, 
 import { formatPrice, formatMileage } from "@/data/cars";
 import { vehicleService } from "@/services";
 import { cn } from "@/lib/utils";
-import { CarListingSkeleton } from "@/components/cars/CarCardSkeleton";
+import { CarCardSkeleton, CarListingSkeleton } from "@/components/cars/CarCardSkeleton";
 
 export function FeaturedCars() {
   const [cars, setCars] = useState([]);
@@ -17,7 +17,7 @@ export function FeaturedCars() {
     const fetchFeaturedCars = async () => {
       try {
         const response = await vehicleService.getVehicles({ is_featured: true, limit: 6 });
-        
+
         if (response.success && response.data) {
           // Map to expected format and filter out invalid entries
           const featuredVehicles = response.data

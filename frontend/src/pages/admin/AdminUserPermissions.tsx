@@ -12,6 +12,7 @@ import { LoadingSpinner } from '@/components/ui/loading';
 import { format } from 'date-fns';
 import { UserPermissionManagement } from '@/components/admin/UserPermissionManagement';
 import type { UserPermission, User } from '@/types/api';
+import AdminLayout from '@/components/layout/AdminLayout';
 
 export default function AdminUserPermissionsPage() {
   const [users, setUsers] = useState<(User & { permissions: UserPermission[] })[]>([]);
@@ -69,16 +70,17 @@ export default function AdminUserPermissionsPage() {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <ShieldCheckIcon className="w-8 h-8 text-primary" />
-          User Permission Management
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Manage specific access rights for users across the platform
-        </p>
-      </div>
+    <AdminLayout>
+      <div className="container mx-auto py-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <ShieldCheckIcon className="w-8 h-8 text-primary" />
+            User Permission Management
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Manage specific access rights for users across the platform
+          </p>
+        </div>
 
       <Card>
         <CardHeader>
@@ -219,5 +221,6 @@ export default function AdminUserPermissionsPage() {
         </Dialog>
       )}
     </div>
+  </AdminLayout>
   );
 }

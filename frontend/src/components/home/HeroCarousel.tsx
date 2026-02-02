@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronLeft, ChevronRight, Play, Volume2, VolumeX } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Play, Volume2, VolumeX, Volume1 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import heroImage from "@/assets/hero-car.jpg";
