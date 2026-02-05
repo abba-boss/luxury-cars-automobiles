@@ -6,13 +6,15 @@ interface ProtectedRouteProps {
   requireAdmin?: boolean;
   requireCustomer?: boolean;
   requireCustomerOrAdmin?: boolean;
+  requireStaff?: boolean;
 }
 
 const ProtectedRoute = ({
   children,
   requireAdmin = false,
   requireCustomer = false,
-  requireCustomerOrAdmin = false
+  requireCustomerOrAdmin = false,
+  requireStaff = false
 }: ProtectedRouteProps) => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
@@ -37,6 +39,19 @@ const ProtectedRoute = ({
           <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
           <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
           <p className="text-sm text-gray-500">Administrator privileges required.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Staff-only routes - show access denied to non-staff
+  if (requireStaff && !(user.role === 'staff' || user.role === 'admin')) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+          <p className="text-sm text-gray-500">Staff or Administrator privileges required.</p>
         </div>
       </div>
     );

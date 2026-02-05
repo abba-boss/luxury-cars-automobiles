@@ -1,4 +1,4 @@
-const { User, UserPermission } = require('../models');
+const { User, UserPermission, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
 // Get all permissions for a specific user
@@ -261,8 +261,8 @@ const getAllUsersWithPermissions = async (req, res, next) => {
     const whereClause = {};
     if (search) {
       whereClause[Op.or] = [
-        { full_name: { [Op.iLike]: `%${search}%` } },
-        { email: { [Op.iLike]: `%${search}%` } }
+        sequelize.where(sequelize.fn('LOWER', sequelize.col('full_name')), 'LIKE', `%${search.toLowerCase()}%`),
+        sequelize.where(sequelize.fn('LOWER', sequelize.col('email')), 'LIKE', `%${search.toLowerCase()}%`)
       ];
     }
 

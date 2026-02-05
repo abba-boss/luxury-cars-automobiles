@@ -39,7 +39,12 @@ export default function AdminUserPermissionsPage() {
         // The API returns data in the format { data: users[], pagination: {...} }
         // So response.data contains the users array
         const userData = response.data || [];
-        setUsers(userData as (User & { permissions: UserPermission[] })[]);
+        // Ensure each user has a permissions array
+        const usersWithPermissions = userData.map(user => ({
+          ...user,
+          permissions: Array.isArray(user.permissions) ? user.permissions : []
+        }));
+        setUsers(usersWithPermissions as (User & { permissions: UserPermission[] })[]);
         setTotalPages(response.pagination?.pages || 1);
       } else {
         toast.error(response.message || 'Failed to load users');
@@ -136,8 +141,8 @@ export default function AdminUserPermissionsPage() {
                             {user.permissions && Array.isArray(user.permissions) && user.permissions.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {user.permissions.slice(0, 3).map((perm: UserPermission) => (
-                                  <Badge key={perm.id} variant="secondary" className="text-xs">
-                                    {perm.permission_key.replace(/_/g, ' ')}
+                                  <Badge key={perm?.id} variant="secondary" className="text-xs">
+                                    {perm?.permission_key?.replace(/_/g, ' ') || 'N/A'}
                                   </Badge>
                                 ))}
                                 {user.permissions.length > 3 && (

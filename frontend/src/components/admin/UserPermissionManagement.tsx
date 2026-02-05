@@ -36,16 +36,29 @@ export const UserPermissionManagement = ({ userId, userName, userEmail }: UserPe
     expires_at: ''
   });
   const [availablePermissions] = useState<{ key: string; label: string }[]>([
-    { key: 'view_premium_inventory', label: 'View Premium Inventory' },
-    { key: 'schedule_test_drive', label: 'Schedule Test Drives' },
-    { key: 'access_financing_calculator', label: 'Access Financing Calculator' },
-    { key: 'early_access_new_models', label: 'Early Access to New Models' },
-    { key: 'exclusive_promotions', label: 'Exclusive Promotions' },
-    { key: 'priority_customer_support', label: 'Priority Customer Support' },
-    { key: 'special_discounts', label: 'Special Discounts' },
-    { key: 'extended_warranty_info', label: 'Extended Warranty Information' },
-    { key: 'trade_in_valuation', label: 'Trade-in Valuation Access' },
-    { key: 'virtual_tour_access', label: 'Virtual Tour Access' },
+    // Staff Permissions
+    { key: 'manage_inventory', label: 'Manage Vehicle Inventory' },
+    { key: 'update_vehicle_status', label: 'Update Vehicle Status' },
+    { key: 'upload_vehicle_media', label: 'Upload Vehicle Media' },
+    { key: 'verify_vehicles', label: 'Verify Vehicles' },
+    { key: 'view_orders', label: 'View Orders' },
+    { key: 'update_order_status', label: 'Update Order Status' },
+    { key: 'manage_customers', label: 'Manage Customers' },
+    { key: 'process_sales', label: 'Process Sales' },
+    { key: 'manage_brand_images', label: 'Manage Brand Images' },
+    { key: 'update_homepage_content', label: 'Update Homepage Content' },
+    { key: 'manage_media_library', label: 'Manage Media Library' },
+    { key: 'update_site_information', label: 'Update Site Information' },
+    { key: 'respond_to_inquiries', label: 'Respond to Inquiries' },
+    { key: 'manage_test_drives', label: 'Manage Test Drives' },
+    { key: 'handle_customer_support', label: 'Handle Customer Support' },
+    { key: 'manage_reviews', label: 'Manage Reviews' },
+    { key: 'view_reports', label: 'View Reports' },
+    { key: 'manage_own_profile', label: 'Manage Own Profile' },
+    { key: 'access_system_settings', label: 'Access System Settings' },
+    { key: 'send_notifications', label: 'Send Notifications' },
+    { key: 'manage_messaging', label: 'Manage Messaging' },
+    { key: 'access_live_chat', label: 'Access Live Chat' },
   ]);
 
   useEffect(() => {
@@ -58,7 +71,7 @@ export const UserPermissionManagement = ({ userId, userName, userEmail }: UserPe
       const response = await userPermissionService.getUserPermissions(userId);
       if (response.success) {
         // The API returns data in the format { user: User, permissions: UserPermission[] }
-        setPermissions((response.data?.permissions as UserPermission[]) || []);
+        setPermissions(Array.isArray(response.data?.permissions) ? (response.data.permissions as UserPermission[]) : []);
       } else {
         toast.error(response.message || 'Failed to load user permissions');
         setPermissions([]); // Reset permissions to empty array on error
@@ -208,19 +221,19 @@ export const UserPermissionManagement = ({ userId, userName, userEmail }: UserPe
             <div className="flex justify-center items-center h-32">
               <LoadingSpinner />
             </div>
-          ) : !(permissions || []) || !Array.isArray(permissions || []) || (permissions || []).length === 0 ? (
+          ) : !Array.isArray(permissions) || permissions.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <ShieldCheckIcon className="w-12 h-12 mx-auto mb-2" />
               <p>No permissions granted yet</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {permissions && Array.isArray(permissions) ? permissions.map((permission: UserPermission) => (
+              {Array.isArray(permissions) ? permissions.map((permission: UserPermission) => (
                 <div
-                  key={permission.id}
+                  key={permission?.id}
                   className={cn(
                     "flex items-center justify-between p-4 rounded-lg border",
-                    permission.is_active ? "bg-background" : "bg-muted/50"
+                    permission?.is_active ? "bg-background" : "bg-muted/50"
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -229,37 +242,37 @@ export const UserPermissionManagement = ({ userId, userName, userEmail }: UserPe
                     </div>
                     <div>
                       <h4 className="font-medium capitalize">
-                        {availablePermissions.find(p => p.key === permission.permission_key)?.label || permission.permission_key}
+                        {availablePermissions.find(p => p.key === permission?.permission_key)?.label || permission?.permission_key || 'N/A'}
                       </h4>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <CalendarIcon className="w-3 h-3" />
-                          Granted: {formatDate(permission.granted_at)}
+                          Granted: {formatDate(permission?.granted_at)}
                         </span>
-                        {permission.expires_at && (
+                        {permission?.expires_at && (
                           <span className="flex items-center gap-1">
                             <ClockIcon className="w-3 h-3" />
-                            Expires: {formatDate(permission.expires_at)}
+                            Expires: {formatDate(permission?.expires_at)}
                           </span>
                         )}
                       </div>
-                      {permission.permission_value && (
+                      {permission?.permission_value && (
                         <p className="text-sm mt-1">
-                          <span className="font-medium">Value:</span> {permission.permission_value}
+                          <span className="font-medium">Value:</span> {permission?.permission_value}
                         </p>
                       )}
-                      {permission.grantingUser && (
+                      {permission?.grantingUser && (
                         <p className="text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <UserRoundIcon className="w-3 h-3" />
-                            Granted by: {permission.grantingUser.full_name}
+                            Granted by: {permission?.grantingUser?.full_name}
                           </span>
                         </p>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {!permission.is_active ? (
+                    {!permission?.is_active ? (
                       <Badge variant="secondary">Revoked</Badge>
                     ) : (
                       <Badge variant="default">Active</Badge>
@@ -278,7 +291,7 @@ export const UserPermissionManagement = ({ userId, userName, userEmail }: UserPe
                       variant="outline"
                       size="sm"
                       onClick={() => handleRevokePermission(permission.id)}
-                      disabled={!permission.is_active}
+                      disabled={!permission?.is_active}
                     >
                       <TrashIcon className="w-4 h-4" />
                     </Button>

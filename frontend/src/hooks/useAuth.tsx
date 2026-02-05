@@ -8,6 +8,7 @@ interface AuthContextType {
   session: { user: User } | null;
   loading: boolean;
   isAdmin: boolean;
+  isStaff: boolean;
   signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -109,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     session: user ? { user } : null,
     loading,
     isAdmin: user?.role === 'admin',
+    isStaff: user?.role === 'staff' || user?.role === 'admin',
     signUp,
     signIn,
     signOut,

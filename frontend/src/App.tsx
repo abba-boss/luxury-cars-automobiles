@@ -55,6 +55,15 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import CheckoutProtection from "./components/auth/CheckoutProtection";
 import LiveChat from "./components/chat/LiveChat";
 import WhatsAppButton from "./components/chat/WhatsAppButton";
+import StaffLayout from "./components/layout/StaffLayout";
+import StaffDashboard from "./pages/staff/StaffDashboard";
+import StaffVehicles from "./pages/staff/StaffVehicles";
+import StaffOrders from "./pages/staff/StaffOrders";
+import StaffInquiries from "./pages/staff/StaffInquiries";
+import StaffReviews from "./pages/staff/StaffReviews";
+import StaffCustomers from "./pages/staff/StaffCustomers";
+import StaffReports from "./pages/staff/StaffReports";
+import StaffSettings from "./pages/staff/StaffSettings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -306,6 +315,80 @@ const App = () => {
                         <Suspense fallback={<GlobalAppLoader />}>
                           <AdminUserPermissions />
                         </Suspense>
+                      </ProtectedRoute>
+                    } />
+
+                    {/* Staff Routes - Staff portal with staff layout */}
+                    <Route path="/staff" element={
+                      <ProtectedRoute requireStaff>
+                        <StaffLayout>
+                          <Suspense fallback={<GlobalAppLoader />}>
+                            <StaffDashboard />
+                          </Suspense>
+                        </StaffLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/staff/vehicles" element={
+                      <ProtectedRoute requireStaff>
+                        <StaffLayout>
+                          <Suspense fallback={<GlobalAppLoader />}>
+                            <StaffVehicles />
+                          </Suspense>
+                        </StaffLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/staff/orders" element={
+                      <ProtectedRoute requireStaff>
+                        <StaffLayout>
+                          <Suspense fallback={<GlobalAppLoader />}>
+                            <StaffOrders />
+                          </Suspense>
+                        </StaffLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/staff/inquiries" element={
+                      <ProtectedRoute requireStaff>
+                        <StaffLayout>
+                          <Suspense fallback={<GlobalAppLoader />}>
+                            <StaffInquiries />
+                          </Suspense>
+                        </StaffLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/staff/reviews" element={
+                      <ProtectedRoute requireStaff>
+                        <StaffLayout>
+                          <Suspense fallback={<GlobalAppLoader />}>
+                            <StaffReviews />
+                          </Suspense>
+                        </StaffLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/staff/customers" element={
+                      <ProtectedRoute requireStaff>
+                        <StaffLayout>
+                          <Suspense fallback={<GlobalAppLoader />}>
+                            <StaffCustomers />
+                          </Suspense>
+                        </StaffLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/staff/reports" element={
+                      <ProtectedRoute requireStaff>
+                        <StaffLayout>
+                          <Suspense fallback={<GlobalAppLoader />}>
+                            <StaffReports />
+                          </Suspense>
+                        </StaffLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/staff/settings" element={
+                      <ProtectedRoute requireStaff>
+                        <StaffLayout>
+                          <Suspense fallback={<GlobalAppLoader />}>
+                            <StaffSettings />
+                          </Suspense>
+                        </StaffLayout>
                       </ProtectedRoute>
                     } />
 
