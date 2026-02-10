@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { authenticateUser, requireAdmin } = require('../middlewares/rbac');
 const { User, UserPermission } = require('../models');
-const { Op } = require('sequelize');
+const { Op, fn, col, where } = require('sequelize');
+const sequelize = require('../config/database');
 
 // All user permission routes require authentication and admin role
 router.use(authenticateUser);
@@ -131,7 +132,7 @@ router.post('/users/:userId/permissions', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+});
 
 // Revoke a permission from a user
 router.delete('/users/:userId/permissions/:permissionId', async (req, res, next) => {
@@ -268,8 +269,8 @@ router.get('/users-with-permissions', async (req, res, next) => {
     const whereClause = {};
     if (search) {
       whereClause[Op.or] = [
-        sequelize.where(sequelize.fn('LOWER', sequelize.col('full_name')), 'LIKE', `%${search.toLowerCase()}%`),
-        sequelize.where(sequelize.fn('LOWER', sequelize.col('email')), 'LIKE', `%${search.toLowerCase()}%`)
+        where(fn('LOWER', col('full_name')), 'LIKE', `%${search.toLowerCase()}%`),
+        where(fn('LOWER', col('email')), 'LIKE', `%${search.toLowerCase()}%`)
       ];
     }
 

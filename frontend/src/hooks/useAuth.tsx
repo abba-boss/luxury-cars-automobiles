@@ -2,6 +2,7 @@ import { createContext, useContext, ReactNode, useState, useEffect } from 'react
 import { authService } from '@/services';
 import { ApiError } from '@/lib/api';
 import type { User } from '@/types/api';
+import { hasPermission as checkPermission, hasAnyPermission, hasAllPermissions, getActivePermissions } from '@/utils/permissionUtils';
 
 interface AuthContextType {
   user: User | null;
@@ -9,6 +10,10 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isStaff: boolean;
+  hasPermission: (permissionKey: string) => boolean;
+  hasAnyPermission: (permissionKeys: string[]) => boolean;
+  hasAllPermissions: (permissionKeys: string[]) => boolean;
+  getActivePermissions: () => string[];
   signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -111,6 +116,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading,
     isAdmin: user?.role === 'admin',
     isStaff: user?.role === 'staff' || user?.role === 'admin',
+    hasPermission: (permissionKey: string) => checkPermission(user, permissionKey),
+    hasAnyPermission: (permissionKeys: string[]) => hasAnyPermission(user, permissionKeys),
+    hasAllPermissions: (permissionKeys: string[]) => hasAllPermissions(user, permissionKeys),
+    getActivePermissions: () => getActivePermissions(user),
     signUp,
     signIn,
     signOut,

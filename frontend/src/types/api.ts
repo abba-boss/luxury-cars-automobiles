@@ -16,10 +16,11 @@ export interface User {
   email: string;
   full_name: string;
   phone?: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'staff' | 'admin';
   status: 'active' | 'inactive' | 'suspended';
   created_at: string;
   updated_at: string;
+  permissions?: UserPermission[];
 }
 
 export interface Vehicle {

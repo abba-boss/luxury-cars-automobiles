@@ -130,11 +130,15 @@ const login = async (req, res, next) => {
     // Generate token
     const token = generateToken(user);
 
-    // Remove password from response
+    // Get user's active permissions
+    const permissions = await user.getActivePermissions();
+
+    // Remove password from response and add permissions
     const userResponse = user.toJSON();
     delete userResponse.password;
+    userResponse.permissions = permissions;
 
-    console.log('User logged in successfully:', { id: user.id, email: user.email, role: user.role });
+    console.log('User logged in successfully:', { id: user.id, email: user.email, role: user.role, permissionsCount: permissions.length });
 
     res.json({
       success: true,
@@ -163,9 +167,16 @@ const getProfile = async (req, res, next) => {
       });
     }
 
+    // Get user's active permissions
+    const permissions = await user.getActivePermissions();
+
+    // Add permissions to the user response
+    const userResponse = user.toJSON();
+    userResponse.permissions = permissions;
+
     res.json({
       success: true,
-      data: user
+      data: userResponse
     });
 
   } catch (error) {

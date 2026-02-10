@@ -139,7 +139,7 @@ const requireAdmin = authorizeRoles('admin');
 
 // Middleware to check if user owns resource or is admin
 const requireOwnershipOrAdmin = (resourceUserIdField = 'user_id') => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     try {
       if (!req.user) {
         return res.status(401).json({
@@ -151,6 +151,12 @@ const requireOwnershipOrAdmin = (resourceUserIdField = 'user_id') => {
 
       // Admin can access anything
       if (req.user.role === 'admin') {
+        return next();
+      }
+
+      // Check if user has a specific permission to bypass ownership check
+      const bypassPermission = await req.user.hasPermission('access_any_resource');
+      if (bypassPermission) {
         return next();
       }
 
@@ -198,7 +204,7 @@ const requireOwnershipOrAdmin = (resourceUserIdField = 'user_id') => {
 
 // Middleware for staff vehicle management permissions
 const requireStaffVehicleManagement = () => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     try {
       if (!req.user) {
         return res.status(401).json({
@@ -213,7 +219,13 @@ const requireStaffVehicleManagement = () => {
         return next();
       }
 
-      // Staff can manage vehicles
+      // Check if user has specific vehicle management permission
+      const hasVehiclePermission = await req.user.hasPermission('manage_vehicles');
+      if (hasVehiclePermission) {
+        return next();
+      }
+
+      // Staff can manage vehicles if they have the specific permission
       if (req.user.role === 'staff') {
         // Allow specific vehicle operations for staff
         const allowedMethods = ['GET', 'POST', 'PUT', 'PATCH']; // Staff can view, add, update vehicles
