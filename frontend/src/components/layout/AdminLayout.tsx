@@ -6,7 +6,6 @@ import {
   PlusCircle,
   Package,
   Users,
-  MessageSquare,
   BarChart3,
   Settings,
   LogOut,
@@ -26,28 +25,11 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { PermissionBasedNavigation } from '@/components/PermissionBasedNavigation';
 
 interface AdminLayoutProps {
   children: ReactNode;
 }
-
-const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
-  { icon: Car, label: 'Browse Cars', href: '/cars' },
-  { icon: Package, label: 'All Orders', href: '/admin/orders' },
-  { icon: Car, label: 'Car Management', href: '/admin/cars' },
-  { icon: PlusCircle, label: 'Add New Car', href: '/admin/add-car' },
-  { icon: Tag, label: 'Brand Management', href: '/admin/brands' },
-  { icon: Image, label: 'Media Manager', href: '/admin/media' },
-  { icon: Users, label: 'User Management', href: '/admin/users' },
-  { icon: ShieldCheckIcon, label: 'User Permissions', href: '/admin/user-permissions' },
-  { icon: MessageSquare, label: 'Messages', href: '/admin/messages' },
-  { icon: Calendar, label: 'Bookings', href: '/admin/bookings' },
-  { icon: Star, label: 'Reviews', href: '/admin/reviews' },
-  { icon: Home, label: 'Homepage Controls', href: '/admin/homepage' },
-  { icon: Bell, label: 'Notifications', href: '/admin/notifications' },
-  { icon: Settings, label: 'Settings', href: '/admin/settings' },
-];
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
@@ -108,36 +90,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-2 sm:p-3 space-y-1 overflow-y-auto scrollbar-thin" role="navigation" aria-label="Admin navigation">
-          {navItems.map((item, idx) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  'flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg sm:rounded-xl transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary/50',
-                  isActive
-                    ? 'bg-primary text-primary-foreground shadow-red'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                )}
-                style={{ animationDelay: `${idx * 50}ms` }}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <item.icon className={cn('w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0', isActive && 'animate-scale-in')} />
-                {!collapsed && (
-                  <span className="font-medium text-xs sm:text-sm truncate">{item.label}</span>
-                )}
-                {collapsed && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-card border border-border rounded-md text-xs sm:text-sm text-foreground opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                    {item.label}
-                  </div>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+        <PermissionBasedNavigation variant="sidebar" />
 
         {/* Footer */}
         <div className="p-2 sm:p-3 border-t border-border space-y-1">

@@ -88,7 +88,7 @@ export const UserPermissionManagement = ({ userId, userName, userEmail }: UserPe
     try {
       const response = await userPermissionService.grantUserPermission(userId, grantForm);
       if (response.success) {
-        toast.success('Permission granted successfully');
+        toast.success('Permission granted successfully. The user should refresh their permissions to see the changes.');
         setGrantForm({ permission_key: '', permission_value: '', expires_at: '' });
         setOpenGrantDialog(false);
         loadPermissions(); // Refresh the list
@@ -105,7 +105,7 @@ export const UserPermissionManagement = ({ userId, userName, userEmail }: UserPe
     try {
       const response = await userPermissionService.revokeUserPermission(userId, permissionId);
       if (response.success) {
-        toast.success('Permission revoked successfully');
+        toast.success('Permission revoked successfully. The user should refresh their permissions to see the changes.');
         loadPermissions(); // Refresh the list
       } else {
         toast.error(response.message || 'Failed to revoke permission');
@@ -120,7 +120,7 @@ export const UserPermissionManagement = ({ userId, userName, userEmail }: UserPe
     try {
       const response = await userPermissionService.updateUserPermission(userId, permissionId, updates);
       if (response.success) {
-        toast.success('Permission updated successfully');
+        toast.success('Permission updated successfully. The user should refresh their permissions to see the changes.');
         loadPermissions(); // Refresh the list
       } else {
         toast.error(response.message || 'Failed to update permission');

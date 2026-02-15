@@ -3,6 +3,7 @@ import { authService } from '@/services';
 import { ApiError } from '@/lib/api';
 import type { User } from '@/types/api';
 import { hasPermission as checkPermission, hasAnyPermission, hasAllPermissions, getActivePermissions } from '@/utils/permissionUtils';
+import { refreshUserPermissions } from '@/utils/permissionRefresh';
 
 interface AuthContextType {
   user: User | null;
@@ -14,6 +15,7 @@ interface AuthContextType {
   hasAnyPermission: (permissionKeys: string[]) => boolean;
   hasAllPermissions: (permissionKeys: string[]) => boolean;
   getActivePermissions: () => string[];
+  refreshPermissions: () => Promise<void>;
   signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -44,6 +46,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.warn('Auth refresh failed:', error);
       localStorage.removeItem('auth_token');
       setUser(null);
+    }
+  };
+
+  const refreshPermissions = async () => {
+    try {
+      const userData = await refreshUserPermissions();
+      if (userData) {
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Error refreshing permissions:', error);
     }
   };
 
@@ -120,6 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     hasAnyPermission: (permissionKeys: string[]) => hasAnyPermission(user, permissionKeys),
     hasAllPermissions: (permissionKeys: string[]) => hasAllPermissions(user, permissionKeys),
     getActivePermissions: () => getActivePermissions(user),
+    refreshPermissions,
     signUp,
     signIn,
     signOut,

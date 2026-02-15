@@ -1,20 +1,21 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { 
-  Car, 
-  Package, 
-  ShoppingCart, 
-  MessageSquare, 
-  Star, 
-  BarChart3, 
-  Users, 
+import {
+  Car,
+  Package,
+  ShoppingCart,
+  MessageSquare,
+  Star,
+  BarChart3,
+  Users,
   Settings,
   Menu,
   X
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { PermissionBasedNavigation } from '@/components/PermissionBasedNavigation';
 
 interface StaffLayoutProps {
   children: React.ReactNode;
@@ -24,57 +25,6 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const navItems = [
-    { 
-      title: 'Dashboard', 
-      path: '/staff', 
-      icon: BarChart3,
-      permissions: ['view_reports']
-    },
-    { 
-      title: 'Inventory', 
-      path: '/staff/vehicles', 
-      icon: Car,
-      permissions: ['manage_inventory']
-    },
-    { 
-      title: 'Orders', 
-      path: '/staff/orders', 
-      icon: ShoppingCart,
-      permissions: ['view_orders']
-    },
-    { 
-      title: 'Inquiries', 
-      path: '/staff/inquiries', 
-      icon: MessageSquare,
-      permissions: ['respond_to_inquiries']
-    },
-    { 
-      title: 'Reviews', 
-      path: '/staff/reviews', 
-      icon: Star,
-      permissions: ['manage_reviews']
-    },
-    { 
-      title: 'Customers', 
-      path: '/staff/customers', 
-      icon: Users,
-      permissions: ['manage_customers']
-    },
-    { 
-      title: 'Reports', 
-      path: '/staff/reports', 
-      icon: BarChart3,
-      permissions: ['view_reports']
-    },
-    { 
-      title: 'Settings', 
-      path: '/staff/settings', 
-      icon: Settings,
-      permissions: ['access_system_settings']
-    },
-  ];
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -102,30 +52,7 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
           <h1 className="text-xl font-bold">Staff Portal</h1>
         </div>
         
-        <nav className="p-2">
-          <ul className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.path}>
-                  <Link
-                    to={item.path}
-                    className={cn(
-                      "flex items-center gap-3 w-full p-3 rounded-lg text-sm transition-colors",
-                      isActive(item.path)
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-accent text-foreground"
-                    )}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.title}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+        <PermissionBasedNavigation variant="sidebar" />
         
         <div className="absolute bottom-0 w-full p-4 border-t border-border">
           <div className="flex items-center gap-3 mb-3">

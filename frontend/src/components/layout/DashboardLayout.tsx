@@ -7,7 +7,6 @@ import {
   Search,
   Package,
   Heart,
-  MessageSquare,
   User,
   LogOut,
   Menu,
@@ -21,20 +20,20 @@ interface DashboardLayoutProps {
   subtitle?: string;
 }
 
-const sidebarItems = [
-  { icon: Home, label: "Dashboard", href: "/dashboard" },
-  { icon: Search, label: "Browse Cars", href: "/cars" },
-  { icon: Package, label: "My Orders", href: "/orders" },
-  { icon: Heart, label: "Saved Cars", href: "/saved" },
-  { icon: MessageSquare, label: "Messages", href: "/messages" },
-  { icon: User, label: "Profile", href: "/profile" },
-];
-
 export function DashboardLayout({ children, title, subtitle }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+
+  // Define sidebar items for users
+  const sidebarItems = [
+    { icon: Home, label: "Dashboard", href: "/dashboard" },
+    { icon: Search, label: "Browse Cars", href: "/cars" },
+    { icon: Package, label: "My Orders", href: "/orders" },
+    { icon: Heart, label: "Saved Cars", href: "/saved" },
+    { icon: User, label: "Profile", href: "/profile" },
+  ];
 
   const handleSignOut = async () => {
     await signOut();

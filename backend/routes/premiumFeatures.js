@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { requirePermission } = require('../middlewares/permissionMiddleware');
-const { authenticateUser } = require('../middlewares/rbac');
+const { requirePermissionRealtime, authenticateUserWithPermissions } = require('../middlewares/realTimePermissionMiddleware');
 const { Vehicle } = require('../models');
 
 // Route to get premium inventory - requires 'view_premium_inventory' permission
-router.get('/premium', authenticateUser, requirePermission('view_premium_inventory'), async (req, res, next) => {
+router.get('/premium', authenticateUserWithPermissions, requirePermissionRealtime('view_premium_inventory'), async (req, res, next) => {
   try {
     // Get premium inventory (e.g., vehicles with special features)
     const premiumVehicles = await Vehicle.findAll({
@@ -27,14 +26,14 @@ router.get('/premium', authenticateUser, requirePermission('view_premium_invento
 });
 
 // Route to schedule test drive - requires 'schedule_test_drive' permission
-router.post('/test-drive', authenticateUser, requirePermission('schedule_test_drive'), async (req, res, next) => {
+router.post('/test-drive', authenticateUserWithPermissions, requirePermissionRealtime('schedule_test_drive'), async (req, res, next) => {
   try {
     const { vehicleId, dateTime } = req.body;
     const userId = req.user.id;
 
     // In a real implementation, you would create a booking record
     // For now, we just validate the permission
-    
+
     res.json({
       success: true,
       message: 'Test drive scheduled successfully',
@@ -50,11 +49,11 @@ router.post('/test-drive', authenticateUser, requirePermission('schedule_test_dr
 });
 
 // Route to access exclusive promotions - requires 'exclusive_promotions' permission
-router.get('/promotions/exclusive', authenticateUser, requirePermission('exclusive_promotions'), async (req, res, next) => {
+router.get('/promotions/exclusive', authenticateUserWithPermissions, requirePermissionRealtime('exclusive_promotions'), async (req, res, next) => {
   try {
     // In a real implementation, you would fetch exclusive promotions
     // For now, returning mock data
-    
+
     const exclusivePromotions = [
       {
         id: 1,

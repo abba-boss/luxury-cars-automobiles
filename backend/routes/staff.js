@@ -1,17 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { requirePermission } = require('../middlewares/permissionMiddleware');
-const { authenticateUser, requireStaff } = require('../middlewares/rbac');
+const { requirePermissionRealtime, authenticateUserWithPermissions } = require('../middlewares/realTimePermissionMiddleware');
+const { requireStaff } = require('../middlewares/rbac');
 const { Vehicle, Sale, Customer, Inquiry, Review, Brand, HomepageImage, User } = require('../models');
 const { Op } = require('sequelize');
 
 // All staff routes require authentication and appropriate permissions
-router.use(authenticateUser);
+router.use(authenticateUserWithPermissions);
 router.use(requireStaff); // Only staff and admin can access these routes
 
 // Vehicle Management Routes
 // GET vehicles - requires 'manage_inventory' permission
-router.get('/vehicles', requirePermission('manage_inventory'), async (req, res, next) => {
+router.get('/vehicles', requirePermissionRealtime('manage_inventory'), async (req, res, next) => {
   try {
     const { page = 1, limit = 10, status, make, model } = req.query;
     const offset = (page - 1) * limit;
@@ -44,7 +44,7 @@ router.get('/vehicles', requirePermission('manage_inventory'), async (req, res, 
 });
 
 // POST new vehicle - requires 'manage_inventory' permission
-router.post('/vehicles', requirePermission('manage_inventory'), async (req, res, next) => {
+router.post('/vehicles', requirePermissionRealtime('manage_inventory'), async (req, res, next) => {
   try {
     const { make, model, year, price, mileage, fuel_type, transmission, condition, 
            body_type, color, description, features, images, videos, is_featured, 
@@ -88,7 +88,7 @@ router.post('/vehicles', requirePermission('manage_inventory'), async (req, res,
 });
 
 // PUT update vehicle - requires 'manage_inventory' permission
-router.put('/vehicles/:id', requirePermission('manage_inventory'), async (req, res, next) => {
+router.put('/vehicles/:id', requirePermissionRealtime('manage_inventory'), async (req, res, next) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -114,7 +114,7 @@ router.put('/vehicles/:id', requirePermission('manage_inventory'), async (req, r
 });
 
 // PUT update vehicle status - requires 'update_vehicle_status' permission
-router.put('/vehicles/:id/status', requirePermission('update_vehicle_status'), async (req, res, next) => {
+router.put('/vehicles/:id/status', requirePermissionRealtime('update_vehicle_status'), async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -148,7 +148,7 @@ router.put('/vehicles/:id/status', requirePermission('update_vehicle_status'), a
 });
 
 // POST upload vehicle media - requires 'upload_vehicle_media' permission
-router.post('/vehicles/:id/media', requirePermission('upload_vehicle_media'), async (req, res, next) => {
+router.post('/vehicles/:id/media', requirePermissionRealtime('upload_vehicle_media'), async (req, res, next) => {
   try {
     // This would handle file uploads for vehicle media
     // Implementation depends on your upload setup
@@ -163,7 +163,7 @@ router.post('/vehicles/:id/media', requirePermission('upload_vehicle_media'), as
 });
 
 // PUT verify vehicle - requires 'verify_vehicles' permission
-router.put('/vehicles/:id/verify', requirePermission('verify_vehicles'), async (req, res, next) => {
+router.put('/vehicles/:id/verify', requirePermissionRealtime('verify_vehicles'), async (req, res, next) => {
   try {
     const { id } = req.params;
     const vehicle = await Vehicle.findByPk(id);
@@ -188,7 +188,7 @@ router.put('/vehicles/:id/verify', requirePermission('verify_vehicles'), async (
 
 // Order Management Routes
 // GET orders - requires 'view_orders' permission
-router.get('/orders', requirePermission('view_orders'), async (req, res, next) => {
+router.get('/orders', requirePermissionRealtime('view_orders'), async (req, res, next) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
     const offset = (page - 1) * limit;
@@ -223,7 +223,7 @@ router.get('/orders', requirePermission('view_orders'), async (req, res, next) =
 });
 
 // PUT update order status - requires 'update_order_status' permission
-router.put('/orders/:id/status', requirePermission('update_order_status'), async (req, res, next) => {
+router.put('/orders/:id/status', requirePermissionRealtime('update_order_status'), async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status, payment_status } = req.body;
@@ -258,7 +258,7 @@ router.put('/orders/:id/status', requirePermission('update_order_status'), async
 
 // Customer Management Routes
 // GET customers - requires 'manage_customers' permission
-router.get('/customers', requirePermission('manage_customers'), async (req, res, next) => {
+router.get('/customers', requirePermissionRealtime('manage_customers'), async (req, res, next) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
@@ -285,7 +285,7 @@ router.get('/customers', requirePermission('manage_customers'), async (req, res,
 });
 
 // PUT update customer - requires 'manage_customers' permission
-router.put('/customers/:id', requirePermission('manage_customers'), async (req, res, next) => {
+router.put('/customers/:id', requirePermissionRealtime('manage_customers'), async (req, res, next) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -312,7 +312,7 @@ router.put('/customers/:id', requirePermission('manage_customers'), async (req, 
 
 // Sales Processing Routes
 // POST process sale - requires 'process_sales' permission
-router.post('/sales', requirePermission('process_sales'), async (req, res, next) => {
+router.post('/sales', requirePermissionRealtime('process_sales'), async (req, res, next) => {
   try {
     const { vehicle_id, customer_id, sale_price, payment_method, notes } = req.body;
 
@@ -350,7 +350,7 @@ router.post('/sales', requirePermission('process_sales'), async (req, res, next)
 
 // Content Management Routes
 // GET brands - requires 'manage_brand_images' permission
-router.get('/brands', requirePermission('manage_brand_images'), async (req, res, next) => {
+router.get('/brands', requirePermissionRealtime('manage_brand_images'), async (req, res, next) => {
   try {
     const brands = await Brand.findAll();
     res.json({
@@ -363,7 +363,7 @@ router.get('/brands', requirePermission('manage_brand_images'), async (req, res,
 });
 
 // PUT update brand - requires 'manage_brand_images' permission
-router.put('/brands/:id', requirePermission('manage_brand_images'), async (req, res, next) => {
+router.put('/brands/:id', requirePermissionRealtime('manage_brand_images'), async (req, res, next) => {
   try {
     const { id } = req.params;
     const { name, image } = req.body;
@@ -389,7 +389,7 @@ router.put('/brands/:id', requirePermission('manage_brand_images'), async (req, 
 });
 
 // GET homepage content - requires 'update_homepage_content' permission
-router.get('/homepage-content', requirePermission('update_homepage_content'), async (req, res, next) => {
+router.get('/homepage-content', requirePermissionRealtime('update_homepage_content'), async (req, res, next) => {
   try {
     const homepageImages = await HomepageImage.findAll({
       where: { is_active: true },
@@ -406,7 +406,7 @@ router.get('/homepage-content', requirePermission('update_homepage_content'), as
 });
 
 // PUT update homepage content - requires 'update_homepage_content' permission
-router.put('/homepage-content/:id', requirePermission('update_homepage_content'), async (req, res, next) => {
+router.put('/homepage-content/:id', requirePermissionRealtime('update_homepage_content'), async (req, res, next) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -433,7 +433,7 @@ router.put('/homepage-content/:id', requirePermission('update_homepage_content')
 
 // Customer Service Routes
 // GET inquiries - requires 'respond_to_inquiries' permission
-router.get('/inquiries', requirePermission('respond_to_inquiries'), async (req, res, next) => {
+router.get('/inquiries', requirePermissionRealtime('respond_to_inquiries'), async (req, res, next) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
     const offset = (page - 1) * limit;
@@ -464,7 +464,7 @@ router.get('/inquiries', requirePermission('respond_to_inquiries'), async (req, 
 });
 
 // PUT update inquiry status - requires 'respond_to_inquiries' permission
-router.put('/inquiries/:id', requirePermission('respond_to_inquiries'), async (req, res, next) => {
+router.put('/inquiries/:id', requirePermissionRealtime('respond_to_inquiries'), async (req, res, next) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -490,7 +490,7 @@ router.put('/inquiries/:id', requirePermission('respond_to_inquiries'), async (r
 });
 
 // GET reviews - requires 'manage_reviews' permission
-router.get('/reviews', requirePermission('manage_reviews'), async (req, res, next) => {
+router.get('/reviews', requirePermissionRealtime('manage_reviews'), async (req, res, next) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
     const offset = (page - 1) * limit;
@@ -525,7 +525,7 @@ router.get('/reviews', requirePermission('manage_reviews'), async (req, res, nex
 });
 
 // PUT update review status - requires 'manage_reviews' permission
-router.put('/reviews/:id/status', requirePermission('manage_reviews'), async (req, res, next) => {
+router.put('/reviews/:id/status', requirePermissionRealtime('manage_reviews'), async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -559,7 +559,7 @@ router.put('/reviews/:id/status', requirePermission('manage_reviews'), async (re
 });
 
 // GET reports - requires 'view_reports' permission
-router.get('/reports', requirePermission('view_reports'), async (req, res, next) => {
+router.get('/reports', requirePermissionRealtime('view_reports'), async (req, res, next) => {
   try {
     // This would return various reports based on the staff member's permissions
     // For now, returning a basic structure
@@ -603,7 +603,7 @@ router.get('/reports', requirePermission('view_reports'), async (req, res, next)
 });
 
 // GET customers - requires 'manage_customers' permission
-router.get('/customers', requirePermission('manage_customers'), async (req, res, next) => {
+router.get('/customers', requirePermissionRealtime('manage_customers'), async (req, res, next) => {
   try {
     const { page = 1, limit = 10, status, search } = req.query;
     const offset = (page - 1) * limit;
@@ -641,7 +641,7 @@ router.get('/customers', requirePermission('manage_customers'), async (req, res,
 });
 
 // PUT update customer - requires 'manage_customers' permission
-router.put('/customers/:id', requirePermission('manage_customers'), async (req, res, next) => {
+router.put('/customers/:id', requirePermissionRealtime('manage_customers'), async (req, res, next) => {
   try {
     const { id } = req.params;
     const updates = req.body;

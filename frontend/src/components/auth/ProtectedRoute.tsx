@@ -7,6 +7,9 @@ interface ProtectedRouteProps {
   requireCustomer?: boolean;
   requireCustomerOrAdmin?: boolean;
   requireStaff?: boolean;
+  requirePermission?: string;
+  requireAnyPermission?: string[];
+  requireAllPermissions?: string[];
 }
 
 const ProtectedRoute = ({
@@ -14,9 +17,12 @@ const ProtectedRoute = ({
   requireAdmin = false,
   requireCustomer = false,
   requireCustomerOrAdmin = false,
-  requireStaff = false
+  requireStaff = false,
+  requirePermission,
+  requireAnyPermission,
+  requireAllPermissions
 }: ProtectedRouteProps) => {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, hasPermission, hasAnyPermission, hasAllPermissions } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -29,6 +35,43 @@ const ProtectedRoute = ({
 
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  // Check permission-based requirements first
+  if (requirePermission && !hasPermission(requirePermission)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+          <p className="text-sm text-gray-500">Required permission: {requirePermission}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (requireAnyPermission && !hasAnyPermission(requireAnyPermission)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+          <p className="text-sm text-gray-500">Required any of: {requireAnyPermission.join(', ')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (requireAllPermissions && !hasAllPermissions(requireAllPermissions)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+          <p className="text-sm text-gray-500">Required all of: {requireAllPermissions.join(', ')}</p>
+        </div>
+      </div>
+    );
   }
 
   // Admin-only routes - show access denied to non-admins

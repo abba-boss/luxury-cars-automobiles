@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Bell, X, Car, MessageSquare, Calendar, Info, Check, CheckCheck, Filter, Settings, Mail, User, CreditCard, Package, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Bell, X, Car, Calendar, Info, Check, CheckCheck, Filter, Settings, Mail, User, CreditCard, Package, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { notificationService } from '@/services';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 import type { Notification as NotificationType } from '@/types/api';
 
 interface Notification extends NotificationType {
@@ -23,6 +24,7 @@ interface Notification extends NotificationType {
 }
 
 const EnhancedNotificationCenter = () => {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,15 +50,12 @@ const EnhancedNotificationCenter = () => {
 
   const applyFilters = useCallback(() => {
     let result = [...notifications];
-    
+
     // Apply type filter
     if (filter !== 'all') {
       switch(filter) {
         case 'order':
           result = result.filter(n => n.type.includes('order'));
-          break;
-        case 'message':
-          result = result.filter(n => n.type.includes('message'));
           break;
         case 'payment':
           result = result.filter(n => n.type.includes('payment'));
@@ -69,16 +68,16 @@ const EnhancedNotificationCenter = () => {
           break;
       }
     }
-    
+
     // Apply sorting
     result.sort((a, b) => {
       const dateA = new Date(a.created_at).getTime();
       const dateB = new Date(b.created_at).getTime();
       return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
     });
-    
+
     setFilteredNotifications(result);
-  }, [notifications, filter, sortBy]);
+  }, [notifications, filter, sortBy, user?.role]);
 
   useEffect(() => {
     applyFilters();
@@ -137,9 +136,6 @@ const EnhancedNotificationCenter = () => {
       case 'order_new':
       case 'order_update':
         return <Package className="w-4 h-4" />;
-      case 'order_message':
-      case 'message':
-        return <MessageSquare className="w-4 h-4" />;
       case 'payment_update':
       case 'payment':
         return <CreditCard className="w-4 h-4" />;
@@ -163,9 +159,6 @@ const EnhancedNotificationCenter = () => {
       case 'order_new':
       case 'order_update':
         return 'bg-blue-500/20 text-blue-400';
-      case 'order_message':
-      case 'message':
-        return 'bg-indigo-500/20 text-indigo-400';
       case 'payment_update':
       case 'payment':
         return 'bg-emerald-500/20 text-emerald-400';
@@ -246,7 +239,6 @@ const EnhancedNotificationCenter = () => {
             { key: 'all', label: 'All', count: notifications.length },
             { key: 'unread', label: 'Unread', count: unreadCount },
             { key: 'order', label: 'Orders', count: notifications.filter(n => n.type.includes('order')).length },
-            { key: 'message', label: 'Messages', count: notifications.filter(n => n.type.includes('message')).length },
             { key: 'payment', label: 'Payments', count: notifications.filter(n => n.type.includes('payment')).length },
           ].map((tab) => (
             <button

@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Menu, X, User, Search, Settings, LogOut, LayoutDashboard, Car, Users, MessageSquare as MessageSquareLucide, Package, Heart } from "lucide-react";
+import { ShoppingCart, Menu, X, User, Search, Settings, LogOut, LayoutDashboard, Car, Users, Package, Heart, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/hooks/useCart";
@@ -156,10 +156,6 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                           <Users className="mr-2 h-4 w-4" />
                           User Management
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate('/admin/messages')}>
-                          <MessageSquareLucide className="mr-2 h-4 w-4" />
-                          Messages
-                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
                           <Settings className="mr-2 h-4 w-4" />
@@ -180,10 +176,6 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                         <DropdownMenuItem onClick={() => navigate('/saved')}>
                           <Heart className="mr-2 h-4 w-4" />
                           Saved Cars
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate('/messages')}>
-                          <MessageSquareLucide className="mr-2 h-4 w-4" />
-                          Messages
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate('/profile')}>
@@ -376,7 +368,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                     href="mailto:alaminsarkinmota@gmail.com"
                     className="hover:text-primary transition-colors cursor-pointer block flex items-center gap-2 text-sm"
                   >
-                    <MessageSquareLucide className="h-4 w-4" />
+                    <Mail className="h-4 w-4" />
                     <span className="truncate max-w-[120px] sm:max-w-[150px]">alaminsarkinmota@gmail.com</span>
                   </a>
                 </li>

@@ -32,13 +32,11 @@ const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const SavedCarsPage = lazy(() => import("./pages/SavedCarsPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
-const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 
 // Admin Pages (Protected)
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminAddCar = lazy(() => import("./pages/admin/AdminAddCar"));
 const AdminInventory = lazy(() => import("./pages/admin/AdminInventory"));
-const AdminMessages = lazy(() => import("./pages/admin/AdminMessages"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminMedia = lazy(() => import("./pages/admin/AdminMedia"));
 const AdminBookings = lazy(() => import("./pages/admin/AdminBookings"));
@@ -189,13 +187,6 @@ const App = () => {
                         </Suspense>
                       </ProtectedRoute>
                     } />
-                    <Route path="/messages" element={
-                      <ProtectedRoute requireCustomer>
-                        <Suspense fallback={<GlobalAppLoader />}>
-                          <MessagesPage />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
                     <Route path="/profile" element={
                       <ProtectedRoute requireCustomer>
                         <Suspense fallback={<GlobalAppLoader />}>
@@ -237,13 +228,6 @@ const App = () => {
                       <ProtectedRoute requireAdmin>
                         <Suspense fallback={<GlobalAppLoader />}>
                           <AdminInventory />
-                        </Suspense>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/admin/messages" element={
-                      <ProtectedRoute requireAdmin>
-                        <Suspense fallback={<GlobalAppLoader />}>
-                          <AdminMessages />
                         </Suspense>
                       </ProtectedRoute>
                     } />
@@ -329,7 +313,7 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     <Route path="/staff/vehicles" element={
-                      <ProtectedRoute requireStaff>
+                      <ProtectedRoute requireStaff requirePermission="manage_inventory">
                         <StaffLayout>
                           <Suspense fallback={<GlobalAppLoader />}>
                             <StaffVehicles />
@@ -338,7 +322,7 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     <Route path="/staff/orders" element={
-                      <ProtectedRoute requireStaff>
+                      <ProtectedRoute requireStaff requirePermission="view_orders">
                         <StaffLayout>
                           <Suspense fallback={<GlobalAppLoader />}>
                             <StaffOrders />
@@ -347,7 +331,7 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     <Route path="/staff/inquiries" element={
-                      <ProtectedRoute requireStaff>
+                      <ProtectedRoute requireStaff requirePermission="respond_to_inquiries">
                         <StaffLayout>
                           <Suspense fallback={<GlobalAppLoader />}>
                             <StaffInquiries />
@@ -356,7 +340,7 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     <Route path="/staff/reviews" element={
-                      <ProtectedRoute requireStaff>
+                      <ProtectedRoute requireStaff requirePermission="manage_reviews">
                         <StaffLayout>
                           <Suspense fallback={<GlobalAppLoader />}>
                             <StaffReviews />
@@ -365,7 +349,7 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     <Route path="/staff/customers" element={
-                      <ProtectedRoute requireStaff>
+                      <ProtectedRoute requireStaff requirePermission="manage_customers">
                         <StaffLayout>
                           <Suspense fallback={<GlobalAppLoader />}>
                             <StaffCustomers />
@@ -374,7 +358,7 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     <Route path="/staff/reports" element={
-                      <ProtectedRoute requireStaff>
+                      <ProtectedRoute requireStaff requirePermission="view_reports">
                         <StaffLayout>
                           <Suspense fallback={<GlobalAppLoader />}>
                             <StaffReports />
@@ -383,7 +367,7 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     <Route path="/staff/settings" element={
-                      <ProtectedRoute requireStaff>
+                      <ProtectedRoute requireStaff requirePermission="access_system_settings">
                         <StaffLayout>
                           <Suspense fallback={<GlobalAppLoader />}>
                             <StaffSettings />

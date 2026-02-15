@@ -4,13 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { KPICard } from "@/components/analytics/KPICard";
+import { UserPermissionsDisplay } from "@/components/UserPermissionsDisplay";
+import { EnsurePermissionsLoaded } from "@/components/EnsurePermissionsLoaded";
+import { PermissionDemo } from "@/components/PermissionDemo";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { favoriteService, bookingService } from "@/services";
 import {
   Car,
   Heart,
-  MessageSquare,
   ShoppingBag,
   TrendingUp,
   Plus,
@@ -28,7 +30,6 @@ const DashboardPage = () => {
   const [stats, setStats] = useState({
     savedVehicles: 0,
     activeBookings: 0,
-    messages: 3,
     totalViews: 0
   });
   const [loading, setLoading] = useState(true);
@@ -71,15 +72,15 @@ const DashboardPage = () => {
     },
     {
       id: 2,
-      type: "inquiry",
-      title: "Inquiry about Toyota Camry",
+      type: "order",
+      title: "Order #12345 confirmed",
       time: "1 day ago",
-      status: "replied"
+      status: "confirmed"
     },
     {
       id: 3,
-      type: "order",
-      title: "Order #12345 confirmed",
+      type: "booking",
+      title: "Booking confirmed for test drive",
       time: "3 days ago",
       status: "confirmed"
     }
@@ -87,6 +88,7 @@ const DashboardPage = () => {
 
   return (
     <DashboardLayout title="Dashboard" subtitle={`Welcome back, ${user?.full_name || 'Customer'}`}>
+      <EnsurePermissionsLoaded />
       <div className="space-y-6 h-full flex flex-col overflow-hidden">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -148,7 +150,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Dashboard Content */}
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 flex-1 min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 flex-1 min-h-0">
           {/* Recent Activity */}
           <Card variant="premium" className="flex-1 flex flex-col min-h-0">
             <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-3">
@@ -160,8 +162,8 @@ const DashboardPage = () => {
                   <div key={activity.id} className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 rounded-lg bg-secondary/30">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
                       {activity.type === 'saved' && <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
-                      {activity.type === 'inquiry' && <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
                       {activity.type === 'order' && <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
+                      {activity.type === 'booking' && <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{activity.title}</p>
@@ -176,40 +178,46 @@ const DashboardPage = () => {
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
-          <Card variant="premium" className="flex-1 flex flex-col min-h-0">
-            <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-3">
-              <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 p-3 sm:p-4 pt-2 sm:pt-0">
-              <div className="space-y-2 sm:space-y-3">
-                <Button asChild className="w-full justify-start" variant="outline">
-                  <Link to="/cars">
-                    <Car className="w-4 h-4 mr-2" />
-                    Browse Vehicles
-                  </Link>
-                </Button>
-                <Button asChild className="w-full justify-start" variant="outline">
-                  <Link to="/saved-cars">
-                    <Heart className="w-4 h-4 mr-2" />
-                    View Saved Cars
-                  </Link>
-                </Button>
-                <Button asChild className="w-full justify-start" variant="outline">
-                  <Link to="/bookings">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    My Bookings
-                  </Link>
-                </Button>
-                <Button asChild className="w-full justify-start" variant="outline">
-                  <Link to="/orders">
-                    <ShoppingBag className="w-4 h-4 mr-2" />
-                    My Orders
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Permissions and Quick Actions */}
+          <div className="space-y-3 sm:space-y-4 flex flex-col min-h-0">
+            <UserPermissionsDisplay />
+            <PermissionDemo />
+            
+            {/* Quick Actions */}
+            <Card variant="premium" className="flex-1 flex flex-col min-h-0">
+              <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-3">
+                <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 p-3 sm:p-4 pt-2 sm:pt-0">
+                <div className="space-y-2 sm:space-y-3">
+                  <Button asChild className="w-full justify-start" variant="outline">
+                    <Link to="/cars">
+                      <Car className="w-4 h-4 mr-2" />
+                      Browse Vehicles
+                    </Link>
+                  </Button>
+                  <Button asChild className="w-full justify-start" variant="outline">
+                    <Link to="/saved-cars">
+                      <Heart className="w-4 h-4 mr-2" />
+                      View Saved Cars
+                    </Link>
+                  </Button>
+                  <Button asChild className="w-full justify-start" variant="outline">
+                    <Link to="/bookings">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      My Bookings
+                    </Link>
+                  </Button>
+                  <Button asChild className="w-full justify-start" variant="outline">
+                    <Link to="/orders">
+                      <ShoppingBag className="w-4 h-4 mr-2" />
+                      My Orders
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </DashboardLayout>
